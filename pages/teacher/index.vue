@@ -3,11 +3,13 @@
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 import AddListSub from "@/components/contact/modal/AddListSub";
+
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
     components: {AddListSub},
-    data(){
-        return{
+    data() {
+        return {
             items: [{
                 text: "Forms",
                 href: "/"
@@ -17,8 +19,8 @@ export default {
                     active: true
                 }
             ],
-            conditionSearch:'',
-            valueSearch:'',
+            conditionSearch: '',
+            valueSearch: '',
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
@@ -32,42 +34,42 @@ export default {
                     key: "index",
                     label: "STT",
                     sortable: true,
-                    thStyle: { width: "3%" },
-                },
-                {
-                    key: "id",
-                    label: "ID Tập TB",
-                    sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "3%"},
                 },
                 {
                     key: "name",
-                    label: 'Tên Tệp',
+                    label: "Tên Giảng Viên",
                     sortable: true,
-                    thStyle: { width: "20%" },
+                    thStyle: {width: "20%"},
                 },
                 {
-                    key: "count_sub",
-                    label: 'Số lượng thuê bao',
+                    key: "dob",
+                    label: "Ngày sinh",
                     sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "10%"},
                 },
                 {
-                    key: "user_name",
-                    label: 'Tài khoản',
+                    key: "address",
+                    label: "Địa chỉ",
                     sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "10%"},
                 },
                 {
-                    key: "description",
-                    label: 'Thông tin khác',
+                    key: "phone",
+                    label: "Số điện thoại",
                     sortable: true,
-                    thStyle: { width: "20%" },
+                    thStyle: {width: "10%"},
+                },
+                {
+                    key: "email",
+                    label: "Email",
+                    sortable: true,
+                    thStyle: {width: "20%"},
                 },
                 {
                     key: "action",
-                    label: 'Thao tác',
-                    thStyle: { width: "10%"},
+                    label: "Thao tác",
+                    thStyle: {width: "10%"},
                     tdClass: 'text-center',
                 },
             ],
@@ -80,13 +82,14 @@ export default {
     created() {
 
     },
-    computed:{
+    computed: {
         rows() {
             return this.tableData.length;
         }
     },
     mounted() {
         // this.searchContact();
+        this.handleGetTeacher();
         this.handleGetListTeacher();
     },
     methods: {
@@ -106,41 +109,52 @@ export default {
                 .finally(() => {
                 })
         },
-        // searchContact() {
-        //     let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
-        //     console.log('apiGetListContactGroup', objInput);
-        //     if(this.conditionSearch !== ''){
-        //         if(this.valueSearch.trim()===''){
-        //             this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm','warn');
-        //             return;
-        //         }
-        //     }
-        //     this.apiGetListContactGroup(objInput)
-        //         .then(response => {
-        //
-        //             if (response.err_code === 0) {
-        //                 let data = response['data'];
-        //                 this.tableData = data;
-        //                 console.log('apiGetListContactGroup', data);
-        //             } else {
-        //                 this.commonWarningVue(response.err_message);
-        //             }
-        //         })
-        //         .catch(err => {
-        //             console.log(err);
-        //         })
-        //         .finally(() => {
-        //             // this.commonLoadingPage(false);
-        //         });
-        //
-        // },
+        handleGetTeacher() {
+            this.apiGetTeacher(this.objGetTeacher)
+                .then(response => {
+                    console.log('apiGetListContactGroup', response)
+                    this.tableData = response;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+        },
+        searchContact() {
+            let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            console.log('apiGetListContactGroup', objInput);
+            if (this.conditionSearch !== '') {
+                if (this.valueSearch.trim() === '') {
+                    this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm', 'warn');
+                    return;
+                }
+            }
+            this.apiGetListContactGroup(objInput)
+                .then(response => {
+
+                    if (response.err_code === 0) {
+                        let data = response;
+                        this.tableData = data;
+                        console.log('apiGetListContactGroup', data);
+                    } else {
+                        this.commonWarningVue(response.err_message);
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+        },
         onFiltered(filteredItems) {
             // Trigger pagination to update the number of buttons/pages due to filtering
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
         deleteFileSub(id) {
-            let objDel ={id:id};
+            let objDel = {id: id};
             Swal.fire({
                 title: "Bạn có chắc chắn muốn xóa?",
                 text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
@@ -151,7 +165,7 @@ export default {
                 confirmButtonText: "Đồng ý",
                 cancelButtonText: "Hủy"
             }).then(result => {
-                if(result.value){
+                if (result.value) {
                     this.apiDeleteContactGroup(objDel)
                         .then(response => {
                             console.log('apiDeleteContactGroup', response);
@@ -176,14 +190,14 @@ export default {
             });
 
         },
-        changeContactGroupStatus(id,oldStatus){
-            let status=-1;
-            if(oldStatus===1)
-                status =0;
-            if(oldStatus===0)
-                status=1;
-            let objInput ={id:id,status:status};
-            this.apiChangeContactGroupStatus (objInput)
+        changeContactGroupStatus(id, oldStatus) {
+            let status = -1;
+            if (oldStatus === 1)
+                status = 0;
+            if (oldStatus === 0)
+                status = 1;
+            let objInput = {id: id, status: status};
+            this.apiChangeContactGroupStatus(objInput)
                 .then(response => {
                     console.log('apiChangeContactGroupStatus', response);
                     if (response.err_code === 0) {
@@ -201,7 +215,7 @@ export default {
                 });
 
         },
-        handleModalCall () {
+        handleModalCall() {
             this.searchContact();
         }
     }
@@ -236,7 +250,6 @@ export default {
                             <option value="NAME">Tên tệp</option>
                             <option value="SDT">Số điện thoại</option>
                         </select>
-                        <h1>Teacher</h1>
                     </div>
                     <div class="col-7">
                         <label>Từ khóa tìm kiếm</label>
@@ -255,7 +268,7 @@ export default {
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
-                        <template v-slot:cell(action) = data>
+                        <template v-slot:cell(action)=data>
                             <ul class="list-inline mb-0">
                                 <nuxt-link title="Xem tập TB"
                                            :to="{ path: '/contact/view/viewinfo', query: { id: data.item.id, name: data.item.name }}"

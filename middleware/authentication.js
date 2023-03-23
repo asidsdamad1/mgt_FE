@@ -8,9 +8,9 @@ export default function ({ store, route, redirect }) {
       // if (!authRequired) return next()
 
       // If auth is required and the user is logged in...
-      if (store.getters['auth/loggedIn']) {
+      if (store.getters['authen.js/loggedIn']) {
         // Validate the local user token...
-        return store.dispatch('auth/validate').then((validUser) => {
+        return store.dispatch('authen.js/validate').then((validUser) => {
           // Then continue if the token still represents a valid user,
           // otherwise redirect to login.
           validUser ? redirect() : redirectToLogin()

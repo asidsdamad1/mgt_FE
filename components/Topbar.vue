@@ -126,7 +126,7 @@
             },
             logoutUser() {
                 if (process.env.auth === "firebase") {
-                    this.$store.dispatch("auth/logOut");
+                    this.$store.dispatch("authen.js/logOut");
                 } else if (process.env.auth === "fakebackend") {
                     this.$store.dispatch("authfack/logout");
                 }

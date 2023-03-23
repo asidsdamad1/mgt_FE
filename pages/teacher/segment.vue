@@ -601,6 +601,7 @@ export default {
                 </div>
                 <div class="table-responsive">
                     <b-table hover bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
+
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>

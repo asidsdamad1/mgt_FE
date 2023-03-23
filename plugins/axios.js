@@ -1,4 +1,5 @@
 import { CONSTANTS } from '@/utils/constant';
+import {getAccessToken} from "../utils/cookieAuthen";
 // import {
 //     getAccessToken,
 //     removeAccessToken,
@@ -12,10 +13,10 @@ export default function({ store, $axios, redirect }) {
     // $axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
     $axios.onRequest(config => {
-        // const token = getAccessToken();
-        // if (token) {
-        //     config.headers['Authorization'] = `Bearer ${token}`;
-        // }
+        const token = getAccessToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
     });
 
     $axios.onResponse(response => {
@@ -23,9 +24,7 @@ export default function({ store, $axios, redirect }) {
         const { data } = response;
         // if data.code == 6767 || 6868 || 6969 => logout
         if (
-            data.code === CONSTANTS.TOKEN_EXPIRED ||
-            data.code === CONSTANTS.TOKEN_INCORRECT ||
-            data.code === CONSTANTS.TOKEN_NOT_EXIST
+            data === null
         ) {
             // removeAccessToken();
             // removeRefreshToken();
@@ -43,7 +42,7 @@ export default function({ store, $axios, redirect }) {
             console.log(status, 'Axios onError'); // displays in console
 
             // if status == 401 => logout
-            if (status === CONSTANTS.TOKEN_UNAUTHORIZED) {
+            if (data.username.trim() === "") {
                 // removeAccessToken();
                 // removeRefreshToken();
                 // removeUserInfo();

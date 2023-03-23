@@ -56,7 +56,7 @@ export function configureFakeBackend() {
                 // get user by id
                 if (url.match(/\/users\/\d+$/) && opts.method === 'GET') {
                     // check for fake auth token in header and return user if valid, this security is implemented server side in a real application
-                    if (opts.headers && opts.headers.Authorization === 'Bearer fake-jwt-token') {
+                    if (opts.headers && opts.headers.Authorization === 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTY3OTUzNzMxOCwiZXhwIjo4ODA3OTUzNzMxOH0.RmyUxDt0_G5g8PQU8QGq4jE1J6L2--YE_jxqZwBVULxHUHCsa5lOnV4gR3yFPaznA3c7AFkEgr9veXlVleLcQg') {
                         // find user by id in users array
                         let urlParts = url.split('/');
                         let id = parseInt(urlParts[urlParts.length - 1]);

@@ -1,94 +1,173 @@
 <script>
-    import {required, email} from "vuelidate/lib/validators";
+import {mapActions, mapMutations} from "vuex";
+import {getAccessToken} from "../../utils/cookieAuthen";
 
-    /**
-     * Login component
-     */
-    export default {
-        head() {
-            return {
-                title: `Login | Nuxtjs Responsive Bootstrap 5 Admin Dashboard`
-            };
-        },
-        layout: "auth",
-        data() {
-            return {
-                email: "admin@themesbrand.com",
-                password: "123456",
-                submitted: false,
-                authError: null,
-                tryingToLogIn: false,
-                isAuthError: false
-            };
-        },
-        validations: {
-            email: {
-                required,
-                email
-            },
-            password: {
-                required
-            }
-        },
-        computed: {
-            notification() {
-                return this.$store ? this.$store.state.notification : null;
-            },
-            notificationAutoCloseDuration() {
-                return this.$store && this.$store.state.notification ? 5 : 0;
-            }
-        },
-        methods: {
-            // Try to log the user in with the username
-            // and password they provided.
-            tryToLogIn() {
-                this.submitted = true;
-                // stop here if form is invalid
-                this.$v.$touch();
-
-                if (this.$v.$invalid) {
-                    return;
-                } else {
-                    if (process.env.auth === "firebase") {
-                        this.tryingToLogIn = true;
-                        // Reset the authError if it existed.
-                        this.authError = null;
-                        return (
-                            this.$store
-                                .dispatch("auth/logIn", {
-                                    email: this.email,
-                                    password: this.password
-                                })
-                                // eslint-disable-next-line no-unused-vars
-                                .then(token => {
-                                    this.tryingToLogIn = false;
-                                    this.isAuthError = false;
-                                    // Redirect to the originally requested page, or to the home page
-                                    this.$router.push(
-                                        this.$route.query.redirectFrom || {
-                                            path: "/"
-                                        }
-                                    );
-                                })
-                                .catch(error => {
-                                    this.tryingToLogIn = false;
-                                    this.authError = error ? error : "";
-                                    this.isAuthError = true;
-                                })
-                        );
-                    } else if (process.env.auth === "fakebackend") {
-                        const {email, password} = this;
-                        if (email && password) {
-                            this.$store.dispatch("authfack/login", {
-                                email,
-                                password
-                            });
-                        }
-                    }
-                }
-            }
+/**
+ * Login component
+ */
+export default {
+    middleware({redirect}) {
+        if (getAccessToken()) {
+            return redirect('/account/login');
         }
-    };
+    },
+    head() {
+        return {
+            title: `Login | Nuxtjs Responsive Bootstrap 5 Admin Dashboard`
+        };
+    },
+    layout: "auth",
+    data() {
+        return {
+            objInfo: {
+                username: '',
+                password: '',
+                loginType: 0
+            },
+            flagPassword: false,
+            showPassword: false
+        };
+    },
+    // validations: {
+    //     email: {
+    //         required
+    //     },
+    //     password: {
+    //         required
+    //     }
+    // },
+    computed: {
+        notification() {
+            return this.$store ? this.$store.state.notification : null;
+        },
+        notificationAutoCloseDuration() {
+            return this.$store && this.$store.state.notification ? 5 : 0;
+        }
+    },
+    methods: {
+        // Try to log the user in with the username
+        // and password they provided.
+        /*   tryToLogIn() {
+               this.submitted = true;
+               // stop here if form is invalid
+               this.$v.$touch();
+
+               if (this.$v.$invalid) {
+                   return;
+               } else {
+                   if (process.env.auth === "firebase") {
+                       this.tryingToLogIn = true;
+                       // Reset the authError if it existed.
+                       this.authError = null;
+                       return (
+                           this.$store
+                               .dispatch("auth/logIn", {
+                                   email: this.email,
+                                   password: this.password
+                               })
+                               // eslint-disable-next-line no-unused-vars
+                               .then(token => {
+                                   this.tryingToLogIn = false;
+                                   this.isAuthError = false;
+                                   // Redirect to the originally requested page, or to the home page
+                                   this.$router.push(
+                                       this.$route.query.redirectFrom || {
+                                           path: "/"
+                                       }
+                                   );
+                               })
+                               .catch(error => {
+                                   this.tryingToLogIn = false;
+                                   this.authError = error ? error : "";
+                                   this.isAuthError = true;
+                               })
+                       );
+                   } else if (process.env.auth === "fakebackend") {
+                       const {email, password} = this;
+                       if (email && password) {
+                           this.$store.dispatch("authfack/login", {
+                               email,
+                               password
+                           });
+                       }
+                   }
+               }
+           }*/
+        ...mapMutations('authen', {
+            ACTION_LOGIN_TYPE: 'ACTION_LOGIN_TYPE',
+            ACTION_LOGIN_CSRF_STATE: 'ACTION_LOGIN_CSRF_STATE'
+        }),
+        ...mapActions('authen', {
+            apiSendOTP: 'apiSendOTP',
+            apiLogin: 'apiLogin'
+        }),
+        handleActionLogin() {
+            if (getAccessToken()) {
+                this.$router.push('/account');
+                return;
+            }
+            console.log(this.objInfo)
+            if (this.objInfo.username.trim() === '') {
+                this.commonNotifyVue('Vui lòng nhập tài khoản', 'warn');
+                return;
+            }
+
+            if (this.objInfo.password.trim() === '') {
+                this.commonNotifyVue('Vui lòng nhập mật khẩu', 'warn');
+                return;
+            }
+
+            if (this.flagPassword) {
+                this.objInfo.loginType = 0;
+            } else {
+                this.objInfo.loginType = 5;
+            }
+
+            this.ACTION_LOGIN_TYPE('local');
+
+            this.commonLoadingPage(true);
+            this.apiLogin(this.objInfo)
+                .then(response => {
+                    console.log('handleActionLogin response', response);
+                    this.$router.push('/');
+                })
+                .catch(err => {
+                    console.log('handleActionLogin err', err);
+                    this.commonErrorVue(err);
+                })
+                .finally(() => {
+                    this.commonLoadingPage(false);
+                });
+        },
+        handleActionLoginWidthGoogle() {
+            this.ACTION_LOGIN_TYPE('google');
+            this.$auth.loginWith('google', {params: {prompt: 'select_account'}});
+        },
+        handleActionLoginWidthFacebook() {
+            this.ACTION_LOGIN_TYPE('facebook');
+            this.$auth.loginWith('facebook');
+        },
+        handleActionLoginWidthTiktok() {
+            const csrfState = Math.random().toString(36).substring(2);
+
+            this.ACTION_LOGIN_TYPE('tiktok');
+            this.ACTION_LOGIN_CSRF_STATE(csrfState);
+
+            let url = configTiktok.url;
+
+            url += `?client_key=${configTiktok.client_key}`;
+            url += '&scope=user.info.basic';
+            url += '&response_type=code';
+            url += `&redirect_uri=${window.location.origin}/${configTiktok.redirect_uri}`;
+            url += '&state=' + csrfState;
+
+            window.open(url, '_parent');
+        },
+        toggleShow() {
+            this.showPassword = !this.showPassword;
+        }
+    }
+};
 </script>
 
 <template>
@@ -145,31 +224,31 @@
                                         {{ notification.message }}
                                     </div>
 
-                                    <b-form @submit.prevent="tryToLogIn">
+                                    <b-form @submit.prevent="handleActionLogin">
                                         <b-form-group
                                             id="input-group-1"
-                                            label="Email"
+                                            label="Username"
                                             label-for="input-1"
                                             class="mb-3"
                                         >
                                             <b-form-input
                                                 id="input-1"
-                                                v-model="email"
+                                                v-model="objInfo.username"
                                                 type="text"
-                                                placeholder="Enter email"
-                                                :class="{ 'is-invalid': submitted && $v.email.$error }"
+                                                placeholder="Enter username"
+                                                :class="{ 'is-invalid': submitted }"
                                             ></b-form-input>
-                                            <div
-                                                v-if="submitted && $v.email.$error"
-                                                class="invalid-feedback"
-                                            >
-                        <span v-if="!$v.email.required"
-                        >Email is required.</span
-                        >
-                                                <span v-if="!$v.email.email"
-                                                >Please enter valid email.</span
-                                                >
-                                            </div>
+<!--                                            <div-->
+<!--                                                v-if="submitted && $v.email.$error"-->
+<!--                                                class="invalid-feedback"-->
+<!--                                            >-->
+<!--                        <span v-if="!$v.email.required"-->
+<!--                        >Email is required.</span-->
+<!--                        >-->
+<!--                                                <span v-if="!$v.email.email"-->
+<!--                                                >Please enter valid email.</span-->
+<!--                                                >-->
+<!--                                            </div>-->
                                         </b-form-group>
 
                                         <b-form-group id="input-group-2" class="mb-3">
@@ -184,7 +263,7 @@
                                             <label for="input-2">Password</label>
                                             <b-form-input
                                                 id="input-2"
-                                                v-model="password"
+                                                v-model="objInfo.password"
                                                 type="password"
                                                 placeholder="Enter password"
                                                 :class="{

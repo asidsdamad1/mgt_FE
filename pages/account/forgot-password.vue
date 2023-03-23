@@ -42,7 +42,7 @@ export default {
           this.error = null;
           return (
             this.$store
-              .dispatch("auth/resetPassword", {
+              .dispatch("authen.js/resetPassword", {
                 email: this.email,
               })
               // eslint-disable-next-line no-unused-vars
