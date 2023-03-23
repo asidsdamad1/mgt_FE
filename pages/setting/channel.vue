@@ -2,7 +2,7 @@
 <script>
 
 import {mapActions} from "vuex";
-import ChannelModal from "@/components/setting/ChannelModal";
+import ChannelModal from "../../components/setting/ChannelModal";
 import Swal from "sweetalert2";
 
 export default {

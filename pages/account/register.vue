@@ -63,7 +63,7 @@ export default {
           this.regError = null;
           return (
             this.$store
-              .dispatch("auth/register", {
+              .dispatch("authen.js/register", {
                 email: this.user.email,
                 password: this.user.password,
               })

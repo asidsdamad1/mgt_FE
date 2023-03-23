@@ -2,12 +2,18 @@
 
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
-import AddListSub from "@/components/contact/modal/AddListSub";
+import Multiselect from "vue-multiselect";
+import TeacherModal from "../../components/teacher/TeacherModal.vue";
+
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
-    components: {AddListSub},
-    data(){
-        return{
+    components: {
+        Multiselect,
+        TeacherModal
+    },
+    data() {
+        return {
             items: [{
                 text: "Forms",
                 href: "/"
@@ -17,8 +23,8 @@ export default {
                     active: true
                 }
             ],
-            conditionSearch:'',
-            valueSearch:'',
+            conditionSearch: '',
+            valueSearch: '',
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
@@ -32,66 +38,84 @@ export default {
                     key: "index",
                     label: "STT",
                     sortable: true,
-                    thStyle: { width: "3%" },
                 },
                 {
-                    key: "id",
-                    label: "ID Tập TB",
+                    key: "fullName",
+                    label: "Tên Giảng Viên",
                     sortable: true,
-                    thStyle: { width: "10%" },
                 },
                 {
-                    key: "name",
-                    label: 'Tên Tệp',
+                    key: "dob",
+                    label: "Ngày sinh",
                     sortable: true,
-                    thStyle: { width: "20%" },
                 },
                 {
-                    key: "count_sub",
-                    label: 'Số lượng thuê bao',
+                    key: "address",
+                    label: "Địa chỉ",
                     sortable: true,
-                    thStyle: { width: "10%" },
                 },
                 {
-                    key: "user_name",
-                    label: 'Tài khoản',
+                    key: "phone",
+                    label: "Số điện thoại",
                     sortable: true,
-                    thStyle: { width: "10%" },
                 },
                 {
-                    key: "description",
-                    label: 'Thông tin khác',
+                    key: "email",
+                    label: "Email",
                     sortable: true,
-                    thStyle: { width: "20%" },
+                },
+                {
+                    key: "createdAt",
+                    label: 'Thời gian tạo',
+                    sortable: true
+                },
+                {
+                    key: "updatedAt",
+                    label: 'Thời gian cập nhật',
+                    sortable: true
                 },
                 {
                     key: "action",
-                    label: 'Thao tác',
-                    thStyle: { width: "10%"},
+                    label: "Thao tác",
                     tdClass: 'text-center',
                 },
             ],
             tableData: [],
+            idSegment: 0,
+            objGetTeacher: {
+                id: 0,
+                name: "",
+                dob: "",
+                gender: "",
+                phone: "",
+                email: "",
+                address:""
+            },
             objGetListTeacher: {
                 id: 0
             },
+            modalActionType:-1,
+            flagModal: false
         }
     },
     created() {
 
     },
-    computed:{
+    computed: {
         rows() {
             return this.tableData.length;
         }
     },
     mounted() {
         // this.searchContact();
+        this.handleGetTeacher();
         this.handleGetListTeacher();
     },
     methods: {
         ...mapActions('teachers', {
             apiGetListTeacher: 'apiGetListTeacher',
+            apiGetTeacher: 'apiGetTeacher',
+            apiGetTeacherById: 'apiGetTeacherById'
         }),
         handleGetListTeacher() {
             this.apiGetListTeacher(this.objGetListTeacher)
@@ -106,41 +130,95 @@ export default {
                 .finally(() => {
                 })
         },
-        // searchContact() {
-        //     let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
-        //     console.log('apiGetListContactGroup', objInput);
-        //     if(this.conditionSearch !== ''){
-        //         if(this.valueSearch.trim()===''){
-        //             this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm','warn');
-        //             return;
-        //         }
-        //     }
-        //     this.apiGetListContactGroup(objInput)
-        //         .then(response => {
-        //
-        //             if (response.err_code === 0) {
-        //                 let data = response['data'];
-        //                 this.tableData = data;
-        //                 console.log('apiGetListContactGroup', data);
-        //             } else {
-        //                 this.commonWarningVue(response.err_message);
-        //             }
-        //         })
-        //         .catch(err => {
-        //             console.log(err);
-        //         })
-        //         .finally(() => {
-        //             // this.commonLoadingPage(false);
-        //         });
-        //
-        // },
+        handleGetTeacher() {
+            this.apiGetTeacher(this.objGetTeacher)
+                .then(response => {
+                    console.log('apiGetListContactGroup', response)
+                    this.tableData = response;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+        },
+        searchContact() {
+            let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            console.log('apiGetListContactGroup', objInput);
+            if (this.conditionSearch !== '') {
+                if (this.valueSearch.trim() === '') {
+                    this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm', 'warn');
+                    return;
+                }
+            }
+            this.apiGetListContactGroup(objInput)
+                .then(response => {
+
+                    if (response.err_code === 0) {
+                        let data = response;
+                        this.tableData = data;
+                        console.log('apiGetListContactGroup', data);
+                    } else {
+                        this.commonWarningVue(response.err_message);
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+        },
         onFiltered(filteredItems) {
             // Trigger pagination to update the number of buttons/pages due to filtering
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
+        viewSegment(id) {
+            this.isEditModalField = true;
+            this.disableAdd = true;
+            this.titleModal = 'Xem Chi Tiết';
+            this.typeSegment = 3;
+            this.idSegment = parseInt(id);
+            this.objGetTeacher.id = parseInt(id);
+
+            this.flagModal = !this.flagModal;
+
+            this.apiGetTeacherById(this.objGetTeacher).then(response => {
+                console.log("response:: ", response)
+                this.objGetTeacher.name = response.fullName;
+                this.objGetTeacher.dob = response.dob;
+                this.objGetTeacher.gender = response.gender;
+                this.objGetTeacher.phone = response.phone;
+                this.objGetTeacher.email = response.email;
+                this.objGetTeacher.address = response.address;
+
+                console.log("object teacher:: ", this.objGetTeacher)
+
+                this.modalActionType=3;
+
+                this.flagModal = !this.flagModal;
+                this.$bvModal.show('modal-add-event');
+
+            }).catch(err => {
+                console.log(err)
+            }).finally(() => {
+            })
+        },
+        showModalTeacher(){
+            this.idSegment=-1;
+            this.modalActionType=1;
+            this.objGetTeacher.name = "";
+            this.objGetTeacher.dob = "";
+            this.objGetTeacher.gender = "";
+            this.objGetTeacher.phone = "";
+            this.objGetTeacher.email = "";
+            this.objGetTeacher.address = "";
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-event');
+        },
         deleteFileSub(id) {
-            let objDel ={id:id};
+            let objDel = {id: id};
             Swal.fire({
                 title: "Bạn có chắc chắn muốn xóa?",
                 text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
@@ -151,7 +229,7 @@ export default {
                 confirmButtonText: "Đồng ý",
                 cancelButtonText: "Hủy"
             }).then(result => {
-                if(result.value){
+                if (result.value) {
                     this.apiDeleteContactGroup(objDel)
                         .then(response => {
                             console.log('apiDeleteContactGroup', response);
@@ -176,14 +254,14 @@ export default {
             });
 
         },
-        changeContactGroupStatus(id,oldStatus){
-            let status=-1;
-            if(oldStatus===1)
-                status =0;
-            if(oldStatus===0)
-                status=1;
-            let objInput ={id:id,status:status};
-            this.apiChangeContactGroupStatus (objInput)
+        changeContactGroupStatus(id, oldStatus) {
+            let status = -1;
+            if (oldStatus === 1)
+                status = 0;
+            if (oldStatus === 0)
+                status = 1;
+            let objInput = {id: id, status: status};
+            this.apiChangeContactGroupStatus(objInput)
                 .then(response => {
                     console.log('apiChangeContactGroupStatus', response);
                     if (response.err_code === 0) {
@@ -201,7 +279,7 @@ export default {
                 });
 
         },
-        handleModalCall () {
+        handleModalCall() {
             this.searchContact();
         }
     }
@@ -216,14 +294,13 @@ export default {
 <template>
     <div class="row">
         <div class="card">
-
             <div class="card-header">
                 <div class="row" style="float: right">
                     <div class="col-12">
-                        <button type="button" class="btn btn-success" v-b-modal.modal-add-file-tb><i class="uil uil-plus me-1"></i> Tải tập TB</button>
+                        <button type="button" class="btn btn-success" @click="showModalTeacher"><i class="uil uil-plus me-1"></i> Tạo mới giảng viên</button>
                     </div>
-                </div>
 
+                </div>
             </div>
             <div class="card-body">
                 <div class="row mb-3">
@@ -236,7 +313,6 @@ export default {
                             <option value="NAME">Tên tệp</option>
                             <option value="SDT">Số điện thoại</option>
                         </select>
-                        <h1>Teacher</h1>
                     </div>
                     <div class="col-7">
                         <label>Từ khóa tìm kiếm</label>
@@ -255,35 +331,35 @@ export default {
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
-                        <template v-slot:cell(action) = data>
-                            <ul class="list-inline mb-0">
-                                <nuxt-link title="Xem tập TB"
-                                           :to="{ path: '/contact/view/viewinfo', query: { id: data.item.id, name: data.item.name }}"
-                                           class="text-secondary p-2"
-                                ><i class="uil uil-eye font-size-18"></i>
-                                </nuxt-link>
-                                <nuxt-link title="Sửa tập TB"
-                                           :to="{path:'/contact/edit/editcontactgroup',query: { id: data.item.id, name: data.item.name }}"
-                                           class="text-secondary pe-2"
-                                ><i class="uil uil-pen font-size-18"></i>
-                                </nuxt-link>
-                                <li class="list-inline-item">
-                                    <a
-                                        @click="deleteFileSub(data.item.id)"
-                                        class="text-secondary"
-                                        v-b-tooltip.hover
-                                        title="Delete"
-                                    >
-                                        <i class="uil uil-trash-alt font-size-18"></i>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeContactGroupStatus(data.item.id,data.item.status)" v-model="data.item.status===1">
-                                        <label class="form-check-label" for="flexSwitchCheckChecked"></label>
-                                    </div>
-                                </li>
-                            </ul>
+                        <template v-slot:cell(action)=data>
+                            <div class="row align-items-center">
+                                <button title="Xem Segment"
+                                        @click="viewSegment(data.item.id)"
+                                        class="btn btn-gray btn-block view-cart col-auto"
+                                ><i class="uil uil-eye me-1"></i>
+                                </button>
+
+                                <button title="Sửa Segment"
+                                        @click="handleCheckUpdateSegment(data.item.id)"
+                                        class="btn btn-gray btn-block view-cart col-auto"
+                                ><i class="uil uil-pen me-1"></i>
+                                </button>
+
+                                <button title="Xóa Segment"
+                                        @click="handleCheckDeleteSegment(data.item.id)"
+                                        class="btn btn-gray btn-block view-cart col-auto"
+                                ><i class="uil uil-trash me-1"></i>
+                                </button>
+
+                                <div class="form-check form-switch form-check-inline col-auto">
+                                    <input v-model="data.item.status===1"
+                                           type="checkbox"
+                                           class="form-check-input"
+                                           id="flexSwitchCheckChecked"
+                                           @click="handleCheckActiveSegment(data.item.id)"
+                                    />
+                                </div>
+                            </div>
                         </template>
                     </b-table>
                 </div>
@@ -305,7 +381,18 @@ export default {
                 </div>
             </div>
         </div>
-        <add-list-sub @handleModalCall="handleModalCall" :actionType="1" :contactGroupIdEdit="-1"></add-list-sub>
+        <teacher-modal
+            :idTeacher="idSegment"
+            :nameTeacher="objGetTeacher.name"
+            :dobTeacher="objGetTeacher.dob"
+            :genderTeacher="objGetTeacher.gender"
+            :phoneTeacher="objGetTeacher.phone"
+            :emailTeacher="objGetTeacher.email"
+            :addressTeacher="objGetTeacher.address"
+            :actionType="modalActionType"
+            :flagModal="flagModal"
+           >
+        </teacher-modal>
     </div>
 
 </template>

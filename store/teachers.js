@@ -50,6 +50,21 @@ const actions = {
         }
     },
 
+    async apiGetTeacherById({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacherById}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiEditTeacher({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiEditTeacher}`, payload);
