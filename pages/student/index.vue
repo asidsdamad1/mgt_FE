@@ -3,17 +3,19 @@
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
-import TeacherModal from "../../components/teacher/TeacherModal.vue";
+import StudentModal from "../../components/student/StudentModal.vue";
+import AddStudentModal from "../../components/student/AddStudentModal.vue";
 
 export default {
-    middleware: ['check-authen'],
     name: "subscriber",
     components: {
         Multiselect,
-        TeacherModal
+        StudentModal,
+        AddStudentModal
     },
     data() {
         return {
+            fileUpload: null,
             items: [{
                 text: "Forms",
                 href: "/"
@@ -40,8 +42,18 @@ export default {
                     sortable: true,
                 },
                 {
+                    key: "code",
+                    label: "Mã Sinh Viên",
+                    sortable: true,
+                },
+                {
                     key: "fullName",
-                    label: "Tên Giảng Viên",
+                    label: "Tên Sinh Viên",
+                    sortable: true,
+                },
+                {
+                    key: "studentClass.name",
+                    label: "Lớp ",
                     sortable: true,
                 },
                 {
@@ -50,13 +62,8 @@ export default {
                     sortable: true,
                 },
                 {
-                    key: "address",
-                    label: "Địa chỉ",
-                    sortable: true,
-                },
-                {
-                    key: "phone",
-                    label: "Số điện thoại",
+                    key: "studentClass.course",
+                    label: "Khóa",
                     sortable: true,
                 },
                 {
@@ -71,21 +78,24 @@ export default {
                 },
             ],
             tableData: [],
-            idTeacher: 0,
-            objGetTeacher: {
+            idStudent: 0,
+            objGetStudent: {
                 id: 0,
+                code: "",
                 fullName: "",
                 dob: "",
                 gender: "",
                 phone: "",
                 email: "",
-                address: ""
+                address: "",
+                class: ""
             },
-            objGetListTeacher: {
+            objGetListStudent: {
                 id: 0
             },
             modalActionType: -1,
-            flagModal: false
+            flagModal: false,
+            studentClass: []
         }
     },
     created() {
@@ -98,32 +108,55 @@ export default {
     },
     mounted() {
         // this.searchContact();
-        this.handleGetTeacher();
-        this.handleGetListTeacher();
+        this.handleGetStudent();
+        // this.getStudentClass();
     },
     methods: {
-        ...mapActions('teachers', {
-            apiGetListTeacher: 'apiGetListTeacher',
-            apiGetTeacher: 'apiGetTeacher',
-            apiGetTeacherById: 'apiGetTeacherById',
-            apiDeleteTeacher: 'apiDeleteTeacher',
-            apiSearchTeacher: 'apiSearchTeacher'
+        ...mapActions('students', {
+            apiGetStudent: 'apiGetStudent',
+            apiDeleteStudent: 'apiDeleteStudent',
+            apiSearchStudent: 'apiSearchStudent',
+            apiImportStudent: 'apiImportStudent',
+            apiGetStudentClass: 'apiGetStudentClass'
         }),
-        handleGetListTeacher() {
-            this.apiGetListTeacher(this.objGetListTeacher)
-                .then(response => {
-                    if (response.err_code === 0) {
-                        this.teachersOptions = response.data
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                })
-                .finally(() => {
-                })
+        closeModalListSub() {
+            this.$bvModal.hide('modal-add-list-tb');
         },
-        handleGetTeacher() {
-            this.apiGetTeacher(this.objGetTeacher)
+        getStudentClass() {
+            this.apiGetStudentClass().then(response => {
+                this.studentClass = response;
+            })
+        },
+        addListSub() {
+            this.errorValidate = [];
+            let formData = new FormData();
+            if (this.fileUpload === null) {
+                this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
+            } else {
+                formData.append('fileExcel', this.fileUpload);
+                console.log(formData);
+
+                this.apiImportStudent(formData)
+                    .then(response => {
+                        console.log('apiAddBlacklist', response);
+                        if (response === null) {
+                            this.$emit('handleGetStudent');
+                            this.$bvModal.hide('modal-add-file-blacklist');
+                        } else {
+                            this.commonWarningVue("bug");
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+                    .finally(() => {
+                        // this.commonLoadingPage(false);
+                    });
+
+            }
+        },
+        handleGetStudent() {
+            this.apiGetStudent(this.objGetStudent)
                 .then(response => {
                     console.log('apiGetListContactGroup', response)
                     this.tableData = response;
@@ -143,7 +176,7 @@ export default {
                     return;
                 }
             }
-            this.apiSearchTeacher(objInput)
+            this.apiGetStudent(objInput)
                 .then(response => {
                     let data = response;
                     this.tableData = data;
@@ -161,26 +194,23 @@ export default {
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
-        viewTeacher(id) {
+        viewStudent(id) {
             this.isEditModalField = true;
             this.disableAdd = true;
             this.titleModal = 'Xem Chi Tiết';
             this.typeSegment = 3;
-            this.idTeacher = parseInt(id);
-            this.objGetTeacher.id = parseInt(id);
+            this.idStudent = parseInt(id);
+            this.objGetStudent.id = parseInt(id);
 
             this.flagModal = !this.flagModal;
 
-            this.apiGetTeacherById(this.objGetTeacher).then(response => {
-                console.log("response:: ", response)
-                this.objGetTeacher.name = response.fullName;
-                this.objGetTeacher.dob = response.dob;
-                this.objGetTeacher.gender = response.gender;
-                this.objGetTeacher.phone = response.phone;
-                this.objGetTeacher.email = response.email;
-                this.objGetTeacher.address = response.address;
+            this.apiGetStudent({
+                conditionSearch: 'ID',
+                valueSearch: id,
+            }).then(response => {
+                this.objGetStudent = response[0];
 
-                console.log("object teacher:: ", this.objGetTeacher)
+                console.log("object student:: ", this.objGetStudent)
 
                 this.modalActionType = 3;
 
@@ -192,36 +222,40 @@ export default {
             }).finally(() => {
             })
         },
-        showModalTeacher() {
-            this.idTeacher = -1;
+        showModalStudent() {
+            this.idStudent = -1;
             this.modalActionType = 1;
-            this.objGetTeacher.name = "";
-            this.objGetTeacher.dob = "";
-            this.objGetTeacher.gender = "";
-            this.objGetTeacher.phone = "";
-            this.objGetTeacher.email = "";
-            this.objGetTeacher.address = "";
+            this.objGetStudent.name = "";
+            this.objGetStudent.dob = "";
+            this.objGetStudent.gender = "";
+            this.objGetStudent.phone = "";
+            this.objGetStudent.email = "";
+            this.objGetStudent.address = "";
+            this.objGetStudent.code = "";
+            this.objGetStudent.class = "";
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-event');
         },
-        prepareEditTeacher(id) {
+        prepareEditStudent(id) {
             this.isEditModalField = false;
             this.titleModal = 'Sửa thông tin';
-            this.typeTeacher = 2;
-            this.objGetTeacher.id = parseInt(id);
-            this.idTeacher = parseInt(id);
+            this.typeStudent = 2;
+            this.objGetStudent.id = parseInt(id);
+            this.idStudent = parseInt(id);
 
-            this.teachersValue = [];
-            this.listConditions = [];
-
-            this.apiGetTeacherById(this.objGetTeacher).then(response => {
+            this.apiGetStudent({
+                id: id,
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(response => {
                 console.log(response);
-                this.objGetTeacher.name = response.fullName;
-                this.objGetTeacher.dob = response.dob;
-                this.objGetTeacher.gender = response.gender;
-                this.objGetTeacher.phone = response.phone;
-                this.objGetTeacher.email = response.email;
-                this.objGetTeacher.address = response.address;
+                this.objGetStudent.code = response.code;
+                this.objGetStudent.name = response.fullName;
+                this.objGetStudent.dob = response.dob;
+                this.objGetStudent.gender = response.gender;
+                this.objGetStudent.phone = response.phone;
+                this.objGetStudent.email = response.email;
+                this.objGetStudent.address = response.address;
                 this.modalActionType = 2;
 
                 this.$bvModal.show('modal-add-event');
@@ -231,7 +265,7 @@ export default {
             }).finally(() => {
             })
         },
-        deleteTeacher(id) {
+        deleteStudent(id) {
             console.log("id: ", id);
 
             Swal.fire({
@@ -245,10 +279,10 @@ export default {
                 cancelButtonText: "Hủy"
             }).then(result => {
                 if (result.isConfirmed) {
-                    this.apiDeleteTeacher(id).then(response => {
+                    this.apiDeleteStudent(id).then(response => {
                         console.log("in")
                         Swal.fire("", response.err_message, "success");
-                        this.handleGetTeacher();
+                        this.handleGetStudent();
 
 
                     }).catch(err => {
@@ -304,9 +338,11 @@ export default {
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <div class="row" style="float: right">
-                    <div class="col-12">
-                        <button type="button" class="btn btn-success" @click="showModalTeacher"><i class="uil uil-plus me-1"></i> Tạo mới giảng viên</button>
+                <div class="row">
+                    <div class="col-6"></div>
+                    <div class="col-6 text-end">
+                        <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-student><i class="uil uil-arrow-circle-up me-1"></i> Tải tập SV</button>
+                        <button type="button" class="btn btn-success" @click="showModalStudent"><i class="uil uil-plus me-1"></i> Tạo mới sinh viên</button>
                     </div>
 
                 </div>
@@ -321,6 +357,8 @@ export default {
                             <option value="NAME">Tên</option>
                             <option value="PHONE">Số điện thoại</option>
                             <option value="EMAIL">Email</option>
+                            <option value="CLASS">Lớp</option>
+                            <option value="CODE">Mã sinh viên</option>
                         </select>
                     </div>
                     <div class="col-7">
@@ -343,19 +381,19 @@ export default {
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
                                 <button title="Xem Segment"
-                                        @click="viewTeacher(data.item.id)"
+                                        @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
                                 </button>
 
                                 <button title="Sửa Segment"
-                                        @click="prepareEditTeacher(data.item.id)"
+                                        @click="prepareEditStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
 
                                 <button title="Xóa Segment"
-                                        @click="deleteTeacher(data.item.id)"
+                                        @click="deleteStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>
                                 </button>
@@ -382,13 +420,22 @@ export default {
                 </div>
             </div>
         </div>
-        <teacher-modal
-            :idTeacher="idTeacher"
+
+        <student-modal
+            :idStudent="idStudent"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetTeacher="handleGetTeacher"
+            @handleGetStudent="handleGetStudent"
         >
-        </teacher-modal>
+        </student-modal>
+
+        <add-student-modal
+            :idStudent="idStudent"
+            :actionType="modalActionType"
+            :flagModal="flagModal"
+            @handleGetStudent="handleGetStudent"
+        >
+        </add-student-modal>
     </div>
 
 </template>

@@ -15,7 +15,7 @@ export const menuItems = [
         id: 3,
         label: "Danh sách sinh viên",
         icon: "uil-list-ul",
-        link: "/charts/chartist"
+        link: "/student"
     },
     {
         id: 13,

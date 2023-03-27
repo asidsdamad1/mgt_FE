@@ -161,7 +161,7 @@ export default {
                                 <h4>Thả files vào đây hoặc kích nút upload.</h4>
                             </div>
                         </vue-dropzone>
-                    </div>
+                    </div>0
                 </div>
             </div>
             <div class="card-footer text-end">

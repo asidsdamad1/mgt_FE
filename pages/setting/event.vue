@@ -1,11 +1,8 @@
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/develop
 <script>
 
 import {mapActions} from "vuex";
-import EventModal from "@/components/setting/EventModal";
+import EventModal from "../../components/setting/EventModal";
 import Swal from "sweetalert2";
 
 export default {

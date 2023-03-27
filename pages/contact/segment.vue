@@ -3,7 +3,7 @@ import Multiselect from 'vue-multiselect';
 import "vue-multiselect/dist/vue-multiselect.min.css";
 import Swal from "sweetalert2";
 import {mapActions} from "vuex";
-import MdAddSegment from "@/components/contact/modal/MdAddSegment.vue";
+import MdAddSegment from "../../components/contact/modal/MdAddSegment.vue";
 
 export default {
     name: "segment",

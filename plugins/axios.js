@@ -42,12 +42,13 @@ export default function({ store, $axios, redirect }) {
             console.log(status, 'Axios onError'); // displays in console
 
             // if status == 401 => logout
-            if (data.username.trim() === "") {
+            if (status === CONSTANTS.TOKEN_UNAUTHORIZED && status === CONSTANTS.NOT_FOUND) {
                 // removeAccessToken();
                 // removeRefreshToken();
                 // removeUserInfo();
                 redirect('/account/login');
             }
+
         } catch (err) {
             redirect('/account/login');
             console.log('[onResponseError]', error);
