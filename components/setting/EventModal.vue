@@ -391,7 +391,7 @@ export default {
                         <label>Dung lượng gói</label>
                         <input type="text" maxlength="10" v-model="pkgCapacity" :disabled="actionType===3" class="form-control"/>
                         <label>Cảnh báo hết dung lượng</label>
-                        <select v-model="pkgWarning" :disabled="actionType===3" class="form-control">
+                            <select v-model="pkgWarning" :disabled="actionType===3" class="form-control">
                             <option value="1">Có</option>
                             <option value="0">Không</option>
                         </select>

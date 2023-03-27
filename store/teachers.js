@@ -82,7 +82,7 @@ const actions = {
 
     async apiDeleteTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiDeleteTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiDeleteTeacher}`+`/${parseInt(payload)}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -95,9 +95,9 @@ const actions = {
         }
     },
 
-    async apiGetListCities({commit, state}) {
+    async apiSearchTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetListCities}`);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiSearchTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

@@ -5,5 +5,6 @@ export const API_TEACHER_MANAGE = {
     apiGetListTeacher: 'teacher/get-list-teacher',
     apiGetTeacherById: 'teacher/get-teacher-by-id',
     apiGetTeacher: 'teacher/get-list-teacher',
+    apiSearchTeacher: 'teacher/get-teacher',
     apiChangeBlacklistStatus: 'teacher/change-teacher-status',
 };

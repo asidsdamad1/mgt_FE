@@ -65,36 +65,26 @@ export default {
                     sortable: true,
                 },
                 {
-                    key: "createdAt",
-                    label: 'Thời gian tạo',
-                    sortable: true
-                },
-                {
-                    key: "updatedAt",
-                    label: 'Thời gian cập nhật',
-                    sortable: true
-                },
-                {
                     key: "action",
                     label: "Thao tác",
                     tdClass: 'text-center',
                 },
             ],
             tableData: [],
-            idSegment: 0,
+            idTeacher: 0,
             objGetTeacher: {
                 id: 0,
-                name: "",
+                fullName: "",
                 dob: "",
                 gender: "",
                 phone: "",
                 email: "",
-                address:""
+                address: ""
             },
             objGetListTeacher: {
                 id: 0
             },
-            modalActionType:-1,
+            modalActionType: -1,
             flagModal: false
         }
     },
@@ -115,7 +105,9 @@ export default {
         ...mapActions('teachers', {
             apiGetListTeacher: 'apiGetListTeacher',
             apiGetTeacher: 'apiGetTeacher',
-            apiGetTeacherById: 'apiGetTeacherById'
+            apiGetTeacherById: 'apiGetTeacherById',
+            apiDeleteTeacher: 'apiDeleteTeacher',
+            apiSearchTeacher: 'apiSearchTeacher'
         }),
         handleGetListTeacher() {
             this.apiGetListTeacher(this.objGetListTeacher)
@@ -151,16 +143,11 @@ export default {
                     return;
                 }
             }
-            this.apiGetListContactGroup(objInput)
+            this.apiSearchTeacher(objInput)
                 .then(response => {
-
-                    if (response.err_code === 0) {
-                        let data = response;
-                        this.tableData = data;
-                        console.log('apiGetListContactGroup', data);
-                    } else {
-                        this.commonWarningVue(response.err_message);
-                    }
+                    let data = response;
+                    this.tableData = data;
+                    console.log('apiGetListContactGroup', data);
                 })
                 .catch(err => {
                     console.log(err);
@@ -179,7 +166,7 @@ export default {
             this.disableAdd = true;
             this.titleModal = 'Xem Chi Tiết';
             this.typeSegment = 3;
-            this.idSegment = parseInt(id);
+            this.idTeacher = parseInt(id);
             this.objGetTeacher.id = parseInt(id);
 
             this.flagModal = !this.flagModal;
@@ -195,7 +182,7 @@ export default {
 
                 console.log("object teacher:: ", this.objGetTeacher)
 
-                this.modalActionType=3;
+                this.modalActionType = 3;
 
                 this.flagModal = !this.flagModal;
                 this.$bvModal.show('modal-add-event');
@@ -205,9 +192,9 @@ export default {
             }).finally(() => {
             })
         },
-        showModalTeacher(){
-            this.idSegment=-1;
-            this.modalActionType=1;
+        showModalTeacher() {
+            this.idTeacher = -1;
+            this.modalActionType = 1;
             this.objGetTeacher.name = "";
             this.objGetTeacher.dob = "";
             this.objGetTeacher.gender = "";
@@ -217,8 +204,36 @@ export default {
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-event');
         },
-        deleteFileSub(id) {
-            let objDel = {id: id};
+        prepareEditTeacher(id) {
+            this.isEditModalField = false;
+            this.titleModal = 'Sửa thông tin';
+            this.typeTeacher = 2;
+            this.objGetTeacher.id = parseInt(id);
+            this.idTeacher = parseInt(id);
+
+            this.teachersValue = [];
+            this.listConditions = [];
+
+            this.apiGetTeacherById(this.objGetTeacher).then(response => {
+                console.log(response);
+                this.objGetTeacher.name = response.fullName;
+                this.objGetTeacher.dob = response.dob;
+                this.objGetTeacher.gender = response.gender;
+                this.objGetTeacher.phone = response.phone;
+                this.objGetTeacher.email = response.email;
+                this.objGetTeacher.address = response.address;
+                this.modalActionType = 2;
+
+                this.$bvModal.show('modal-add-event');
+
+            }).catch(err => {
+                console.log(err)
+            }).finally(() => {
+            })
+        },
+        deleteTeacher(id) {
+            console.log("id: ", id);
+
             Swal.fire({
                 title: "Bạn có chắc chắn muốn xóa?",
                 text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
@@ -229,30 +244,24 @@ export default {
                 confirmButtonText: "Đồng ý",
                 cancelButtonText: "Hủy"
             }).then(result => {
-                if (result.value) {
-                    this.apiDeleteContactGroup(objDel)
-                        .then(response => {
-                            console.log('apiDeleteContactGroup', response);
-                            if (response.err_code === 0) {
-                                Swal.fire("", response.err_message, "success");
-                                this.searchContact();
-                            } else {
-                            }
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
+                if (result.isConfirmed) {
+                    this.apiDeleteTeacher(id).then(response => {
+                        console.log("in")
+                        Swal.fire("", response.err_message, "success");
+                        this.handleGetTeacher();
 
-                    if (result.value) {
-                        Swal.fire("Deleted!", "Your file has been deleted.", "success");
-                    }
+
+                    }).catch(err => {
+                        console.log(err);
+                    }).finally(() => {
+                        // this.commonLoadingPage(false);
+                    })
+                } else {
                 }
-
+                if (result.value) {
+                    Swal.fire("Deleted!", "Your file has been deleted.", "success");
+                }
             });
-
         },
         changeContactGroupStatus(id, oldStatus) {
             let status = -1;
@@ -309,9 +318,9 @@ export default {
                         <select v-model="conditionSearch" class="form-control">
                             <option value=""></option>
                             <option value="-1">Tất cả</option>
-                            <option value="ID">ID Tập TB</option>
-                            <option value="NAME">Tên tệp</option>
-                            <option value="SDT">Số điện thoại</option>
+                            <option value="NAME">Tên</option>
+                            <option value="PHONE">Số điện thoại</option>
+                            <option value="EMAIL">Email</option>
                         </select>
                     </div>
                     <div class="col-7">
@@ -340,25 +349,17 @@ export default {
                                 </button>
 
                                 <button title="Sửa Segment"
-                                        @click="handleCheckUpdateSegment(data.item.id)"
+                                        @click="prepareEditTeacher(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
 
                                 <button title="Xóa Segment"
-                                        @click="handleCheckDeleteSegment(data.item.id)"
+                                        @click="deleteTeacher(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>
                                 </button>
 
-                                <div class="form-check form-switch form-check-inline col-auto">
-                                    <input v-model="data.item.status===1"
-                                           type="checkbox"
-                                           class="form-check-input"
-                                           id="flexSwitchCheckChecked"
-                                           @click="handleCheckActiveSegment(data.item.id)"
-                                    />
-                                </div>
                             </div>
                         </template>
                     </b-table>
@@ -382,16 +383,11 @@ export default {
             </div>
         </div>
         <teacher-modal
-            :idTeacher="idSegment"
-            :nameTeacher="objGetTeacher.name"
-            :dobTeacher="objGetTeacher.dob"
-            :genderTeacher="objGetTeacher.gender"
-            :phoneTeacher="objGetTeacher.phone"
-            :emailTeacher="objGetTeacher.email"
-            :addressTeacher="objGetTeacher.address"
+            :idTeacher="idTeacher"
             :actionType="modalActionType"
             :flagModal="flagModal"
-           >
+            @handleGetTeacher="handleGetTeacher"
+        >
         </teacher-modal>
     </div>
 
