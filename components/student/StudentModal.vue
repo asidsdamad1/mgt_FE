@@ -15,7 +15,11 @@ export default {
         actionType: {
             type: Number,
             default: 0
-        }
+        },
+        code: {
+            type: String,
+            default: ''
+        },
     },
     watch: {
         // 'flagModal'() {
@@ -97,8 +101,8 @@ export default {
                     else if (this.actionType === 3)
                         this.modalTitle = 'Xem thông tin Sinh viên';
                     this.apiGetStudent({
-                        conditionSearch: 'ID',
-                        valueSearch: this.idStudent
+                        conditionSearch: 'CODE',
+                        valueSearch: this.codeStudent
                     }).then(response => {
                         this.studentObj = response[0];
                     })
@@ -150,7 +154,6 @@ export default {
                 //     console.log('addEvent', optionEvent);
                 //     this.eventObj.eventOption = optionEvent;
                 if (this.actionType === 2) {
-                    this.studentObj.id = this.idStudent;
                     console.log("before edit: ", this.studentObj)
                     this.apiEditStudent(this.studentObj)
                         .then(response => {

@@ -18,6 +18,12 @@ export const menuItems = [
         link: "/student"
     },
     {
+        id: 4,
+        icon: "uil-browser",
+        label: "Phân công hướng dẫn",
+        link: "/assign/session"
+    },
+    {
         id: 13,
         label: "Quản lý người dùng",
         icon: "uil-user-circle",
@@ -48,37 +54,7 @@ export const menuItems = [
             }
         ]
     },
-    {
-        id: 17,
-        icon: "uil-setting",
-        label: "Cài đặt chung",
-        subItems: [
-            {
-                id: 18,
-                label: "Quản lý blacklist hệ thống",
-                link: "/setting/blacklist",
-                parentId: 17
-            },
-            {
-                id: 19,
-                label: "Quản lý rule dịch vụ",
-                link: "/setting/rule",
-                parentId: 17
-            },
-            {
-                id: 20,
-                label: "Quản lý event",
-                link: "/setting/event",
-                parentId: 17
-            },
-            {
-                id: 21,
-                label: "Quản lý kênh",
-                link: "/setting/channel",
-                parentId: 17
-            }
-        ]
-    },
+
     // {
     //   id: 25,
     //   label: "menuitems.pages.text",
