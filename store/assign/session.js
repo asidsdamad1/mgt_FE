@@ -1,13 +1,12 @@
-// import { API_TEACHER_MANAGE} from "@/api/teacher";
-import {CONSTANTS} from '@/utils/constant';
-import {API_TEACHER_MANAGE} from "../api/teacher";
+// import { API_SESSION_MANAGE} from "@/api/teacher";
+import {CONSTANTS} from '../../utils/constant';
+import {API_SESSION_MANAGE} from "../../api/assign/session";
 
 const actions = {
 
-
-    async apiGetListTeacher({commit, state}, payload) {
+    async apiAddSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetListTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiAddSession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -20,9 +19,13 @@ const actions = {
         }
     },
 
-    async apiAddTeacher({commit, state}, payload) {
+    async apiImportSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiAddTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiImportSession}`, payload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -35,9 +38,9 @@ const actions = {
         }
     },
 
-    async apiGetTeacher({commit, state}, payload) {
+    async apiGetSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiGetSession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -50,9 +53,9 @@ const actions = {
         }
     },
 
-    async apiGetTeacherById({commit, state}, payload) {
+    async apiGetSessionClass({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacherById}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiGetSessionClass}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -65,9 +68,9 @@ const actions = {
         }
     },
 
-    async apiEditTeacher({commit, state}, payload) {
+    async apiGetSessionById({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiEditTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiGetSessionById}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -80,9 +83,9 @@ const actions = {
         }
     },
 
-    async apiDeleteTeacher({commit, state}, payload) {
+    async apiEditSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiDeleteTeacher}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiEditSession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -95,9 +98,9 @@ const actions = {
         }
     },
 
-    async apiSearchTeacher({commit, state}, payload) {
+    async apiDeleteSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiSearchTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiDeleteSession}`+`/${parseInt(payload)}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -110,9 +113,9 @@ const actions = {
         }
     },
 
-    async apiGetBySession({commit, state}, payload) {
+    async apiSearchSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetBySession}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiSearchSession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -124,9 +127,10 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiCheckActiveTeacher({commit, state}, payload) {
+
+    async apiCheckActiveSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckActiveTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiCheckActiveSession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -138,9 +142,9 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiCheckTeacherUpdate({commit, state}, payload) {
+    async apiCheckSessionUpdate({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckTeacherUpdate}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiCheckSessionUpdate}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -154,7 +158,7 @@ const actions = {
     },
     async apiGetTotalContact({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTotalContact}`, payload);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiGetTotalContact}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
