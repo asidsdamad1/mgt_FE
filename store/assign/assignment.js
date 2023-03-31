@@ -1,13 +1,12 @@
-// import { API_TEACHER_MANAGE} from "@/api/teacher";
-import {CONSTANTS} from '@/utils/constant';
-import {API_TEACHER_MANAGE} from "../api/teacher";
+// import { API_ASSIGNMENT_MANAGE} from "@/api/teacher";
+import {CONSTANTS} from '../../utils/constant';
+import {API_ASSIGNMENT_MANAGE} from "../../api/assign/assignment";
 
 const actions = {
 
-
-    async apiGetListTeacher({commit, state}, payload) {
+    async apiAddAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetListTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiAddAssignment}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -20,9 +19,13 @@ const actions = {
         }
     },
 
-    async apiAddTeacher({commit, state}, payload) {
+    async apiImportAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiAddTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiImportAssignment}`, payload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -35,9 +38,9 @@ const actions = {
         }
     },
 
-    async apiGetTeacher({commit, state}, payload) {
+    async apiGetAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetAssignment}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -50,9 +53,9 @@ const actions = {
         }
     },
 
-    async apiGetTeacherById({commit, state}, payload) {
+    async apiGetAssignmentClass({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacherById}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetAssignmentClass}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -65,9 +68,9 @@ const actions = {
         }
     },
 
-    async apiEditTeacher({commit, state}, payload) {
+    async apiGetAssignmentById({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiEditTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetAssignmentById}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -80,9 +83,9 @@ const actions = {
         }
     },
 
-    async apiDeleteTeacher({commit, state}, payload) {
+    async apiEditAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiDeleteTeacher}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiEditAssignment}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -95,9 +98,9 @@ const actions = {
         }
     },
 
-    async apiSearchTeacher({commit, state}, payload) {
+    async apiDeleteAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiSearchTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiDeleteAssignment}`+`/${parseInt(payload)}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -110,51 +113,52 @@ const actions = {
         }
     },
 
+    async apiSearchAssignment({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiSearchAssignment}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiCheckActiveAssignment({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiCheckActiveAssignment}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+    async apiCheckAssignmentUpdate({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiCheckAssignmentUpdate}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
     async apiGetBySession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetBySession}`, payload);
-
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
-    async apiCheckActiveTeacher({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckActiveTeacher}`, payload);
-
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
-    async apiCheckTeacherUpdate({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckTeacherUpdate}`, payload);
-
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
-    async apiGetTotalContact({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTotalContact}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetBySession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
