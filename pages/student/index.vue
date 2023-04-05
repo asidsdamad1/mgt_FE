@@ -79,6 +79,7 @@ export default {
             ],
             tableData: [],
             idStudent: 0,
+            codeStudent: '',
             objGetStudent: {
                 id: 0,
                 code: "",
@@ -200,7 +201,7 @@ export default {
             this.titleModal = 'Xem Chi Tiết';
             this.typeSegment = 3;
             this.idStudent = parseInt(id);
-            this.objGetStudent.id = parseInt(id);
+            this.codeStudent = id;
 
             this.flagModal = !this.flagModal;
 
@@ -381,7 +382,7 @@ export default {
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
                                 <button title="Xem Segment"
-                                        @click="viewStudent(data.item.id)"
+                                        @click="viewStudent(data.item.code)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
                                 </button>
@@ -431,6 +432,7 @@ export default {
 
         <add-student-modal
             :idStudent="idStudent"
+            :codeStudent="codeStudent"
             :actionType="modalActionType"
             :flagModal="flagModal"
             @handleGetStudent="handleGetStudent"

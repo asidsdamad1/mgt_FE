@@ -53,6 +53,21 @@ const actions = {
         }
     },
 
+    async apiGetStudent({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetStudent}` + `/${payload.sessionId}` + `/${payload.teacherId}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiGetAssignmentClass({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetAssignmentClass}`, payload);

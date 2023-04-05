@@ -35,6 +35,7 @@ export default {
             filterOn: [],
             sortBy: "age",
             sortDesc: false,
+            sessionId: '',
             fields: [
                 {
                     key: "index",
@@ -46,13 +47,19 @@ export default {
                     key: "teacher.fullName",
                     label: "Tên giảng viên",
                     sortable: true,
-                    thStyle: {width: "20%"},
+                    thStyle: {width: "15%"},
                 },
                 {
                     key: "teacher.email",
                     label: 'Email',
                     sortable: true,
-                    thStyle: {width: "20%"},
+                    thStyle: {width: "15%"},
+                },
+                {
+                    key: "amount",
+                    label: 'Số sinh viên hướng dẫn',
+                    sortable: true,
+                    thStyle: { width: "10%" },
                 },
                 {
                     key: "createdBy",
@@ -183,31 +190,17 @@ export default {
                         <div class="table-responsive">
 
                             <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
-                                <template v-slot:cell(index) = data>
-                                    {{ data.index + 1 }}
+                                <template v-slot:cell(action) = data>
+
                                 </template>
+
                                 <template v-slot:cell(action)=data>
                                     <ul class="list-inline" style="padding-right: 40%">
                                         <nuxt-link title="Xem tập TB"
-                                                   :to="{ path: '/assign/view/view-assign', query: { id: data.item.id, name: data.item.name }}"
+                                                   :to="{ path: '/assign/view/view-assign', query: { id: data.item.session.id, teacherId: data.item.teacher.id }}"
                                                    class="text-secondary p-2"
                                         ><i class="uil uil-eye font-size-18"></i>
                                         </nuxt-link>
-                                        <nuxt-link title="Sửa tập TB"
-                                                   :to="{path:'/setting/edit/editblacklist',query: { id: data.item.id, name: data.item.name }}"
-                                                   class="text-secondary pe-2"
-                                        ><i class="uil uil-pen font-size-18"></i>
-                                        </nuxt-link>
-                                        <li class="list-inline-item">
-                                            <a
-                                                @click="deleteSession(data.item.id)"
-                                                class="text-secondary"
-                                                v-b-tooltip.hover
-                                                title="Delete"
-                                            >
-                                                <i class="uil uil-trash-alt font-size-18"></i>
-                                            </a>
-                                        </li>
 
                                     </ul>
                                 </template>

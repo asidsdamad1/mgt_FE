@@ -21,7 +21,7 @@ export const menuItems = [
         id: 4,
         icon: "uil-browser",
         label: "Phân công hướng dẫn",
-        link: "assign/session"
+        link: "/assign/session"
     },
     {
         id: 13,

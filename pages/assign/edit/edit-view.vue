@@ -8,7 +8,7 @@ import {mapActions} from "vuex";
 export default {
     head() {
         return {
-            title: `Danh sách sinh viên được hướng dẫn`
+            title: `Xem chi tiết năm học`
         };
     },
     asyncData({
@@ -19,7 +19,7 @@ export default {
     data() {
         return {
 
-            title: "Danh sách sinh viên được hướng dẫn",
+            title: "Chi tiết tệp blacklist",
             contactGroupNam:'',
             contactGroupId:'',
             conditionSearch:'',
@@ -35,44 +35,59 @@ export default {
             filterOn: [],
             sortBy: "age",
             sortDesc: false,
+            sessionId: '',
             fields: [
                 {
                     key: "index",
                     label: "STT",
                     sortable: true,
-                    thStyle: { width: "3%" },
+                    thStyle: {width: "3%"},
                 },
                 {
-                    key: "student.code",
-                    label: "Mã sinh viên",
+                    key: "teacher.fullName",
+                    label: "Tên giảng viên",
                     sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "15%"},
                 },
                 {
-                    key: "student.email",
+                    key: "teacher.email",
                     label: 'Email',
                     sortable: true,
-                    thStyle: { width: "20%" },
+                    thStyle: {width: "15%"},
+                },
+                {
+                    key: "amount",
+                    label: 'Số sinh viên hướng dẫn',
+                    sortable: true,
+                    thStyle: { width: "10%" },
                 },
                 {
                     key: "createdBy",
                     label: 'Tài khoản',
                     sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "10%"},
                 },
                 {
                     key: "createdDate",
                     label: 'Thời gian tạo',
                     sortable: true,
-                    thStyle: { width: "10%" },
-                }
+                    thStyle: {width: "15%"},
+                },
+                {
+                    key: "action",
+                    label: 'Thao tác',
+                    thStyle: {width: "10%"},
+                    tdClass: 'text-center',
+                },
             ],
             tableData: []
         };
     },
+
+
+
     methods:{
         ...mapActions('assign/assignment', {
-            apiGetStudent: 'apiGetStudent',
             apiGetAssignment: 'apiGetAssignment'
         }),
         goToPrev() {
@@ -84,15 +99,14 @@ export default {
             this.currentPage = 1;
         },
         searchSub(){
-            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch,startDate:this.startDate,endDate:this.endDate,assignmentId:this.assignmentId};
+            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
 
             console.log('apiGetListContact', objInput);
 
             this.apiGetAssignment(objInput)
                 .then(response => {
-                    let data = response['data'];
-                    this.tableData = data;
-                    console.log('apiGetListSub', data);
+                    this.tableData = response;
+                    console.log('apiGetListSub', response);
                     if (response.err_code === 0) {
                     } else {
                     }
@@ -107,26 +121,11 @@ export default {
         }
     },
     created() {
-        this.teacherId = this.$route.query.teacherId;
+        this.blacklistNam = this.$route.query.name;
         this.sessionId = this.$route.query.id;
     },
     mounted() {
-        let objInput = {conditionSearch: 'ID', valueSearch: this.assignmentId}
-        console.log("teacher id: ", this.teacherId);
-        this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
-            .then(response => {
-                this.tableData = response;
-                console.log('apiGetListSub', tableData);
-                if (response.err_code === 0) {
-                } else {
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            })
-            .finally(() => {
-                // this.commonLoadingPage(false);
-            });
+        this.searchSub();
     },
     computed:{
         rows() {
@@ -191,8 +190,34 @@ export default {
                         <div class="table-responsive">
 
                             <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
-                                <template v-slot:cell(index) = data>
-                                    {{ data.index + 1 }}
+                                <template v-slot:cell(action) = data>
+
+                                </template>
+
+                                <template v-slot:cell(action)=data>
+                                    <ul class="list-inline" style="padding-right: 40%">
+                                        <nuxt-link title="Xem tập TB"
+                                                   :to="{ path: '/assign/view/view-assign', query: { id: data.item.session.id, teacherId: data.item.teacher.id }}"
+                                                   class="text-secondary p-2"
+                                        ><i class="uil uil-eye font-size-18"></i>
+                                        </nuxt-link>
+                                        <nuxt-link title="Sửa tập TB"
+                                                   :to="{path:'/setting/edit/editblacklist',query: { id: data.item.id, name: data.item.name }}"
+                                                   class="text-secondary pe-2"
+                                        ><i class="uil uil-pen font-size-18"></i>
+                                        </nuxt-link>
+                                        <li class="list-inline-item">
+                                            <a
+                                                @click="deleteSession(data.item.id)"
+                                                class="text-secondary"
+                                                v-b-tooltip.hover
+                                                title="Delete"
+                                            >
+                                                <i class="uil uil-trash-alt font-size-18"></i>
+                                            </a>
+                                        </li>
+
+                                    </ul>
                                 </template>
                             </b-table>
 
