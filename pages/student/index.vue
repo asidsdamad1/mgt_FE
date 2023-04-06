@@ -7,6 +7,7 @@ import StudentModal from "../../components/student/StudentModal.vue";
 import AddStudentModal from "../../components/student/AddStudentModal.vue";
 
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
     components: {
         Multiselect,
@@ -142,7 +143,7 @@ export default {
                         console.log('apiAddBlacklist', response);
                         if (response === null) {
                             this.$emit('handleGetStudent');
-                            this.$bvModal.hide('modal-add-file-blacklist');
+                            this.$bvModal.hide('modal-add-file-student');
                         } else {
                             this.commonWarningVue("bug");
                         }
@@ -345,7 +346,6 @@ export default {
                         <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-student><i class="uil uil-arrow-circle-up me-1"></i> Tải tập SV</button>
                         <button type="button" class="btn btn-success" @click="showModalStudent"><i class="uil uil-plus me-1"></i> Tạo mới sinh viên</button>
                     </div>
-
                 </div>
             </div>
             <div class="card-body">
@@ -382,7 +382,7 @@ export default {
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
                                 <button title="Xem Segment"
-                                        @click="viewStudent(data.item.code)"
+                                        @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
                                 </button>

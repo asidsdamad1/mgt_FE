@@ -65,6 +65,7 @@
                     menuName = 'Chăm sóc khách hàng';
                 } else {
                     for (let x = 0; x < this.menuItems.length; x++) {
+                        // console.log("menu: ", menuItems[x])
                         let subItems = menuItems[x]['subItems'];
                         if (subItems) {
                             const objMenu = subItems.find(x => x.link === path);
@@ -72,10 +73,16 @@
                                 menuName = objMenu.label;
                                 break;
                             }
+                        } else {
+                            if (menuItems[x].link === path) {
+                                menuName = menuItems[x].label;
+                                break;
+                            }
                         }
                     }
                 }
 
+                console.log(menuName);
                 return menuName;
             },
             toggleMenu() {

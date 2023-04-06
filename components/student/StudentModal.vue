@@ -199,18 +199,6 @@ export default {
                 this.commonNotifyVue("Bạn phải nhập mã sinh viên", 'warn');
                 return false;
             }
-            if (this.studentObj.dob === null || this.studentObj.dob.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn ngày sinh", 'warn');
-                return false;
-            }
-            if (this.studentObj.address === null || this.studentObj.address.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn địa chỉ", 'warn');
-                return false;
-            }
-            if (this.studentObj.phone === null || this.studentObj.phone.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn số điện thoại", 'warn');
-                return false;
-            }
             if (this.studentObj.email === null || this.studentObj.email.trim() === '') {
                 this.commonNotifyVue("Bạn phải chọn email", 'warn');
                 return false;

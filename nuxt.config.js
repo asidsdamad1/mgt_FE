@@ -58,7 +58,7 @@ export default {
         "~/plugins/excelExport.js",
         "~/plugins/globalFunctionCommon.js",
         "~/plugins/vue-notification.js",
-        "~/plugins/vue-tree.js"
+        "~/plugins/vue-tree.js",
     ],
     /*
      ** Auto import components
@@ -72,6 +72,7 @@ export default {
         '@nuxtjs/moment',
         ['@nuxtjs/dotenv', {filename: `.env${process.env.NODE_ENV === 'production' ? '.' + process.env.NODE_ENV : ''}`}]
     ],
+
     moment: {
         defaultLocale: 'vi',
         locales: ['vi']
@@ -84,7 +85,7 @@ export default {
         // Doc: https://bootstrap-vue.js.org
         "bootstrap-vue/nuxt",
         // Doc: https://github.com/nuxt/content
-        "@nuxt/content"
+        "@nuxt/content",
     ],
     // axios: {
     //     baseURL: process.env.VUE_APP_API_BASE
@@ -99,7 +100,7 @@ export default {
      ** See https://nuxtjs.org/api/configuration-build/
      */
     build: {
-        transpile: ['drawflow']
+        transpile: ['drawflow'],
         // publicPath:'ads'
     },
     server: {

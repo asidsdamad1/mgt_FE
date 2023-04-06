@@ -1,11 +1,14 @@
 <script>
 
 import {mapActions} from "vuex";
+import AddAssignment from "@/components/assign/AddAssignment.vue";
+import Swal from "sweetalert2";
 
 /**
  * Product-detail component
  */
 export default {
+    middleware: ['check-authen'],
     head() {
         return {
             title: `Xem chi tiết năm học`
@@ -16,17 +19,24 @@ export default {
               }) {
 
     },
+    components: {
+        AddAssignment
+    },
     data() {
         return {
-
+            sizes: ['Small', 'Medium', 'Large', 'Extra Large'],
             title: "Chi tiết tệp blacklist",
-            contactGroupNam:'',
-            contactGroupId:'',
-            conditionSearch:'',
-            valueSearch:'',
-            startDate:'',
-            endDate:'',
-
+            contactGroupNam: '',
+            contactGroupId: '',
+            conditionSearch: '',
+            valueSearch: '',
+            startDate: '',
+            endDate: '',
+            email: '',
+            idSession: 0,
+            modalActionType: -1,
+            flagModal: false,
+            isEditModalField: false,
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
@@ -42,6 +52,7 @@ export default {
                     label: "STT",
                     sortable: true,
                     thStyle: {width: "3%"},
+                    tdClass: 'text-center'
                 },
                 {
                     key: "teacher.fullName",
@@ -59,7 +70,7 @@ export default {
                     key: "amount",
                     label: 'Số sinh viên hướng dẫn',
                     sortable: true,
-                    thStyle: { width: "10%" },
+                    thStyle: {width: "10%"},
                 },
                 {
                     key: "createdBy",
@@ -76,19 +87,28 @@ export default {
                 {
                     key: "action",
                     label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
+                    thStyle: {width: "15%"}
                 },
             ],
+            objAssignment: {
+                session: {
+                    id: 0
+                },
+                teacher: {
+                    id: 0,
+                    code: ''
+                }
+            },
             tableData: []
         };
     },
 
 
-
-    methods:{
+    methods: {
         ...mapActions('assign/assignment', {
-            apiGetAssignment: 'apiGetAssignment'
+            apiGetAssignment: 'apiGetAssignment',
+            apiDeleteAssignment: 'apiDeleteAssignment',
+            apiChangeAssignmentStatus: 'apiChangeAssignmentStatus'
         }),
         goToPrev() {
             this.$router.go(-1);
@@ -98,8 +118,8 @@ export default {
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
-        searchSub(){
-            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
+        searchSub() {
+            let objInput = {conditionSearch: 'SESSION', valueSearch: this.sessionId};
 
             console.log('apiGetListContact', objInput);
 
@@ -118,7 +138,77 @@ export default {
                     // this.commonLoadingPage(false);
                 });
 
-        }
+        },
+        closeModalSub() {
+            this.$bvModal.hide('modal-add-one-tb');
+        },
+        addEditOneSub() {
+            this.apiAddSession({year: this.year})
+                .then(response => {
+                    console.log('apiAddSession', response);
+
+                    this.searchSession();
+                    this.$bvModal.hide('modal-add-one-tb');
+
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
+        },
+        deleteAssignment(sessionId, teacherId) {
+            this.objAssignment.session.id = sessionId;
+            this.objAssignment.teacher.id = teacherId;
+            Swal.fire({
+                title: "Bạn có chắc chắn muốn xóa?",
+                text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#34c38f",
+                cancelButtonColor: "#f46a6a",
+                confirmButtonText: "Đồng ý",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    this.apiDeleteAssignment(this.objAssignment).then(response => {
+                        console.log("in")
+                        if (!response) {
+                            Swal.fire("", "Xóa thất bại", "error");
+                        } else {
+                            Swal.fire("", "Xóa thành công", "success");
+                        }
+                        this.searchSub();
+
+
+                    }).catch(err => {
+                        console.log(err);
+                    }).finally(() => {
+                        // this.commonLoadingPage(false);
+                    })
+                } else {
+                }
+            });
+        },
+        changeAssignmentStatus(id, oldStatus) {
+            let status = !oldStatus;
+            let objInput = {id: id, status: status};
+            this.apiChangeAssignmentStatus(objInput)
+                .then(response => {
+                    console.log('apiChangeSessionStatus', response);
+                    Swal.fire("", "Thành công", "success");
+                    this.searchSub();
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
+        },
     },
     created() {
         this.blacklistNam = this.$route.query.name;
@@ -127,13 +217,13 @@ export default {
     mounted() {
         this.searchSub();
     },
-    computed:{
+    computed: {
         rows() {
             return this.tableData.length;
         }
     },
 
-    middleware: "authentication",
+
 };
 </script>
 
@@ -148,7 +238,9 @@ export default {
                                 <button type="button" class="btn btn-outline-secondary" @click="goToPrev"><i class="uil uil-arrow-circle-left me-1"></i> Quay lại</button>
                                 <label>{{ contactGroupNam }}</label>
                             </div>
-
+                            <div class="col-6 text-end">
+                                <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-assigment><i class="uil uil-arrow-circle-up ms-1"></i> Tải tệp excel</button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -190,25 +282,25 @@ export default {
                         <div class="table-responsive">
 
                             <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
-                                <template v-slot:cell(action) = data>
-
+                                <template v-slot:cell(index)=data>
+                                    {{ data.index + 1 }}
                                 </template>
 
                                 <template v-slot:cell(action)=data>
-                                    <ul class="list-inline" style="padding-right: 40%">
+                                    <ul class="list-inline ">
                                         <nuxt-link title="Xem tập TB"
                                                    :to="{ path: '/assign/view/view-assign', query: { id: data.item.session.id, teacherId: data.item.teacher.id }}"
                                                    class="text-secondary p-2"
                                         ><i class="uil uil-eye font-size-18"></i>
                                         </nuxt-link>
                                         <nuxt-link title="Sửa tập TB"
-                                                   :to="{path:'/setting/edit/editblacklist',query: { id: data.item.id, name: data.item.name }}"
+                                                   :to="{path:'/assign/edit/edit-assign',query: {  id: data.item.session.id, teacherId: data.item.teacher.id  }}"
                                                    class="text-secondary pe-2"
                                         ><i class="uil uil-pen font-size-18"></i>
                                         </nuxt-link>
                                         <li class="list-inline-item">
                                             <a
-                                                @click="deleteSession(data.item.id)"
+                                                @click="deleteAssignment(data.item.session.id, data.item.teacher.id)"
                                                 class="text-secondary"
                                                 v-b-tooltip.hover
                                                 title="Delete"
@@ -216,7 +308,12 @@ export default {
                                                 <i class="uil uil-trash-alt font-size-18"></i>
                                             </a>
                                         </li>
-
+                                        <li class="list-inline-item">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeAssignmentStatus(data.item.id,data.item.status)" v-model="data.item.status">
+                                                <label class="form-check-label" for="flexSwitchCheckChecked"></label>
+                                            </div>
+                                        </li>
                                     </ul>
                                 </template>
                             </b-table>
@@ -242,6 +339,13 @@ export default {
                 <!-- end card -->
             </div>
         </div>
+        <add-assignment
+            :idSession="idSession"
+            :actionType="modalActionType"
+            :flagModal="flagModal"
+            @handleGetSession="searchSub"
+        >
+        </add-assignment>
         <!-- end row -->
     </div>
 </template>

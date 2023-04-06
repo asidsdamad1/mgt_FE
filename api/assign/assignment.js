@@ -5,4 +5,6 @@ export const API_ASSIGNMENT_MANAGE = {
     apiGetAssignment: 'assignment/get-assignment',
     apiGetBySession: 'assignment/get-teacher-by-session',
     apiGetStudent: 'assignment/get-student',
+    apiImportAssignment: 'assignment/import-assignment',
+    apiChangeAssignmentStatus: 'assignment/change-status'
 };
