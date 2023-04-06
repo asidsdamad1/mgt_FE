@@ -43,8 +43,8 @@ export default {
                     thStyle: {width: "10%"},
                 },
                 {
-                    key: "name",
-                    label: 'Tên Session',
+                    key: "year",
+                    label: 'Năm học',
                     sortable: true,
                     thStyle: {width: "20%"},
                 },
