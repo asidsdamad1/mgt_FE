@@ -76,8 +76,7 @@ export default {
                 {
                     key: "action",
                     label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
+                    thStyle: {width: "10%"}
                 },
             ],
             tableData: []
@@ -99,7 +98,7 @@ export default {
             this.currentPage = 1;
         },
         searchSub(){
-            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
+            let objInput={conditionSearch:'SESSION',valueSearch:this.sessionId};
 
             console.log('apiGetListContact', objInput);
 

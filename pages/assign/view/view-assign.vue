@@ -63,8 +63,7 @@ export default {
                 {
                     key: "createdDate",
                     label: 'Thời gian tạo',
-                    sortable: true,
-                    thStyle: { width: "10%" },
+                    sortable: true
                 }
             ],
             tableData: []
@@ -116,7 +115,7 @@ export default {
         this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
             .then(response => {
                 this.tableData = response;
-                console.log('apiGetListSub', tableData);
+                console.log('apiGetListSub', this.tableData);
                 if (response.err_code === 0) {
                 } else {
                 }

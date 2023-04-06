@@ -1,7 +1,7 @@
 <script>
 
 import {mapActions} from "vuex";
-
+import Multiselect from "vue-multiselect";
 /**
  * Product-detail component
  */
@@ -18,7 +18,7 @@ export default {
     },
     data() {
         return {
-
+            sizes: ['Small', 'Medium', 'Large', 'Extra Large'],
             title: "Chi tiết tệp blacklist",
             contactGroupNam:'',
             contactGroupId:'',
@@ -26,7 +26,8 @@ export default {
             valueSearch:'',
             startDate:'',
             endDate:'',
-
+            email: '',
+            isEditModalField: false,
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
@@ -42,6 +43,7 @@ export default {
                     label: "STT",
                     sortable: true,
                     thStyle: {width: "3%"},
+                    tdClass: 'text-center'
                 },
                 {
                     key: "teacher.fullName",
@@ -76,8 +78,7 @@ export default {
                 {
                     key: "action",
                     label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
+                    thStyle: {width: "15%"}
                 },
             ],
             tableData: []
@@ -99,7 +100,7 @@ export default {
             this.currentPage = 1;
         },
         searchSub(){
-            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
+            let objInput={conditionSearch:'SESSION',valueSearch:this.sessionId};
 
             console.log('apiGetListContact', objInput);
 
@@ -118,7 +119,34 @@ export default {
                     // this.commonLoadingPage(false);
                 });
 
-        }
+        },
+        prepareAddOne() {
+            this.isEditModalField = false;
+            this.isViewModalFileField = false;
+            this.titleModal = 'Tải đơn liên hệ vào tập TB';
+            this.$bvModal.show('modal-add-one-tb');
+            this.email = '';
+        },
+        closeModalSub() {
+            this.$bvModal.hide('modal-add-one-tb');
+        },
+        addEditOneSub() {
+            this.apiAddSession({year: this.year})
+                .then(response => {
+                    console.log('apiAddSession', response);
+
+                    this.searchSession();
+                    this.$bvModal.hide('modal-add-one-tb');
+
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
+        },
     },
     created() {
         this.blacklistNam = this.$route.query.name;
@@ -132,6 +160,7 @@ export default {
             return this.tableData.length;
         }
     },
+
 
     middleware: "authentication",
 };
@@ -148,7 +177,10 @@ export default {
                                 <button type="button" class="btn btn-outline-secondary" @click="goToPrev"><i class="uil uil-arrow-circle-left me-1"></i> Quay lại</button>
                                 <label>{{ contactGroupNam }}</label>
                             </div>
-
+                            <div class="col-6 text-end">
+                                <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-blacklist><i class="uil uil-arrow-circle-up ms-1"></i> Tải tệp excel</button>
+                                <button type="button" class="btn btn-success" @click="prepareAddOne"><i class="uil uil-plus me-1"></i> Thêm giảng viên</button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -190,19 +222,19 @@ export default {
                         <div class="table-responsive">
 
                             <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
-                                <template v-slot:cell(action) = data>
-
+                                <template v-slot:cell(index) = data>
+                                    {{ data.index + 1 }}
                                 </template>
 
                                 <template v-slot:cell(action)=data>
-                                    <ul class="list-inline" style="padding-right: 40%">
+                                    <ul class="list-inline ">
                                         <nuxt-link title="Xem tập TB"
                                                    :to="{ path: '/assign/view/view-assign', query: { id: data.item.session.id, teacherId: data.item.teacher.id }}"
                                                    class="text-secondary p-2"
                                         ><i class="uil uil-eye font-size-18"></i>
                                         </nuxt-link>
                                         <nuxt-link title="Sửa tập TB"
-                                                   :to="{path:'/setting/edit/editblacklist',query: { id: data.item.id, name: data.item.name }}"
+                                                   :to="{path:'/assign/edit/edit-assign',query: { id: data.item.id, name: data.item.name }}"
                                                    class="text-secondary pe-2"
                                         ><i class="uil uil-pen font-size-18"></i>
                                         </nuxt-link>
@@ -216,7 +248,12 @@ export default {
                                                 <i class="uil uil-trash-alt font-size-18"></i>
                                             </a>
                                         </li>
-
+                                        <li class="list-inline-item">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeSessionStatus(data.item.id,data.item.status)" v-model="data.item.status===1">
+                                                <label class="form-check-label" for="flexSwitchCheckChecked"></label>
+                                            </div>
+                                        </li>
                                     </ul>
                                 </template>
                             </b-table>
@@ -242,6 +279,7 @@ export default {
                 <!-- end card -->
             </div>
         </div>
+
         <!-- end row -->
     </div>
 </template>
