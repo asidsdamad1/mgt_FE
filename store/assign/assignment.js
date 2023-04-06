@@ -83,9 +83,9 @@ const actions = {
         }
     },
 
-    async apiGetAssignmentById({commit, state}, payload) {
+    async apiChangeAssignmentStatus({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiGetAssignmentById}`, payload);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiChangeAssignmentStatus}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -115,7 +115,7 @@ const actions = {
 
     async apiDeleteAssignment({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiDeleteAssignment}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_ASSIGNMENT_MANAGE.apiDeleteAssignment}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

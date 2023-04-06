@@ -2,11 +2,12 @@
 
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
-import AddSession from "../../components/assign/AddSession";
+import AddAssignment from "@/components/assign/AddAssignment.vue";
 
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
-    components: {AddSession},
+
     data() {
         return {
             items: [{
@@ -18,9 +19,12 @@ export default {
                     active: true
                 }
             ],
+            titleModal: '',
             conditionSearch: '',
             valueSearch: '',
+            year: 0,
 
+            isEditModalField: false,
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
@@ -63,8 +67,7 @@ export default {
                 {
                     key: "action",
                     label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
+                    thStyle: {width: "10%"}
                 },
             ],
             tableData: []
@@ -84,11 +87,19 @@ export default {
     methods: {
         ...mapActions('assign/session', {
             apiGetSession: 'apiGetSession',
-            apiDeleteSession: 'apiDeleteSession'
+            apiDeleteSession: 'apiDeleteSession',
+            apiAddSession: 'apiAddSession',
+            apiChangeSessionStatus: 'apiChangeSessionStatus'
         }),
         searchSession() {
             let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
 
+            if (this.conditionSearch !== '') {
+                if (this.valueSearch.trim() === '') {
+                    this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm', 'warn');
+                    return;
+                }
+            }
             console.log('searchSession', objInput);
 
             this.apiGetSession(objInput)
@@ -115,7 +126,6 @@ export default {
         },
         deleteSession(id) {
 
-            let objDel = {id: id};
             Swal.fire({
                 title: "Bạn có chắc chắn muốn xóa?",
                 text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
@@ -127,14 +137,16 @@ export default {
                 cancelButtonText: "Hủy"
             }).then(result => {
                 if (result.value) {
-                    this.apiDeleteSession(objDel)
+                    this.apiDeleteSession(parseInt(id))
                         .then(response => {
                             console.log('apiDeleteSession', response);
-                            if (response.err_code === 0) {
-                                Swal.fire("", response.err_message, "success");
-                                this.searchSession();
+                            if (!response) {
+                                Swal.fire("", "Xóa thất bại", "warning");
                             } else {
+                                Swal.fire("", "Xóa thành công", "success");
                             }
+                            this.searchSession();
+
                         })
                         .catch(err => {
                             console.log(err);
@@ -143,29 +155,20 @@ export default {
                             // this.commonLoadingPage(false);
                         });
 
-                    if (result.value) {
-                        Swal.fire("Deleted!", "Your file has been deleted.", "success");
-                    }
+
                 }
 
             });
 
         },
         changeSessionStatus(id, oldStatus) {
-            let status = -1;
-            if (oldStatus === 1)
-                status = 0;
-            if (oldStatus === 0)
-                status = 1;
+            let status = !oldStatus;
             let objInput = {id: id, status: status};
             this.apiChangeSessionStatus(objInput)
                 .then(response => {
                     console.log('apiChangeSessionStatus', response);
-                    if (response.err_code === 0) {
-                        Swal.fire("", response.err_message, "success");
-                        this.searchSession();
-                    } else {
-                    }
+                    Swal.fire("", "Thành công", "success");
+                    this.searchSession();
                 })
                 .catch(err => {
                     console.log(err);
@@ -177,7 +180,34 @@ export default {
         },
         handleModalCall() {
             this.searchSession();
-        }
+        },
+        prepareAddOne() {
+            this.isEditModalField = false;
+            this.isViewModalFileField = false;
+            this.titleModal = 'Tải đơn liên hệ vào tập TB';
+            this.$bvModal.show('modal-add-one-tb');
+            this.year = '';
+        },
+        closeModalSub() {
+            this.$bvModal.hide('modal-add-one-tb');
+        },
+        addEditOneSub() {
+            this.apiAddSession({year: this.year})
+                .then(response => {
+                    console.log('apiAddSession', response);
+
+                    this.searchSession();
+                    this.$bvModal.hide('modal-add-one-tb');
+
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
+        },
     }
 }
 </script>
@@ -194,7 +224,8 @@ export default {
             <div class="card-header">
                 <div class="row" style="float: right">
                     <div class="col-12">
-                        <button type="button" class="btn btn-success" v-b-modal.modal-add-file-blacklist><i class="uil uil-plus me-1"></i> Tải tập TB</button>
+                        <button type="button" class="btn btn-primary" @click="prepareAddOne"><i class="uil uil-arrow-circle-up ms-1"></i> Thêm năm học</button>
+
                     </div>
                 </div>
 
@@ -207,8 +238,7 @@ export default {
                         <select v-model="conditionSearch" class="form-control">
                             <option value=""></option>
                             <option value="-1">Tất cả</option>
-                            <option value="ID">ID SĐT</option>
-                            <option value="SDT">Số điện thoại</option>
+                            <option value="YEAR">Năm học</option>
                         </select>
                     </div>
                     <div class="col-6">
@@ -236,7 +266,7 @@ export default {
                                 ><i class="uil uil-eye font-size-18"></i>
                                 </nuxt-link>
                                 <nuxt-link title="Sửa tập TB"
-                                           :to="{path:'/setting/edit/editblacklist',query: { id: data.item.id, name: data.item.name }}"
+                                           :to="{path:'/assign/edit/edit-session',query: { id: data.item.id, name: data.item.name }}"
                                            class="text-secondary pe-2"
                                 ><i class="uil uil-pen font-size-18"></i>
                                 </nuxt-link>
@@ -252,7 +282,7 @@ export default {
                                 </li>
                                 <li class="list-inline-item">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeSessionStatus(data.item.id,data.item.status)" v-model="data.item.status===1">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeSessionStatus(data.item.id,data.item.status)" v-model="data.item.status">
                                         <label class="form-check-label" for="flexSwitchCheckChecked"></label>
                                     </div>
                                 </li>
@@ -278,7 +308,30 @@ export default {
                 </div>
             </div>
         </div>
-        <add-blacklist @handleModalCall="handleModalCall" :actionType="1" :blacklistIdEdit="-1"></add-blacklist>
+
+        <b-modal id="modal-add-one-tb"
+                 size="lg"
+                 :title="titleModal"
+                 title-class="font-18"
+                 hide-footer>
+            <div class="card-body">
+                <div class="row mb-3">
+
+                    <div class="col-12">
+                        <label>Năm học</label>
+                        <input type="text" maxlength="15" v-model="year" :disabled="isEditModalField" class="form-control"/>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end">
+                    <button type="button" class="btn btn-primary" @click="closeModalSub" v-show="!isEditModalField">Bỏ qua</button>
+                    <button type="button" class="btn btn-success" @click="addEditOneSub" v-show="!isEditModalField"><i class="uil uil-save me-1"></i> Lưu lại</button>
+
+                </div>
+            </div>
+
+        </b-modal>
+
     </div>
 
 </template>

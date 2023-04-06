@@ -7,6 +7,7 @@ import StudentModal from "../../components/student/StudentModal.vue";
 import AddStudentModal from "../../components/student/AddStudentModal.vue";
 
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
     components: {
         Multiselect,
@@ -142,7 +143,7 @@ export default {
                         console.log('apiAddBlacklist', response);
                         if (response === null) {
                             this.$emit('handleGetStudent');
-                            this.$bvModal.hide('modal-add-file-blacklist');
+                            this.$bvModal.hide('modal-add-file-student');
                         } else {
                             this.commonWarningVue("bug");
                         }

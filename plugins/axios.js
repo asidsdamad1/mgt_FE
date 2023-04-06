@@ -17,6 +17,7 @@ export default function({ store, $axios, redirect }) {
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
+
     });
 
     $axios.onResponse(response => {

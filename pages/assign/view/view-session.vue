@@ -6,6 +6,7 @@ import {mapActions} from "vuex";
  * Product-detail component
  */
 export default {
+    middleware: ['check-authen'],
     head() {
         return {
             title: `Xem chi tiết năm học`
@@ -76,8 +77,7 @@ export default {
                 {
                     key: "action",
                     label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
+                    thStyle: {width: "10%"}
                 },
             ],
             tableData: []
@@ -99,7 +99,7 @@ export default {
             this.currentPage = 1;
         },
         searchSub(){
-            let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch};
+            let objInput={conditionSearch:'SESSION',valueSearch:this.sessionId};
 
             console.log('apiGetListContact', objInput);
 
@@ -133,7 +133,6 @@ export default {
         }
     },
 
-    middleware: "authentication",
 };
 </script>
 
