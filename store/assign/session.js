@@ -100,7 +100,7 @@ const actions = {
 
     async apiDeleteSession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiDeleteSession}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiDeleteSession}`+`/${payload}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
