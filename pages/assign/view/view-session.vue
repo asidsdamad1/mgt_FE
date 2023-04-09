@@ -6,6 +6,7 @@ import {mapActions} from "vuex";
  * Product-detail component
  */
 export default {
+    middleware: ['check-authen'],
     head() {
         return {
             title: `Xem chi tiết năm học`
@@ -132,7 +133,6 @@ export default {
         }
     },
 
-    middleware: "authentication",
 };
 </script>
 

@@ -2,9 +2,12 @@
 
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
+import AddAssignment from "@/components/assign/AddAssignment.vue";
 
 export default {
+    middleware: ['check-authen'],
     name: "subscriber",
+
     data() {
         return {
             items: [{
@@ -20,6 +23,7 @@ export default {
             conditionSearch: '',
             valueSearch: '',
             year: 0,
+
             isEditModalField: false,
             totalRows: 1,
             currentPage: 1,
@@ -84,7 +88,8 @@ export default {
         ...mapActions('assign/session', {
             apiGetSession: 'apiGetSession',
             apiDeleteSession: 'apiDeleteSession',
-            apiAddSession: 'apiAddSession'
+            apiAddSession: 'apiAddSession',
+            apiChangeSessionStatus: 'apiChangeSessionStatus'
         }),
         searchSession() {
             let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
@@ -157,20 +162,13 @@ export default {
 
         },
         changeSessionStatus(id, oldStatus) {
-            let status = -1;
-            if (oldStatus === 1)
-                status = 0;
-            if (oldStatus === 0)
-                status = 1;
+            let status = !oldStatus;
             let objInput = {id: id, status: status};
             this.apiChangeSessionStatus(objInput)
                 .then(response => {
                     console.log('apiChangeSessionStatus', response);
-                    if (response.err_code === 0) {
-                        Swal.fire("", response.err_message, "success");
-                        this.searchSession();
-                    } else {
-                    }
+                    Swal.fire("", "Thành công", "success");
+                    this.searchSession();
                 })
                 .catch(err => {
                     console.log(err);
@@ -284,7 +282,7 @@ export default {
                                 </li>
                                 <li class="list-inline-item">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeSessionStatus(data.item.id,data.item.status)" v-model="data.item.status===1">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" @click="changeSessionStatus(data.item.id,data.item.status)" v-model="data.item.status">
                                         <label class="form-check-label" for="flexSwitchCheckChecked"></label>
                                     </div>
                                 </li>
@@ -333,7 +331,7 @@ export default {
             </div>
 
         </b-modal>
-        <add-blacklist @handleModalCall="handleModalCall" :actionType="1" :blacklistIdEdit="-1"></add-blacklist>
+
     </div>
 
 </template>

@@ -68,6 +68,21 @@ const actions = {
         }
     },
 
+    async apiChangeSessionStatus({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiChangeSessionStatus}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiGetSessionById({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_SESSION_MANAGE.apiGetSessionById}`, payload);

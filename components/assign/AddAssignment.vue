@@ -1,11 +1,12 @@
 <script>
 
 import {mapActions} from "vuex";
+import Swal from "sweetalert2";
 
 export default {
     name: "AddAssignment",
     props: {
-        idStudent: {
+        idSession: {
             type: Number,
             default: 0
         },
@@ -31,7 +32,7 @@ export default {
     },
     methods: {
         ...mapActions('assign/assignment', {
-            apiImportStudent: 'apiImportStudent'
+            apiImportAssignment: 'apiImportAssignment'
         }),
         addListSub() {
             let formData = new FormData();
@@ -39,15 +40,19 @@ export default {
                 this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
             } else {
                 formData.append('fileExcel', this.fileUpload);
+                formData.append('session', this.idSession);
 
-                this.apiImportStudent(formData)
+                this.apiImportAssignment(formData)
                     .then(response => {
-                        console.log('apiAddBlacklist', response);
-                        this.$emit('handleGetStudent');
-                        this.$bvModal.hide('modal-add-file-student');
+                        if(response.length === 0) {
+                            Swal.fire("", "File không hợp lệ", "warning");
+                        }
+                        this.$emit('handleGetSession');
+                        this.$bvModal.hide('modal-add-file-assigment');
 
                     })
                     .catch(err => {
+                        Swal.fire("", "Tải file không thành công", "warning");
                         console.log(err);
                     })
                     .finally(() => {
@@ -58,7 +63,7 @@ export default {
             }
         },
         closeModalListSub() {
-            this.$bvModal.hide('modal-add-file-student');
+            this.$bvModal.hide('modal-add-file-assigment');
         },
         onFileChange(e) {
             let files = e.target.files || e.dataTransfer.files;
@@ -75,7 +80,7 @@ export default {
 </style>
 
 <template>
-    <b-modal id="modal-add-file-student" size="lg" title="Tải tập SV" title-class="font-18" hide-footer>
+    <b-modal id="modal-add-file-assigment" size="lg" title="Tải tập SV" title-class="font-18" hide-footer>
         <div class="card">
             <div class="card-body">
 
@@ -92,8 +97,8 @@ export default {
                 </export-excel>
                 <div class="row mb-3">
                     <div class="col-12">
-                        <label v-show="actionType==1">Tên tập TB</label>
-                        <input type="text" v-show="actionType==1" maxlength="150" v-model="blacklistData.name" class="form-control"/>
+                        <label v-show="actionType===1">Tên tập TB</label>
+                        <input type="text" v-show="actionType===1" maxlength="150" v-model="blacklistData.name" class="form-control"/>
                     </div>
                 </div>
 
@@ -111,6 +116,7 @@ export default {
 
             </div>
             <!-- end card-body -->
+
         </div>
     </b-modal>
 </template>

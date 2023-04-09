@@ -6,6 +6,7 @@ import {mapActions} from "vuex";
  * Product-detail component
  */
 export default {
+    middleware: ['check-authen'],
     head() {
         return {
             title: `Danh sách sinh viên được hướng dẫn`
@@ -133,7 +134,6 @@ export default {
         }
     },
 
-    middleware: "authentication",
 };
 </script>
 
