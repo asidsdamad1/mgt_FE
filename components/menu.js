@@ -3,21 +3,21 @@ export const menuItems = [
         id: 1,
         label: "Dashboard",
         icon: "uil-home-alt",
-        link: "/",
+        link: "/admin/",
         role: "ROLE_ADMIN"
     },
     {
         id: 2,
         label: "Danh sách giáo viên",
         icon: "uil-list-ul",
-        link: "/teacher",
+        link: "/admin/teacher",
         role: "ROLE_ADMIN"
     },
     {
         id: 3,
         label: "Danh sách sinh viên",
         icon: "uil-list-ul",
-        link: "/student",
+        link: "/admin/student",
         role: "ROLE_ADMIN"
     },
     {
@@ -32,6 +32,13 @@ export const menuItems = [
         label: "Dashboard",
         icon: "uil-home-alt",
         link: "/calendar",
+        role: "ROLE_TEACHER"
+    },
+    {
+        id: 6,
+        label: "Danh sách sinh viên",
+        icon: "uil-list-ul",
+        link: "/teacher/manage-student",
         role: "ROLE_TEACHER"
     },
     // {

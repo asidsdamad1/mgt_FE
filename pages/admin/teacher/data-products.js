@@ -1,7 +1,7 @@
 const productData = [
   {
     id: 1,
-    image: require("~/assets/images/product/img-1.png"),
+    image: require("assets/images/product/img-1.png"),
     discount: 20,
     brand: "Nike",
     name: "Nike N012 Shoes",
@@ -19,7 +19,7 @@ const productData = [
   },
   {
     id: 2,
-    image: require("~/assets/images/product/img-2.png"),
+    image: require("assets/images/product/img-2.png"),
     discount: 10,
     brand: "Adidas",
     name: "Adidas Running Shoes",
@@ -37,7 +37,7 @@ const productData = [
   },
   {
     id: 3,
-    image: require("~/assets/images/product/img-3.png"),
+    image: require("assets/images/product/img-3.png"),
     discount: 10,
     brand: "Puma",
     name: "Puma P103 Shoes",
@@ -55,7 +55,7 @@ const productData = [
   },
   {
     id: 4,
-    image: require("~/assets/images/product/img-4.png"),
+    image: require("assets/images/product/img-4.png"),
     discount: 10,
     brand: "",
     name: "Sports S120 Shoes",
@@ -73,7 +73,7 @@ const productData = [
   },
   {
     id: 5,
-    image: require("~/assets/images/product/img-5.png"),
+    image: require("assets/images/product/img-5.png"),
     discount: 10,
     brand: "Adidas",
     name: "Adidas AB23 Shoes",
@@ -91,7 +91,7 @@ const productData = [
   },
   {
     id: 6,
-    image: require("~/assets/images/product/img-6.png"),
+    image: require("assets/images/product/img-6.png"),
     discount: 10,
     brand: "Nike",
     name: "Nike N012 Shoes",

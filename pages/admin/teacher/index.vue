@@ -3,7 +3,7 @@
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
-import TeacherModal from "../../components/teacher/TeacherModal.vue";
+import TeacherModal from "../../../components/teacher/TeacherModal.vue";
 
 export default {
     middleware: ['check-authen'],
@@ -102,7 +102,7 @@ export default {
         this.handleGetListTeacher();
     },
     methods: {
-        ...mapActions('teachers', {
+        ...mapActions('admin/teachers', {
             apiGetListTeacher: 'apiGetListTeacher',
             apiGetTeacher: 'apiGetTeacher',
             apiGetTeacherById: 'apiGetTeacherById',

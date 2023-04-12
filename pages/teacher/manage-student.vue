@@ -5,14 +5,14 @@ import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
 import StudentModal from "../../components/student/StudentModal.vue";
 import AddStudentModal from "../../components/student/AddStudentModal.vue";
+import {getUserInfo} from "@/utils/cookieAuthen";
 
 export default {
     middleware: ['check-authen'],
     name: "subscriber",
     components: {
         Multiselect,
-        StudentModal,
-        AddStudentModal
+        StudentModal
     },
     data() {
         return {
@@ -81,6 +81,11 @@ export default {
             tableData: [],
             idStudent: 0,
             codeStudent: '',
+            objTeacher: {
+                id: 0,
+                conditionSearch: '',
+                valueSearch: ''
+            },
             objGetStudent: {
                 id: 0,
                 code: "",
@@ -114,12 +119,8 @@ export default {
         // this.getStudentClass();
     },
     methods: {
-        ...mapActions('students', {
-            apiGetStudent: 'apiGetStudent',
-            apiDeleteStudent: 'apiDeleteStudent',
-            apiSearchStudent: 'apiSearchStudent',
-            apiImportStudent: 'apiImportStudent',
-            apiGetStudentClass: 'apiGetStudentClass'
+        ...mapActions('teachers', {
+            apiGetStudent: 'apiGetStudent'
         }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
@@ -158,9 +159,9 @@ export default {
             }
         },
         handleGetStudent() {
-            this.apiGetStudent(this.objGetStudent)
+            this.objTeacher.id = JSON.parse(getUserInfo()).id;
+            this.apiGetStudent(this.objTeacher)
                 .then(response => {
-                    console.log('apiGetListContactGroup', response)
                     this.tableData = response;
                 })
                 .catch(err => {
@@ -169,10 +170,10 @@ export default {
                 .finally(() => {
                 })
         },
-        searchContact() {
-            let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+        searchStudent() {
+            let objInput = {id: JSON.parse(getUserInfo()).id, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
-            if (this.conditionSearch !== '') {
+            if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {
                     this.commonNotifyVue('Bạn phải nhập từ khóa tìm kiếm', 'warn');
                     return;
@@ -238,94 +239,8 @@ export default {
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-event');
         },
-        prepareEditStudent(id) {
-            this.isEditModalField = false;
-            this.titleModal = 'Sửa thông tin';
-            this.typeStudent = 2;
-            this.objGetStudent.id = parseInt(id);
-            this.idStudent = parseInt(id);
-
-            this.apiGetStudent({
-                id: id,
-                valueSearch: '',
-                conditionSearch: ''
-            }).then(response => {
-                console.log(response);
-                this.objGetStudent.code = response.code;
-                this.objGetStudent.name = response.fullName;
-                this.objGetStudent.dob = response.dob;
-                this.objGetStudent.gender = response.gender;
-                this.objGetStudent.phone = response.phone;
-                this.objGetStudent.email = response.email;
-                this.objGetStudent.address = response.address;
-                this.modalActionType = 2;
-
-                this.$bvModal.show('modal-add-event');
-
-            }).catch(err => {
-                console.log(err)
-            }).finally(() => {
-            })
-        },
-        deleteStudent(id) {
-            console.log("id: ", id);
-
-            Swal.fire({
-                title: "Bạn có chắc chắn muốn xóa?",
-                text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#34c38f",
-                cancelButtonColor: "#f46a6a",
-                confirmButtonText: "Đồng ý",
-                cancelButtonText: "Hủy"
-            }).then(result => {
-                if (result.isConfirmed) {
-                    this.apiDeleteStudent(id).then(response => {
-                        console.log("in")
-                        Swal.fire("", response.err_message, "success");
-                        this.handleGetStudent();
-
-
-                    }).catch(err => {
-                        console.log(err);
-                    }).finally(() => {
-                        // this.commonLoadingPage(false);
-                    })
-                } else {
-                }
-                if (result.value) {
-                    Swal.fire("Deleted!", "Your file has been deleted.", "success");
-                }
-            });
-        },
-        changeContactGroupStatus(id, oldStatus) {
-            let status = -1;
-            if (oldStatus === 1)
-                status = 0;
-            if (oldStatus === 0)
-                status = 1;
-            let objInput = {id: id, status: status};
-            this.apiChangeContactGroupStatus(objInput)
-                .then(response => {
-                    console.log('apiChangeContactGroupStatus', response);
-                    if (response.err_code === 0) {
-                        Swal.fire("", response.err_message, "success");
-                        this.searchContact();
-                        // this.searchContact();
-                    } else {
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-
-        },
         handleModalCall() {
-            this.searchContact();
+            this.searchStudent();
         }
     }
 }
@@ -341,11 +256,7 @@ export default {
         <div class="card">
             <div class="card-header">
                 <div class="row">
-                    <div class="col-6"></div>
-                    <div class="col-6 text-end">
-                        <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-student><i class="uil uil-arrow-circle-up me-1"></i> Tải tập SV</button>
-                        <button type="button" class="btn btn-success" @click="showModalStudent"><i class="uil uil-plus me-1"></i> Tạo mới sinh viên</button>
-                    </div>
+
                 </div>
             </div>
             <div class="card-body">
@@ -353,8 +264,7 @@ export default {
                     <div class="col-5">
                         <label>Điều kiện lọc</label>
                         <select v-model="conditionSearch" class="form-control">
-                            <option value=""></option>
-                            <option value="-1">Tất cả</option>
+                            <option value="ALL">Tất cả</option>
                             <option value="NAME">Tên</option>
                             <option value="PHONE">Số điện thoại</option>
                             <option value="EMAIL">Email</option>
@@ -369,7 +279,7 @@ export default {
                                 <input type="text" v-model="valueSearch" class="form-control"/>
                             </div>
                             <div class="col-2">
-                                <button type="button" class="btn btn-primary d-block" @click="searchContact"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
+                                <button type="button" class="btn btn-primary d-block" @click="searchStudent"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
                             </div>
                         </div>
                     </div>
@@ -385,18 +295,6 @@ export default {
                                         @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
-                                </button>
-
-                                <button title="Sửa Segment"
-                                        @click="prepareEditStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-pen me-1"></i>
-                                </button>
-
-                                <button title="Xóa Segment"
-                                        @click="deleteStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-trash me-1"></i>
                                 </button>
 
                             </div>

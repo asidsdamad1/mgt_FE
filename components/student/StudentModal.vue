@@ -56,7 +56,7 @@ export default {
 
     },
     methods: {
-        ...mapActions('students', {
+        ...mapActions('admin/students', {
             apiAddStudent: 'apiAddStudent',
             apiEditStudent: 'apiEditStudent',
             apiGetStudent: 'apiGetStudent',

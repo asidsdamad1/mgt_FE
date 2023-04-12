@@ -88,10 +88,10 @@ const actions = {
 
             console.log('test: ', data)
             if (data !== null) {
-                setAccessToken(data.accessToken);
+                setAccessToken(data.accessToken, data.expired);
                 setRefreshToken(data.refreshToken);
                 if (data.authorities.length > 0) {
-                    setUserInfo(data.authorities[0].authority);
+                    setUserInfo({role: data.authorities[0].authority, id: data.id});
                 }
                 setSsVideo5(0);
 

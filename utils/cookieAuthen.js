@@ -15,8 +15,8 @@ export function getAccessToken() {
     return Cookies.get(AccessToken);
 }
 
-export function setAccessToken(token) {
-    Cookies.set(AccessToken, token, { expires: 7 });
+export function setAccessToken(token, expired) {
+    Cookies.set(AccessToken, token, { expires: expired * 1/86400000});
 }
 
 export function removeAccessToken() {

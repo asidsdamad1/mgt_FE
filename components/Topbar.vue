@@ -1,6 +1,7 @@
 <script>
 import {menuItems} from "./menu";
 import { removeAccessToken, removeRefreshToken } from '../utils/cookieAuthen';
+import {mapActions} from "vuex";
 /**
  * Topbar component
  */
@@ -51,6 +52,9 @@ export default {
         this.flag = this.value.flag;
     },
     methods: {
+        ...mapActions('authen', {
+            apiLogout: 'apiLogout'
+        }),
         /**
          * Toggle menu
          */
@@ -136,8 +140,7 @@ export default {
             } else if (process.env.auth === "fakebackend") {
                 this.$store.dispatch("authfack/logout");
             }
-            removeAccessToken()
-            removeRefreshToken()
+            this.apiLogout();
             this.$router.push({
                 path: "/account/login",
             });
