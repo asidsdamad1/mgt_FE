@@ -3,57 +3,68 @@ export const menuItems = [
         id: 1,
         label: "Dashboard",
         icon: "uil-home-alt",
-        link: "/"
+        link: "/",
+        role: "ROLE_ADMIN"
     },
     {
         id: 2,
         label: "Danh sách giáo viên",
         icon: "uil-list-ul",
-        link: "/teacher"
+        link: "/teacher",
+        role: "ROLE_ADMIN"
     },
     {
         id: 3,
         label: "Danh sách sinh viên",
         icon: "uil-list-ul",
-        link: "/student"
+        link: "/student",
+        role: "ROLE_ADMIN"
     },
     {
         id: 4,
         icon: "uil-browser",
         label: "Phân công hướng dẫn",
-        link: "/assign/session"
+        link: "/assign/session",
+        role: "ROLE_ADMIN"
     },
     {
-        id: 13,
-        label: "Quản lý người dùng",
-        icon: "uil-user-circle",
-        subItems: [
-            {
-                id: 14,
-                label: "Danh sách nhóm quyền",
-                link: "/user/permission",
-                parentId: 13
-            },
-            {
-                id: 22,
-                label: "Danh sách nhóm người dùng",
-                link: "/user/groupuser",
-                parentId: 13
-            },
-            {
-                id: 15,
-                label: "Danh sách tài khoản",
-                link: "/user/management",
-                parentId: 13
-            },
-            {
-                id: 16,
-                label: "Lịch sử người dùng",
-                link: "/user/history",
-                parentId: 13
-            }
-        ]
+        id: 5,
+        label: "Dashboard",
+        icon: "uil-home-alt",
+        link: "/calendar",
+        role: "ROLE_TEACHER"
     },
+    // {
+    //     id: 13,
+    //     label: "Quản lý người dùng",
+    //     icon: "uil-user-circle",
+    //     subItems: [
+    //         {
+    //             id: 14,
+    //             label: "Danh sách nhóm quyền",
+    //             link: "/user/permission",
+    //             parentId: 13
+    //         },
+    //         {
+    //             id: 22,
+    //             label: "Danh sách nhóm người dùng",
+    //             link: "/user/groupuser",
+    //             parentId: 13
+    //         },
+    //         {
+    //             id: 15,
+    //             label: "Danh sách tài khoản",
+    //             link: "/user/management",
+    //             parentId: 13
+    //         },
+    //         {
+    //             id: 16,
+    //             label: "Lịch sử người dùng",
+    //             link: "/user/history",
+    //             parentId: 13
+    //         }
+    //     ]
+    // },
 
     // {
     //   id: 25,
