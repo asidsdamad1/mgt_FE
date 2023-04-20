@@ -18,7 +18,7 @@ function login(email, password) {
     return fetch(`/users/authenticate`, requestOptions)
         .then(handleResponse)
         .then(user => {
-            // login successful if there's a jwt token in the response
+            // login successful if there'manage-project.vue a jwt token in the response
             if (user.token) {
                 // store user details and jwt token in local storage to keep user logged in between page refreshes
                 localStorage.setItem('user', JSON.stringify(user));

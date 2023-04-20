@@ -32,7 +32,7 @@ const chatData = [
   {
     id: 5,
     name: "Vernon Smith",
-    message: "Wow that's great",
+    message: "Wow that'manage-project.vue great",
     time: "04 Hrs",
     status: "online"
   }
@@ -97,7 +97,7 @@ const chatMessagesData = [
     id: 6,
     align: "right",
     name: "Marcus",
-    message: "Wow that's great",
+    message: "Wow that'manage-project.vue great",
     time: "10:07"
   }
 ];

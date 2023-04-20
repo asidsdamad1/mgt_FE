@@ -1,141 +1,152 @@
 <script>
-
-    import {menuItems} from "./menu";
-
-    /**
-     * Topbar component
-     */
-    export default {
-        head() {
-            return {
-                title: this.menuGetNameActive()
-            };
-        },
-        data() {
-            return {
-                menuItems: menuItems,
-                languages: [{
-                    flag: require("~/assets/images/flags/us.jpg"),
-                    language: "en",
-                    title: "English",
+import {menuItems} from "./menu";
+import { removeAccessToken, removeRefreshToken } from '../utils/cookieAuthen';
+import {mapActions} from "vuex";
+/**
+ * Topbar component
+ */
+export default {
+    head() {
+        return {
+            title: this.menuGetNameActive()
+        };
+    },
+    data() {
+        return {
+            menuItems: menuItems,
+            languages: [{
+                flag: require("~/assets/images/flags/us.jpg"),
+                language: "en",
+                title: "English",
+            },
+                {
+                    flag: require("~/assets/images/flags/french.jpg"),
+                    language: "fr",
+                    title: "French",
                 },
-                    {
-                        flag: require("~/assets/images/flags/french.jpg"),
-                        language: "fr",
-                        title: "French",
-                    },
-                    {
-                        flag: require("~/assets/images/flags/spain.jpg"),
-                        language: "es",
-                        title: "spanish",
-                    },
-                    {
-                        flag: require("~/assets/images/flags/china.png"),
-                        language: "zh",
-                        title: "Chinese",
-                    },
-                    {
-                        flag: require("~/assets/images/flags/arabic.png"),
-                        language: "ar",
-                        title: "Arabic",
-                    },
-                ],
-                current_language: this.$i18n.locale,
-                text: null,
-                flag: null,
-                value: null,
-            };
-        },
-        mounted() {
-            this.value = this.languages.find((x) => x.language === this.$i18n.locale);
-            this.text = this.value.title;
-            this.flag = this.value.flag;
-        },
-        methods: {
-            /**
-             * Toggle menu
-             */
-            menuGetNameActive() {
-                let path = $nuxt.$route.path;
-                let menuName = '';
+                {
+                    flag: require("~/assets/images/flags/spain.jpg"),
+                    language: "es",
+                    title: "spanish",
+                },
+                {
+                    flag: require("~/assets/images/flags/china.png"),
+                    language: "zh",
+                    title: "Chinese",
+                },
+                {
+                    flag: require("~/assets/images/flags/arabic.png"),
+                    language: "ar",
+                    title: "Arabic",
+                },
+            ],
+            current_language: this.$i18n.locale,
+            text: null,
+            flag: null,
+            value: null,
+        };
+    },
+    mounted() {
+        this.value = this.languages.find((x) => x.language === this.$i18n.locale);
+        this.text = this.value.title;
+        this.flag = this.value.flag;
+    },
+    methods: {
+        ...mapActions('authen', {
+            apiLogout: 'apiLogout'
+        }),
+        /**
+         * Toggle menu
+         */
+        menuGetNameActive() {
+            let path = $nuxt.$route.path;
+            let menuName = '';
 
-                if (path === '' || path === '/') {
-                    menuName = 'Dashboard';
-                } else if (path === '/customer') {
-                    menuName = 'Chăm sóc khách hàng';
-                } else {
-                    for (let x = 0; x < this.menuItems.length; x++) {
-                        let subItems = menuItems[x]['subItems'];
-                        if (subItems) {
-                            const objMenu = subItems.find(x => x.link === path);
-                            if (objMenu) {
-                                menuName = objMenu.label;
-                                break;
-                            }
+            if (path === '' || path === '/') {
+                menuName = 'Dashboard';
+            } else if (path === '/customer') {
+                menuName = 'Chăm sóc khách hàng';
+            } else {
+                for (let x = 0; x < this.menuItems.length; x++) {
+                    // console.log("menu: ", menuItems[x])
+                    let subItems = menuItems[x]['subItems'];
+                    if (subItems) {
+                        const objMenu = subItems.find(x => x.link === path);
+                        if (objMenu) {
+                            menuName = objMenu.label;
+                            break;
+                        }
+                    } else {
+                        if (menuItems[x].link === path) {
+                            menuName = menuItems[x].label;
+                            break;
                         }
                     }
                 }
+            }
 
-                return menuName;
-            },
-            toggleMenu() {
-                this.$parent.toggleMenu();
-            },
-            initFullScreen() {
-                document.body.classList.toggle("fullscreen-enable");
-                if (
-                    !document.fullscreenElement &&
-                    /* alternative standard method */
-                    !document.mozFullScreenElement &&
-                    !document.webkitFullscreenElement
-                ) {
-                    // current working methods
-                    if (document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen();
-                    } else if (document.documentElement.mozRequestFullScreen) {
-                        document.documentElement.mozRequestFullScreen();
-                    } else if (document.documentElement.webkitRequestFullscreen) {
-                        document.documentElement.webkitRequestFullscreen(
-                            Element.ALLOW_KEYBOARD_INPUT
-                        );
-                    }
-                } else {
-                    if (document.cancelFullScreen) {
-                        document.cancelFullScreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitCancelFullScreen) {
-                        document.webkitCancelFullScreen();
-                    }
-                }
-            },
-            /**
-             * Toggle rightsidebar
-             */
-            toggleRightSidebar() {
-                this.$parent.toggleRightSidebar();
-            },
-            /**
-             * Set languages
-             */
-            setLanguage(locale, country, flag) {
-                this.$i18n.locale = locale;
-                this.current_language = locale;
-                this.text = country;
-                this.flag = flag;
-            },
-            logoutUser() {
-                if (process.env.auth === "firebase") {
-                    this.$store.dispatch("authen.js/logOut");
-                } else if (process.env.auth === "fakebackend") {
-                    this.$store.dispatch("authfack/logout");
-                }
-                this.$router.push({
-                    path: "/auth/login",
-                });
-            },
+            console.log(menuName);
+            return menuName;
         },
-    };
+        toggleMenu() {
+            this.$parent.toggleMenu();
+        },
+        initFullScreen() {
+            document.body.classList.toggle("fullscreen-enable");
+            if (
+                !document.fullscreenElement &&
+                /* alternative standard method */
+                !document.mozFullScreenElement &&
+                !document.webkitFullscreenElement
+            ) {
+                // current working methods
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(
+                        Element.ALLOW_KEYBOARD_INPUT
+                    );
+                }
+            } else {
+                if (document.cancelFullScreen) {
+                    document.cancelFullScreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+            }
+        },
+        /**
+         * Toggle rightsidebar
+         */
+        toggleRightSidebar() {
+            this.$parent.toggleRightSidebar();
+        },
+        /**
+         * Set languages
+         */
+        setLanguage(locale, country, flag) {
+            this.$i18n.locale = locale;
+            this.current_language = locale;
+            this.text = country;
+            this.flag = flag;
+        },
+        logoutUser() {
+            if (process.env.auth === "firebase") {
+                this.$store.dispatch("authen.js/logOut");
+            } else if (process.env.auth === "fakebackend") {
+                this.$store.dispatch("authfack/logout");
+            }
+            this.apiLogout();
+            this.$router.push({
+                path: "/account/login",
+            });
+        },
+    },
+};
 </script>
 
 <template>
@@ -184,7 +195,7 @@
                 <!--                <form class="p-3">-->
                 <!--                    <div class="form-group m-0">-->
                 <!--                        <div class="input-group">-->
-                <!--                            <input type="text" class="form-control" :placeholder="$t('navbar.search.text')" aria-label="Recipient's username" />-->
+                <!--                            <input type="text" class="form-control" :placeholder="$t('navbar.search.text')" aria-label="Recipient'manage-project.vue username" />-->
                 <!--                            <div class="input-group-append">-->
                 <!--                                <button class="btn btn-primary" type="submit">-->
                 <!--                                    <i class="mdi mdi-magnify"></i>-->

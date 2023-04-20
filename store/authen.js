@@ -1,23 +1,23 @@
-import { getFirebaseBackend } from '../helpers/firebase/authUtils'
-import { API_AUTHEN } from '../api/authen';
-import { CONSTANTS } from '../utils/constant';
+import {API_AUTHEN} from '../api/authen';
+import {CONSTANTS} from '../utils/constant';
 import {
     getAccessToken,
-    setAccessToken,
-    removeAccessToken,
-    setRefreshToken,
-    removeRefreshToken,
-    setUserInfo,
-    getUserInfo,
-    removeUserInfo,
-    setDeviceUsingWifi,
-    setSsVideo5,
-    removeSsVideo5,
     getFirebaseToken,
-    setFirebaseToken,
+    getLoginType,
+    getUserInfo,
+    removeAccessToken,
     removeLoginType,
+    removeRefreshToken,
+    removeSsVideo5,
+    removeUserInfo,
+    setAccessToken,
+    setDeviceUsingWifi,
+    setFirebaseToken,
+    setLoginCsrfState,
     setLoginType,
-    getLoginType, setLoginCsrfState
+    setRefreshToken,
+    setSsVideo5,
+    setUserInfo
 } from '../utils/cookieAuthen';
 
 const AUTHEN_ADD_USER_INFO = 'AUTHEN_ADD_USER_INFO';
@@ -35,9 +35,9 @@ const AUTHEN_REMOVE_USER_INFO = 'AUTHEN_REMOVE_USER_INFO';
 }*/
 
 const actions = {
-    async apiRegister({ commit, state }, payload) {
+    async apiRegister({commit, state}, payload) {
         try {
-            let { data } = await this.$axios.post(`${API_AUTHEN.apiRegister}`, payload);
+            let {data} = await this.$axios.post(`${API_AUTHEN.apiRegister}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -49,9 +49,9 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiSendOTP({ commit, state }, payload) {
+    async apiSendOTP({commit, state}, payload) {
         try {
-            let { data } = await this.$axios.get(`${API_AUTHEN.apiSendOTP}`, {
+            let {data} = await this.$axios.get(`${API_AUTHEN.apiSendOTP}`, {
                 params: payload
             });
 
@@ -65,7 +65,7 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiLogin({ commit, state }, payload) {
+    async apiLogin({commit, state}, payload) {
         try {
             let uri_build = `${API_AUTHEN.apiLogin}`;
             if (getLoginType() === 'google') {
@@ -84,13 +84,15 @@ const actions = {
                 };
             }
 
-            let { data } = await this.$axios.post(uri_build, payload);
+            let {data} = await this.$axios.post(uri_build, payload);
 
             console.log('test: ', data)
             if (data !== null) {
-                setAccessToken(data.token);
+                setAccessToken(data.accessToken, data.expired);
                 setRefreshToken(data.refreshToken);
-                setUserInfo(data.userInfo);
+                if (data.authorities.length > 0) {
+                    setUserInfo({role: data.authorities[0].authority, id: data.id});
+                }
                 setSsVideo5(0);
 
                 if (payload === 'VIETTEL') {
@@ -109,7 +111,7 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiLogout({ commit }) {
+    async apiLogout({commit}) {
         try {
             // await this.$axios.post(`${API_AUTHEN.apiLogout}`);
         } catch (error) {
@@ -126,9 +128,9 @@ const actions = {
 
         return 'OK';
     },
-    async apiForgotPassword({ commit, state }, payload) {
+    async apiForgotPassword({commit, state}, payload) {
         try {
-            let { data } = await this.$axios.post(`${API_AUTHEN.apiForgotPassword}`, payload);
+            let {data} = await this.$axios.post(`${API_AUTHEN.apiForgotPassword}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -140,7 +142,7 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiFirebaseInsertToken({ commit, state }, payload) {
+    async apiFirebaseInsertToken({commit, state}, payload) {
         try {
             if (!getFirebaseToken()) {
                 console.info('apiFirebaseInsertToken: ', payload);
@@ -149,7 +151,7 @@ const actions = {
                     phone: '',
                     token: payload
                 };
-                let { data } = await this.$axios.post(`${API_AUTHEN.apiFirebaseInsertToken}`, payloadFinal);
+                let {data} = await this.$axios.post(`${API_AUTHEN.apiFirebaseInsertToken}`, payloadFinal);
 
                 if (data.code === CONSTANTS.SUCCESS) {
                     setFirebaseToken(1);
@@ -223,7 +225,7 @@ const actions = {
         });
     },
 
-    // Validates the current user's token and refreshes it
+    // Validates the current user'manage-project.vue token and refreshes it
     // with new data from the API.
     // eslint-disable-next-line no-unused-vars
     validate({ commit, state }) {
