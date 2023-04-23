@@ -32,7 +32,7 @@ export const menuItems = [
         label: "Dashboard",
         icon: "uil-home-alt",
         link: "/calendar",
-        role: "ROLE_TEACHER, ROLE_STUDENT"
+        role: "ROLE_TEACHER"
     },
     {
         id: 6,
@@ -47,6 +47,20 @@ export const menuItems = [
         icon: "uil-list-ul",
         link: "/teacher/project-manage",
         role: "ROLE_TEACHER"
+    },
+    {
+        id: 8,
+        label: "Dashboard",
+        icon: "uil-home-alt",
+        link: "/calendar",
+        role: "ROLE_STUDENT"
+    },
+    {
+        id: 9,
+        label: "Danh sách đồ án",
+        icon: "uil-list-ul",
+        link: "/teacher/manage-student",
+        role: "ROLE_STUDENT"
     },
     // {
     //     id: 13,
