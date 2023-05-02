@@ -5,7 +5,7 @@ import {mapActions} from "vuex";
 export default {
     name: "AddStudentModal",
     props: {
-        idStudent: {
+        idProject: {
             type: Number,
             default: 0
         },
@@ -18,7 +18,7 @@ export default {
     data() {
         return {
             fileUpload: null,
-            blacklistData: {
+            outlineData: {
                 name: ''
 
             },
@@ -30,21 +30,22 @@ export default {
         }
     },
     methods: {
-        ...mapActions('admin/students', {
-            apiImportStudent: 'apiImportStudent'
+        ...mapActions('project', {
+            apiAddOutlineFile: 'apiAddOutlineFile'
         }),
-        addListSub() {
+        addOutlineFile() {
             let formData = new FormData();
             if (this.fileUpload === null) {
-                this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
+                this.commonNotifyVue('Bạn phải chọn file đề cương', 'warn');
             } else {
-                formData.append('fileExcel', this.fileUpload);
-
-                this.apiImportStudent(formData)
+                console.log(this.idProject)
+                formData.append('id', this.idProject);
+                formData.append('file', this.fileUpload);
+                this.apiAddOutlineFile(formData)
                     .then(response => {
                         console.log('apiAddBlacklist', response);
-                        this.$emit('handleGetStudent');
-                        this.$bvModal.hide('modal-add-file-student');
+                        this.$emit('handleGetProject');
+                        this.$bvModal.hide('modal-add-file-outline');
 
                     })
                     .catch(err => {
@@ -58,11 +59,10 @@ export default {
             }
         },
         closeModalListSub() {
-            this.$bvModal.hide('modal-add-file-student');
+            this.$bvModal.hide('modal-add-file-outline');
         },
         onFileChange(e) {
             let files = e.target.files || e.dataTransfer.files;
-            console.log('add blacklist onchange file', files);
             if (files != null)
                 this.fileUpload = files[0];
         }
@@ -75,7 +75,7 @@ export default {
 </style>
 
 <template>
-    <b-modal id="modal-add-file-student" size="lg" title="Tải tập SV" title-class="font-18" hide-footer>
+    <b-modal id="modal-add-file-outline" size="lg" title="Tải file đề cương" title-class="font-18" hide-footer>
         <div class="card">
             <div class="card-body">
 
@@ -93,13 +93,13 @@ export default {
                 <div class="row mb-3">
                     <div class="col-12">
                         <label v-show="actionType==1">Tên tập TB</label>
-                        <input type="text" v-show="actionType==1" maxlength="150" v-model="blacklistData.name" class="form-control"/>
+                        <input type="text" v-show="actionType==1" maxlength="150" v-model="outlineData.name" class="form-control"/>
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-12">
-                        <label>File chứa sinh viên</label>
+                        <label>File đề cương</label>
                         <input type="file" @change="onFileChange" class="form-control">
                     </div>
                 </div>
@@ -107,7 +107,7 @@ export default {
             </div>
             <div class="card-footer text-end">
                 <button type="button" class="btn btn-primary" @click="closeModalListSub">Bỏ qua</button>
-                <button type="button" class="btn btn-success" @click="addListSub"><i class="uil uil-save me-1"></i> Lưu lại</button>
+                <button type="button" class="btn btn-success" @click="addOutlineFile"><i class="uil uil-save me-1"></i> Lưu lại</button>
 
             </div>
             <!-- end card-body -->

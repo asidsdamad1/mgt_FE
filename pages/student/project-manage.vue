@@ -3,16 +3,17 @@
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
-import StudentModal from "../../components/student/StudentModal.vue";
-import AddStudentModal from "../../components/student/AddStudentModal.vue";
 import {getUserInfo} from "@/utils/cookieAuthen";
+import ProjectStudentModal from "../../components/project/ProjectStudentModal";
+import AddOutlineModal from "../../components/project/AddOutlineModal";
 
 export default {
     middleware: ['check-authen'],
     name: "subscriber",
     components: {
         Multiselect,
-        StudentModal
+        ProjectStudentModal,
+        AddOutlineModal
     },
     data() {
         return {
@@ -68,6 +69,16 @@ export default {
                     sortable: true,
                 },
                 {
+                    key: "outlineFile",
+                    label: "Đề cương",
+                    sortable: true,
+                },
+                {
+                    key: "reportFile",
+                    label: "Báo cáo",
+                    sortable: true,
+                },
+                {
                     key: "status",
                     label: "Trạng thái",
                     sortable: true
@@ -79,31 +90,39 @@ export default {
                 },
             ],
             tableData: [],
-            idStudent: 0,
+            idProject: 0,
             codeStudent: '',
-            objProject: {
-                teacherId: 0,
+            objSearch: {
                 conditionSearch: '',
                 valueSearch: ''
             },
-            objGetStudent: {
+            objProject: {
                 id: 0,
-                code: "",
-                fullName: "",
-                dob: "",
-                gender: "",
-                phone: "",
-                email: "",
-                address: "",
-                class: ""
+                name: '',
+                student: {
+                    id: 0,
+                    name: ''
+                },
+                teacher: {
+                    id: 0
+                },
+                session: {
+                    id: 0,
+                    name: ''
+                },
+                topic: {
+                    id: 0,name: ''
+
+                },
+                status: 0
             },
             objGetListStudent: {
                 id: 0
             },
             modalActionType: -1,
             flagModal: false,
-            studentClass: [],
-            status: ''
+            status: '',
+            teacherId: '',
         }
     },
     created() {
@@ -115,22 +134,19 @@ export default {
         }
     },
     mounted() {
-        // this.searchContact();
         this.handleGetProject();
-        // this.getStudentClass();
     },
     methods: {
         ...mapActions('project', {
             apiGetProject: 'apiGetProject'
         }),
+        ...mapActions('assign/assignment', {
+            apiGetAssignment: 'apiGetAssignment'
+        }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
         },
-        getStudentClass() {
-            this.apiGetStudentClass().then(response => {
-                this.studentClass = response;
-            })
-        },
+
         addListSub() {
             this.errorValidate = [];
             let formData = new FormData();
@@ -159,10 +175,27 @@ export default {
 
             }
         },
+        handleGetTeacher() {
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).id + "," + JSON.parse(getUserInfo()).session;
+            this.objSearch.conditionSearch = 'TEACHER';
+
+            this.apiGetAssignment(this.objSearch)
+                .then(response => {
+                    this.teacherId = response[0].teacher.id;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+        },
         handleGetProject() {
-            this.objProject.valueSearch = JSON.parse(getUserInfo()).id;
-            this.objProject.conditionSearch = 'TEACHER';
-            this.apiGetProject(this.objProject)
+            this.handleGetTeacher();
+            console.log(this.teacherId)
+            this.objSearch.valueSearch = this.teacherId;
+            this.objSearch.conditionSearch = 'TEACHER'
+            console.log(this.objSearch)
+            this.apiGetProject(this.objSearch)
                 .then(response => {
                     this.tableData = response;
                 })
@@ -204,7 +237,7 @@ export default {
             this.disableAdd = true;
             this.titleModal = 'Xem Chi Tiết';
             this.typeSegment = 3;
-            this.idStudent = parseInt(id);
+            this.idProject = parseInt(id);
             this.codeStudent = id;
 
             this.flagModal = !this.flagModal;
@@ -213,9 +246,9 @@ export default {
                 conditionSearch: 'ID',
                 valueSearch: id,
             }).then(response => {
-                this.objGetStudent = response[0];
+                this.objProject = response[0];
 
-                console.log("object student:: ", this.objGetStudent)
+                console.log("object student:: ", this.objProject)
 
                 this.modalActionType = 3;
 
@@ -228,16 +261,16 @@ export default {
             })
         },
         showModalStudent() {
-            this.idStudent = -1;
+            this.idProject = -1;
             this.modalActionType = 1;
-            this.objGetStudent.name = "";
-            this.objGetStudent.dob = "";
-            this.objGetStudent.gender = "";
-            this.objGetStudent.phone = "";
-            this.objGetStudent.email = "";
-            this.objGetStudent.address = "";
-            this.objGetStudent.code = "";
-            this.objGetStudent.class = "";
+            this.objProject.name = "";
+            this.objProject.dob = "";
+            this.objProject.gender = "";
+            this.objProject.phone = "";
+            this.objProject.email = "";
+            this.objProject.address = "";
+            this.objProject.code = "";
+            this.objProject.class = "";
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-event');
         },
@@ -257,6 +290,38 @@ export default {
             } else {
                 return '';
             }
+        },
+        getDetail(id) {
+            this.objProject.id = JSON.parse(getUserInfo()).id;
+            if(id === this.objProject.id) {
+                return 'display: show'
+            }
+            return 'display: hidden'
+        },
+        showModalProject() {
+            this.idProject = -1;
+            this.modalActionType = 1;
+            this.objProject.name = "";
+            this.objProject.class = "";
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-project');
+        },
+        showModalOutline() {
+            this.objSearch.conditionSearch = 'STUDENT';
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).id;
+            this.apiGetProject(this.objSearch)
+                .then(response => {
+                    console.log(response[0].id)
+                    this.idProject = response[0].id;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
         }
     }
 }
@@ -271,7 +336,11 @@ export default {
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <div class="row">
+                <div class="row" style="float: right">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary" @click="showModalOutline" v-b-modal.modal-add-file-outline><i class="uil uil-arrow-circle-up me-1"></i> Tải file đề cương</button>
+                        <button type="button" class="btn btn-success" @click="showModalProject"><i class="uil uil-plus me-1"></i> Tạo đồ án</button>
+                    </div>
 
                 </div>
             </div>
@@ -307,11 +376,16 @@ export default {
                                 {{ row.value }}
                             </div>
                         </template>
+                        <template #cell(outlineFile)="row">
+                            <a :href="row.value">
+                                {{ row.value != null ? 'Tải xuống' :  'null' }}
+                            </a>
+                        </template>
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
                         <template v-slot:cell(action)=data>
-                            <div class="row align-items-center">
+                            <div class="row align-items-center" >
                                 <button title="Xem Segment"
                                         @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
@@ -341,22 +415,21 @@ export default {
             </div>
         </div>
 
-        <student-modal
-            :idStudent="idStudent"
+        <project-student-modal
+            :idProject="idProject"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetStudent="handleGetProject"
+            @handleGetProject="handleGetProject"
         >
-        </student-modal>
+        </project-student-modal>
 
-        <add-student-modal
-            :idStudent="idStudent"
-            :codeStudent="codeStudent"
+        <add-outline-modal
+            :idProject="idProject"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetStudent="handleGetProject"
+            @handleGetProject="handleGetProject"
         >
-        </add-student-modal>
+        </add-outline-modal>
     </div>
 
 </template>

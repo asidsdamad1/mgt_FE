@@ -45,54 +45,6 @@ export default {
         }
     },
     methods: {
-        // Try to log the user in with the username
-        // and password they provided.
-        /*   tryToLogIn() {
-               this.submitted = true;
-               // stop here if form is invalid
-               this.$v.$touch();
-
-               if (this.$v.$invalid) {
-                   return;
-               } else {
-                   if (process.env.auth === "firebase") {
-                       this.tryingToLogIn = true;
-                       // Reset the authError if it existed.
-                       this.authError = null;
-                       return (
-                           this.$store
-                               .dispatch("auth/logIn", {
-                                   email: this.email,
-                                   password: this.password
-                               })
-                               // eslint-disable-next-line no-unused-vars
-                               .then(token => {
-                                   this.tryingToLogIn = false;
-                                   this.isAuthError = false;
-                                   // Redirect to the originally requested page, or to the home page
-                                   this.$router.push(
-                                       this.$route.query.redirectFrom || {
-                                           path: "/"
-                                       }
-                                   );
-                               })
-                               .catch(error => {
-                                   this.tryingToLogIn = false;
-                                   this.authError = error ? error : "";
-                                   this.isAuthError = true;
-                               })
-                       );
-                   } else if (process.env.auth === "fakebackend") {
-                       const {email, password} = this;
-                       if (email && password) {
-                           this.$store.dispatch("authfack/login", {
-                               email,
-                               password
-                           });
-                       }
-                   }
-               }
-           }*/
         ...mapMutations('authen', {
             ACTION_LOGIN_TYPE: 'ACTION_LOGIN_TYPE',
             ACTION_LOGIN_CSRF_STATE: 'ACTION_LOGIN_CSRF_STATE'

@@ -59,7 +59,7 @@ export const menuItems = [
         id: 9,
         label: "Danh sách đồ án",
         icon: "uil-list-ul",
-        link: "/teacher/manage-student",
+        link: "/student/project-manage",
         role: "ROLE_STUDENT"
     },
     // {

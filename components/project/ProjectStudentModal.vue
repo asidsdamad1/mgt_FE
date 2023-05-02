@@ -6,6 +6,7 @@ import "vue-multiselect/dist/vue-multiselect.min.css";
 import Swal from "sweetalert2";
 
 export default {
+    middleware: ['check-authen'],
     name: "TeacherModal",
     props: {
         idTeacher: {
@@ -25,6 +26,16 @@ export default {
     },
     data() {
         return {
+            fileUpload: null,
+            items: [{
+                text: "Forms",
+                href: "/"
+            },
+                {
+                    text: "Form File Upload",
+                    active: true
+                }
+            ],
             teacherObj: {
                 id: -1,
                 name: '',
@@ -35,11 +46,17 @@ export default {
                 address: ''
             },
             modalTitle: '',
-            optionsEventType: [],
-            optionsProvince: [],
-            optionsDistrict: [],
+            optionTopic: [],
             pkgStartDate: '',
-            pkgEndDate: ''
+            pkgEndDate: '',
+            objProject: {
+                id: '',
+                name: ''
+            },
+            projectData: {
+                name: ''
+
+            },
         }
     },
     components: {
@@ -53,6 +70,9 @@ export default {
             apiAddTeacher: 'apiAddTeacher',
             apiEditTeacher: 'apiEditTeacher',
             apiGetTeacherById: 'apiGetTeacherById',
+        }),
+        ...mapActions('topic', {
+            apiGetTopic: 'apiGetTopic'
         }),
         resetForm() {
             this.teacherObj = {
@@ -70,7 +90,12 @@ export default {
             this.$nextTick(() => {
                 console.log('handleInitData', this.idTeacher);
                 let objInput = {id: 0};
-
+                this.apiGetTopic({
+                    conditionSearch: '',
+                    valueSearch: ''
+                }).then(response => {
+                    this.optionTopic = response;
+                })
                 // alert(this.actionType);
                 if (this.actionType === 1) {
                     this.modalTitle = 'Thêm Event';
@@ -137,8 +162,8 @@ export default {
                     this.apiEditTeacher(this.teacherObj)
                         .then(response => {
                             console.log('apiEditTeacher', response);
-                                this.$emit('handleGetTeacher');
-                                this.$bvModal.hide('modal-add-event');
+                            this.$emit('handleGetTeacher');
+                            this.$bvModal.hide('modal-add-event');
                         })
                         .catch(err => {
                             console.log(err);
@@ -151,10 +176,10 @@ export default {
                     this.apiAddTeacher(this.teacherObj)
                         .then(response => {
                             console.log('apiAddTeacher', response.err_code);
-                                this.$emit('handleGetTeacher');
-                                Swal.fire("", response.err_message, "success");
+                            this.$emit('handleGetTeacher');
+                            Swal.fire("", response.err_message, "success");
 
-                                this.$bvModal.hide('modal-add-event');
+                            this.$bvModal.hide('modal-add-event');
                         })
                         .catch(err => {
                             console.log(err);
@@ -166,7 +191,7 @@ export default {
             }
         },
         closeModal() {
-            this.$bvModal.hide('modal-add-event');
+            this.$bvModal.hide('modal-add-project');
         },
         checkDataInput() {
             if (this.teacherObj.fullName === null || this.teacherObj.fullName.trim() === '') {
@@ -228,6 +253,11 @@ export default {
                     // this.commonLoadingPage(false);
                 });
 
+        },
+        onFileChange(e) {
+            let files = e.target.files || e.dataTransfer.files;
+            if (files != null)
+                this.fileUpload = files[0];
         }
     }
 }
@@ -238,44 +268,39 @@ export default {
 </style>
 
 <template>
-    <b-modal id="modal-add-event"
+    <b-modal id="modal-add-project"
              size="lg" :title="modalTitle"
              title-class="font-18" hide-footer
              @cancel="flagModal = false"
              @show="handleInitData"
     >
         <div class="row pb-3">
-            <div class="col-6">
-                <label>Tên Giảng Viên</label>
-                <input type="text" maxlength="200" v-model="teacherObj.fullName" :disabled="actionType===3" placeholder="Tên Giảng Viên" class="form-control form-control multiselect__tags"/>
-            </div>
-            <div class="col-6">
-                <label>Năm sinh</label>
-                <input type="date" v-model="teacherObj.dob" :disabled="actionType===3" placeholder="Năm sinh" class="form-control form-control multiselect__tags"/>
+            <div class="col-12">
+                <label>Tên Đề tài</label>
+                <input type="text" maxlength="200" v-model="teacherObj.fullName" :disabled="actionType===3" placeholder="Tên đề tài" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
         <div class="row pb-3">
             <div class="col-6">
-                <label>Địa chỉ</label>
-                <input type="text" maxlength="200" v-model="teacherObj.address" :disabled="actionType===3" placeholder="Địa chỉ" class="form-control form-control multiselect__tags"/>
-            </div>
-            <div class="col-6">
-                <label>Giới tính</label>
-                <select v-model="teacherObj.gender" :disabled="actionType===3 || actionType===2" class="form-control form-control multiselect__tags">
-                    <option value="0">Nữ</option>
-                    <option value="1">Nam</option>
-                    <option value="2">Không xác định</option>
+                <label>Chủ đề</label>
+                <select v-model="objProject.id" :disabled="actionType===3" class="form-control">
+                    <option v-for="option in optionTopic" :value="option.id" >
+                        {{ option.name  }}
+                    </option>
                 </select>
             </div>
         </div>
-        <div class="row pb-3">
-            <div class="col-6">
-                <label>Số điện thoại</label>
-                <input type="text" maxlength="200" v-model="teacherObj.phone" :disabled="actionType===3" placeholder="Số điện thoại" class="form-control form-control multiselect__tags"/>
+        <div class="row mb-3">
+            <div class="col-12">
+                <label v-show="actionType==1">Tên tập TB</label>
+                <input type="text" v-show="actionType==1" maxlength="150" v-model="projectData.name" class="form-control"/>
             </div>
-            <div class="col-6">
-                <label>Email</label>
-                <input type="text" maxlength="200" v-model="teacherObj.email" :disabled="actionType===3" placeholder="Email" class="form-control form-control multiselect__tags"/>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label>File chứa sinh viên</label>
+                <input type="file" @change="onFileChange" class="form-control">
             </div>
         </div>
         <!-- end card-body -->
