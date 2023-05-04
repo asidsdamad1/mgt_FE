@@ -4,6 +4,7 @@ import Multiselect from "vue-multiselect";
 
 import "vue-multiselect/dist/vue-multiselect.min.css";
 import Swal from "sweetalert2";
+import {getUserInfo} from "@/utils/cookieAuthen";
 
 export default {
     middleware: ['check-authen'],
@@ -50,8 +51,24 @@ export default {
             pkgStartDate: '',
             pkgEndDate: '',
             objProject: {
-                id: '',
-                name: ''
+                id: 0,
+                name: '',
+                student: {
+                    id: 0,
+                    name: ''
+                },
+                teacher: {
+                    id: 0
+                },
+                session: {
+                    id: 0,
+                    name: ''
+                },
+                topic: {
+                    id: 0, name: ''
+
+                },
+                status: 0
             },
             projectData: {
                 name: ''
@@ -73,6 +90,9 @@ export default {
         }),
         ...mapActions('topic', {
             apiGetTopic: 'apiGetTopic'
+        }),
+        ...mapActions('project', {
+            apiAddProject: 'apiAddProject'
         }),
         resetForm() {
             this.teacherObj = {
@@ -173,11 +193,14 @@ export default {
                         });
                 }
                 if (this.actionType === 1) {
-                    this.apiAddTeacher(this.teacherObj)
+                    this.objProject.teacher.id = JSON.parse(getUserInfo()).teacherId;
+                    this.objProject.student.id = JSON.parse(getUserInfo()).studentId;
+                    this.objProject.session.id = JSON.parse(getUserInfo()).session;
+                    this.objProject.status = 0;
+                    this.apiAddProject(this.objProject)
                         .then(response => {
-                            console.log('apiAddTeacher', response.err_code);
                             this.$emit('handleGetTeacher');
-                            Swal.fire("", response.err_message, "success");
+                            Swal.fire("", response, "success");
 
                             this.$bvModal.hide('modal-add-event');
                         })
@@ -194,65 +217,11 @@ export default {
             this.$bvModal.hide('modal-add-project');
         },
         checkDataInput() {
-            if (this.teacherObj.fullName === null || this.teacherObj.fullName.trim() === '') {
+            if (this.objProject.name === null || this.objProject.name.trim() === '') {
                 this.commonNotifyVue("Bạn phải nhập tên giảng viên", 'warn');
                 return false;
             }
-            if (this.teacherObj.dob === null || this.teacherObj.dob.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn ngày sinh", 'warn');
-                return false;
-            }
-            if (this.teacherObj.address === null || this.teacherObj.address.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn địa chỉ", 'warn');
-                return false;
-            }
-            if (this.teacherObj.phone === null || this.teacherObj.phone.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn số điện thoại", 'warn');
-                return false;
-            }
-            if (this.teacherObj.email === null || this.teacherObj.email.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn email", 'warn');
-                return false;
-            }
-            if (this.teacherObj.gender === null || this.teacherObj.gender.trim() === '') {
-                this.commonNotifyVue("Bạn phải chọn giới tính", 'warn');
-                return false;
-            }
-
             return true;
-        },
-        onChangeDataSource() {
-            this.eventObj.dataType = '';
-            if (this.eventObj.dataSource === 'tapping') {
-                this.optionsEventType = [{value: 'call', text: 'CALL'}, {value: 'ussd', text: 'USSD'}]
-                this.eventObj.dataType = 'call';
-            } else if (this.eventObj.dataSource === 'ccsp') {
-                this.optionsEventType = [{value: 'package', text: 'Gói cước'}]
-                this.eventObj.dataType = 'package';
-            } else if (this.eventObj.dataSource === 'lbs') {
-                this.optionsEventType = [{value: 'sub_location', text: 'Vị trí thuê bao'}]
-                this.eventObj.dataType = 'sub_location';
-            }
-        },
-        onChangeProvince() {
-            console.log('onChangeProvince', this.provinceOptionsSelected);
-            let objInput = {provinces: this.provinceOptionsSelected};
-            this.apiGetListDistrict(objInput)
-                .then(response => {
-                    let data = response['data'];
-                    this.optionsDistrict = data;
-                    console.log('apiGetListDistrict1', data);
-                    if (response.err_code === 0) {
-                    } else {
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-
         },
         onFileChange(e) {
             let files = e.target.files || e.dataTransfer.files;
@@ -277,30 +246,17 @@ export default {
         <div class="row pb-3">
             <div class="col-12">
                 <label>Tên Đề tài</label>
-                <input type="text" maxlength="200" v-model="teacherObj.fullName" :disabled="actionType===3" placeholder="Tên đề tài" class="form-control form-control multiselect__tags"/>
+                <input type="text" maxlength="200" v-model="objProject.name" :disabled="actionType===3" placeholder="Tên đề tài" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
         <div class="row pb-3">
             <div class="col-6">
                 <label>Chủ đề</label>
-                <select v-model="objProject.id" :disabled="actionType===3" class="form-control">
+                <select v-model="objProject.topic.id" :disabled="actionType===3" class="form-control">
                     <option v-for="option in optionTopic" :value="option.id" >
                         {{ option.name  }}
                     </option>
                 </select>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-12">
-                <label v-show="actionType==1">Tên tập TB</label>
-                <input type="text" v-show="actionType==1" maxlength="150" v-model="projectData.name" class="form-control"/>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-12">
-                <label>File chứa sinh viên</label>
-                <input type="file" @change="onFileChange" class="form-control">
             </div>
         </div>
         <!-- end card-body -->

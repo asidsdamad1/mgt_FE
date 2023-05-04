@@ -7,5 +7,6 @@ export const API_TEACHER_MANAGE = {
     apiGetTeacher: 'admin/get-list-teacher',
     apiSearchTeacher: 'admin/get-teacher',
     apiChangeBlacklistStatus: 'admin/change-teacher-status',
-    apiGetBySession: 'admin/get-by-session'
+    apiGetBySession: 'admin/get-by-session',
+    apiGetStudent: 'teacher/get-student'
 };

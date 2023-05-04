@@ -1,7 +1,6 @@
 <script>
 
 import {mapActions} from "vuex";
-import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
 import {getUserInfo} from "@/utils/cookieAuthen";
 import ProjectStudentModal from "../../components/project/ProjectStudentModal";
@@ -111,7 +110,7 @@ export default {
                     name: ''
                 },
                 topic: {
-                    id: 0,name: ''
+                    id: 0, name: ''
 
                 },
                 status: 0
@@ -122,7 +121,7 @@ export default {
             modalActionType: -1,
             flagModal: false,
             status: '',
-            teacherId: '',
+            teacherId: 0,
         }
     },
     created() {
@@ -176,12 +175,14 @@ export default {
             }
         },
         handleGetTeacher() {
-            this.objSearch.valueSearch = JSON.parse(getUserInfo()).id + "," + JSON.parse(getUserInfo()).session;
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).studentId + "," + JSON.parse(getUserInfo()).session;
             this.objSearch.conditionSearch = 'TEACHER';
 
-            this.apiGetAssignment(this.objSearch)
+            return this.apiGetAssignment(this.objSearch)
                 .then(response => {
+                    console.log(response[0])
                     this.teacherId = response[0].teacher.id;
+                    console.log(this.teacherId)
                 })
                 .catch(err => {
                     console.log(err)
@@ -190,12 +191,14 @@ export default {
                 })
         },
         handleGetProject() {
-            this.handleGetTeacher();
-            console.log(this.teacherId)
-            this.objSearch.valueSearch = this.teacherId;
-            this.objSearch.conditionSearch = 'TEACHER'
-            console.log(this.objSearch)
-            this.apiGetProject(this.objSearch)
+            this.handleGetTeacher()
+                .then(() => {
+                    console.log(this.teacherId)
+                    this.objSearch.valueSearch = this.teacherId;
+                    this.objSearch.conditionSearch = 'TEACHER'
+                    console.log(this.objSearch)
+                    return this.apiGetProject(this.objSearch)
+                })
                 .then(response => {
                     this.tableData = response;
                 })
@@ -206,7 +209,7 @@ export default {
                 })
         },
         searchStudent() {
-            let objInput = {id: JSON.parse(getUserInfo()).id, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
             if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {
@@ -284,7 +287,7 @@ export default {
             } else if (row.value === 'RESERVE') {
                 row.value = 'Bảo lưu';
                 return 'text-danger';
-            } else if (row.value === 'INACTIVE'){
+            } else if (row.value === 'INACTIVE') {
                 row.value = 'Chưa duyệt';
                 return 'text-warning';
             } else {
@@ -292,8 +295,8 @@ export default {
             }
         },
         getDetail(id) {
-            this.objProject.id = JSON.parse(getUserInfo()).id;
-            if(id === this.objProject.id) {
+            this.objProject.id = JSON.parse(getUserInfo()).studentId;
+            if (id === this.objProject.id) {
                 return 'display: show'
             }
             return 'display: hidden'
@@ -308,7 +311,7 @@ export default {
         },
         showModalOutline() {
             this.objSearch.conditionSearch = 'STUDENT';
-            this.objSearch.valueSearch = JSON.parse(getUserInfo()).id;
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).studentId;
             this.apiGetProject(this.objSearch)
                 .then(response => {
                     console.log(response[0].id)
@@ -322,6 +325,9 @@ export default {
 
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-file-outline');
+        },
+        getValue(row) {
+            console.log(row.value)
         }
     }
 }
@@ -378,14 +384,14 @@ export default {
                         </template>
                         <template #cell(outlineFile)="row">
                             <a :href="row.value">
-                                {{ row.value != null ? 'Tải xuống' :  'null' }}
+                                {{ row.value !== '' ? 'Tải xuống' : 'Chưa có đề cương' }}
                             </a>
                         </template>
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
                         <template v-slot:cell(action)=data>
-                            <div class="row align-items-center" >
+                            <div class="row align-items-center">
                                 <button title="Xem Segment"
                                         @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"

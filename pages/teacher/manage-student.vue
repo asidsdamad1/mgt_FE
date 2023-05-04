@@ -159,7 +159,7 @@ export default {
             }
         },
         handleGetStudent() {
-            this.objTeacher.id = JSON.parse(getUserInfo()).id;
+            this.objTeacher.id = JSON.parse(getUserInfo()).teacherId;
             this.apiGetStudent(this.objTeacher)
                 .then(response => {
                     this.tableData = response;
@@ -171,7 +171,7 @@ export default {
                 })
         },
         searchStudent() {
-            let objInput = {id: JSON.parse(getUserInfo()).id, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
             if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {

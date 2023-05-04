@@ -68,6 +68,16 @@ export default {
                     sortable: true,
                 },
                 {
+                    key: "outlineFile",
+                    label: "Đề cương",
+                    sortable: true,
+                },
+                {
+                    key: "reportFile",
+                    label: "Báo cáo",
+                    sortable: true,
+                },
+                {
                     key: "status",
                     label: "Trạng thái",
                     sortable: true
@@ -160,7 +170,7 @@ export default {
             }
         },
         handleGetProject() {
-            this.objProject.valueSearch = JSON.parse(getUserInfo()).id;
+            this.objProject.valueSearch = JSON.parse(getUserInfo()).teacherId;
             this.objProject.conditionSearch = 'TEACHER';
             this.apiGetProject(this.objProject)
                 .then(response => {
@@ -173,7 +183,7 @@ export default {
                 })
         },
         searchStudent() {
-            let objInput = {id: JSON.parse(getUserInfo()).id, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
             if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {
@@ -309,6 +319,11 @@ export default {
                         </template>
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
+                        </template>
+                        <template #cell(outlineFile)="row">
+                            <a :href="row.value">
+                                {{ row.value !== '' ? 'Tải xuống' : 'Chưa có đề cương' }}
+                            </a>
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">

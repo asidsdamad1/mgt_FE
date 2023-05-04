@@ -1,12 +1,12 @@
 import {CONSTANTS} from '@/utils/constant';
-import {API_TEACHER} from "@/api/teacher";
+import {API_TEACHER_MANAGE} from "@/api/admin/teacher";
 
 const actions = {
 
 
     async apiGetListTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiGetListTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetListTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -21,7 +21,7 @@ const actions = {
 
     async apiAddTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiAddTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiAddTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -36,7 +36,7 @@ const actions = {
 
     async apiGetStudent({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiGetStudent}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetStudent}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -51,7 +51,7 @@ const actions = {
 
     async apiGetTeacherById({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiGetTeacherById}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTeacherById}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -66,7 +66,7 @@ const actions = {
 
     async apiEditTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiEditTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiEditTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -81,7 +81,7 @@ const actions = {
 
     async apiDeleteTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiDeleteTeacher}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiDeleteTeacher}`+`/${parseInt(payload)}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -96,7 +96,7 @@ const actions = {
 
     async apiSearchTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiSearchTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiSearchTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -111,7 +111,7 @@ const actions = {
 
     async apiGetBySession({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiGetBySession}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetBySession}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -125,7 +125,7 @@ const actions = {
     },
     async apiCheckActiveTeacher({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiCheckActiveTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckActiveTeacher}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -139,7 +139,7 @@ const actions = {
     },
     async apiCheckTeacherUpdate({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiCheckTeacherUpdate}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckTeacherUpdate}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -153,7 +153,7 @@ const actions = {
     },
     async apiGetTotalContact({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_TEACHER.apiGetTotalContact}`, payload);
+            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTotalContact}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

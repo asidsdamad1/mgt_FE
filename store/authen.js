@@ -91,7 +91,7 @@ const actions = {
                 setAccessToken(data.accessToken, data.expired);
                 setRefreshToken(data.refreshToken);
                 if (data.authorities.length > 0) {
-                    setUserInfo({role: data.authorities[0].authority, id: data.id, session: data.sessionId});
+                    setUserInfo({role: data.authorities[0].authority, studentId: data.studentId, teacherId: data.teacherId, session: data.sessionId});
                 }
                 setSsVideo5(0);
 

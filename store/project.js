@@ -1,5 +1,5 @@
 import {CONSTANTS} from '@/utils/constant';
-import {API_PROJECT} from "../api/project";
+import {API_PROJECT} from "@/api/project";
 
 const actions = {
 
@@ -34,9 +34,9 @@ const actions = {
         }
     },
 
-    async apiGetStudent({commit, state}, payload) {
+    async apiAddProject({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_PROJECT.apiGetStudent}`, payload);
+            let {data} = await this.$axios.post(`${API_PROJECT.apiAddProject}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
