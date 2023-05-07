@@ -1,6 +1,6 @@
 const categories = [
     {
-        name: 'Danger',
+        name: 'Cảnh báo',
         value: 'bg-danger text-white'
     },
     {
@@ -8,24 +8,16 @@ const categories = [
         value: 'bg-success text-white'
     },
     {
-        name: 'Primary',
-        value: 'bg-primary text-white'
-    },
-    {
-        name: 'Info',
+        name: 'Thông báo',
         value: 'bg-info text-white'
     },
     {
-        name: 'Dark',
-        value: 'bg-dark text-white'
-    },
-    {
-        name: 'Warning',
+        name: 'Nhắc nhở',
         value: 'bg-warning text-white'
     },
 ];
 
-const calendarEvents = [
+let calendarEvents = [
     {
         id: 1,
         title: 'All Day Event',

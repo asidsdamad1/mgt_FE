@@ -124,48 +124,7 @@ const actions = {
             throw new TypeError(error);
         }
     },
-    async apiCheckActiveTeacher({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckActiveTeacher}`, payload);
 
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
-    async apiCheckTeacherUpdate({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiCheckTeacherUpdate}`, payload);
-
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
-    async apiGetTotalContact({commit, state}, payload) {
-        try {
-            let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetTotalContact}`, payload);
-
-            if (data.code === CONSTANTS.SUCCESS) {
-            }
-
-            return data;
-
-        } catch (error) {
-            console.log(error);
-            throw new TypeError(error);
-        }
-    },
 };
 
 const state = () => ({});

@@ -7,18 +7,18 @@ import interactionPlugin from "@fullcalendar/interaction";
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import listPlugin from "@fullcalendar/list";
 
-import {
-    calendarEvents,
-    categories
-} from "./data-calendar";
-import {
-    required
-} from "vuelidate/lib/validators";
+import {categories} from "./data-calendar";
+import {required} from "vuelidate/lib/validators";
+import {mapActions} from "vuex";
+import {getUserInfo} from "../../utils/cookieAuthen";
 
 /**
  * Calendar component
  */
+
+
 export default {
+
     components: {
         FullCalendar,
     },
@@ -27,19 +27,9 @@ export default {
             title: `${this.title} | Nuxtjs Responsive Bootstrap 5 Admin Dashboard`,
         };
     },
-    data() {
-        return {
-            title: "Calendar",
-            items: [{
-                    text: "Apps",
-                },
-                {
-                    text: "Calendar",
-                    active: true,
-                },
-            ],
-            calendarEvents: calendarEvents,
-            calendarOptions: {
+    computed: {
+        calendarOptions() {
+            return {
                 headerToolbar: {
                     left: "prev,next today",
                     center: "title",
@@ -54,7 +44,7 @@ export default {
                 ],
                 initialView: "dayGridMonth",
                 themeSystem: "bootstrap",
-                initialEvents: calendarEvents,
+                events: this.calendarEvents,
                 editable: true,
                 droppable: true,
                 eventResizableFromStart: true,
@@ -65,7 +55,22 @@ export default {
                 selectable: true,
                 selectMirror: true,
                 dayMaxEvents: true,
+            }
+        }
+    },
+    data() {
+
+        return {
+            reminders: [],
+            title: "Calendar",
+            items: [{
+                text: "Apps",
             },
+                {
+                    text: "Calendar",
+                    active: true,
+                },
+            ],
             currentEvents: [],
             showModal: false,
             eventModal: false,
@@ -78,11 +83,25 @@ export default {
             event: {
                 title: "",
                 category: "",
+                start: new Date(),
+                end: new Date(),
+                teacher: {
+                    id: 0
+                },
+                session: {
+                    id: 0
+                },
+                status: ''
             },
             editevent: {
                 editTitle: "",
                 editcategory: "",
             },
+            searchObj: {
+                valueSearch: '',
+                conditionSearch: ''
+            },
+            calendarEvents: []
         };
     },
     validations: {
@@ -90,16 +109,34 @@ export default {
             title: {
                 required,
             },
-            category: {
+            status: {
                 required,
             },
         },
     },
     middleware: "authentication",
     methods: {
+        ...mapActions('reminder', {
+            apiGetReminder: 'apiGetReminder',
+            apiAddReminder: 'apiAddReminder'
+        }),
         /**
          * Modal form submit
          */
+        async handleInitData() {
+            let userInfo = JSON.parse(getUserInfo());
+            let reminder = [];
+            try {
+                reminder = await this.apiGetReminder({
+                    conditionSearch: "TEACHER",
+                    valueSearch: userInfo.session + "," + userInfo.teacherId
+                })
+            } catch (err) {
+                console.error(err);
+            }
+            this.calendarEvents = reminder;
+
+        },
         // eslint-disable-next-line no-unused-vars
         handleSubmit(e) {
             this.submitted = true;
@@ -111,14 +148,30 @@ export default {
             } else {
                 const title = this.event.title;
                 const category = this.event.category;
+                let userInfo = JSON.parse(getUserInfo());
+                this.event.teacher.id =  userInfo.teacherId;
+                this.event.session.id =  userInfo.session;
+                this.event.start = this.newEventData.date;
+                this.event.status =  this.event.category.name;
                 let calendarApi = this.newEventData.view.calendar;
-                this.currentEvents = calendarApi.addEvent({
-                    id: this.newEventData.length + 1,
-                    title,
-                    start: this.newEventData.date,
-                    end: this.newEventData.date,
-                    classNames: [category],
-                });
+                this.apiAddReminder(this.event)
+                    .then(response => {
+                        this.handleInitData()
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+                    .finally(() => {
+                        // this.commonLoadingPage(false);
+                    });
+                // this.currentEvents = calendarApi.addEvent({
+                //     id: this.newEventData.length + 1,
+                //     title,
+                //     start: this.newEventData.date,
+                //     end: new Date(this.event.end),
+                //     classNames: [category],
+                // });
+                console.log(this.currentEvents)
                 this.successmsg();
                 this.showModal = false;
                 this.newEventData = {};
@@ -198,6 +251,9 @@ export default {
             this.currentEvents = events;
         },
 
+        handleEventsSet() {
+
+        },
         /**
          * Show successfull Save Dialog
          */
@@ -211,76 +267,87 @@ export default {
             });
         },
     },
+
+    mounted() {
+        this.handleInitData();
+    }
 };
 </script>
 
 <template>
-<div>
-    <PageHeader :title="title" :items="items" />
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="app-calendar">
-                        <FullCalendar ref="fullCalendar" :options="calendarOptions"></FullCalendar>
+    <div>
+        <PageHeader :title="title" :items="items"/>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="app-calendar">
+                            <FullCalendar ref="fullCalendar" :options="calendarOptions" :eventsSet="handleEventsSet"></FullCalendar>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <b-modal v-model="showModal" title="Add Event" title-class="text-black font-18" body-class="p-3" hide-footer>
+            <form @submit.prevent="handleSubmit">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="name">Event Name</label>
+                            <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="control-label">Category</label>
+                            <select v-model="event.status" class="form-control" name="status" :class="{ 'is-invalid': submitted && $v.event.status.errors }">
+                                <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
+                            </select>
+                            <div v-if="submitted && !$v.event.status.required" class="invalid-feedback">This value is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="end">Event Name</label>
+                            <input id="end" v-model="event.end" type="date" class="form-control"/>
+                            <div v-if="submitted" class="invalid-feedback">This value is required.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right pt-5 mt-3">
+                    <b-button variant="light" @click="hideModal">Close</b-button>
+                    <b-button type="submit" variant="success" class="ml-1">Create event</b-button>
+                </div>
+            </form>
+        </b-modal>
+
+        <!-- Edit Modal -->
+        <b-modal v-model="eventModal" title="Edit Event" title-class="text-black font-18" hide-footer body-class="p-3">
+            <form @submit.prevent="editSubmit">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="name">Event Name</label>
+                            <input id="name" v-model="editevent.editTitle" type="text" class="form-control" placeholder="Insert Event name"/>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="control-label">Category</label>
+                            <select v-model="editevent.editcategory" class="form-control" name="category">
+                                <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right p-3">
+                    <b-button variant="light" @click="closeModal">Close</b-button>
+                    <b-button class="ml-1" variant="danger" @click="confirm">Delete</b-button>
+                    <b-button class="ml-1" variant="success" @click="editSubmit">Save</b-button>
+                </div>
+            </form>
+        </b-modal>
     </div>
-    <b-modal v-model="showModal" title="Add Event" title-class="text-black font-18" body-class="p-3" hide-footer>
-        <form @submit.prevent="handleSubmit">
-            <div class="row">
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label for="name">Event Name</label>
-                        <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }" />
-                        <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label class="control-label">Category</label>
-                        <select v-model="event.category" class="form-control" name="category" :class="{ 'is-invalid': submitted && $v.event.category.errors }">
-                            <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
-                        </select>
-                        <div v-if="submitted && !$v.event.category.required" class="invalid-feedback">This value is required.</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-right pt-5 mt-3">
-                <b-button variant="light" @click="hideModal">Close</b-button>
-                <b-button type="submit" variant="success" class="ml-1">Create event</b-button>
-            </div>
-        </form>
-    </b-modal>
-
-    <!-- Edit Modal -->
-    <b-modal v-model="eventModal" title="Edit Event" title-class="text-black font-18" hide-footer body-class="p-3">
-        <form @submit.prevent="editSubmit">
-            <div class="row">
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label for="name">Event Name</label>
-                        <input id="name" v-model="editevent.editTitle" type="text" class="form-control" placeholder="Insert Event name" />
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label class="control-label">Category</label>
-                        <select v-model="editevent.editcategory" class="form-control" name="category">
-                            <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="text-right p-3">
-                <b-button variant="light" @click="closeModal">Close</b-button>
-                <b-button class="ml-1" variant="danger" @click="confirm">Delete</b-button>
-                <b-button class="ml-1" variant="success" @click="editSubmit">Save</b-button>
-            </div>
-        </form>
-    </b-modal>
-</div>
 </template>
