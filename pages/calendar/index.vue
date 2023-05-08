@@ -91,7 +91,7 @@ export default {
                 session: {
                     id: 0
                 },
-                status: ''
+                status: ""
             },
             editevent: {
                 editTitle: "",
@@ -109,7 +109,7 @@ export default {
             title: {
                 required,
             },
-            status: {
+            category: {
                 required,
             },
         },
@@ -135,7 +135,7 @@ export default {
                 console.error(err);
             }
             this.calendarEvents = reminder;
-
+            console.log(this.calendarEvents)
         },
         // eslint-disable-next-line no-unused-vars
         handleSubmit(e) {
@@ -152,7 +152,7 @@ export default {
                 this.event.teacher.id =  userInfo.teacherId;
                 this.event.session.id =  userInfo.session;
                 this.event.start = this.newEventData.date;
-                this.event.status =  this.event.category.name;
+                this.event.status =  this.event.category;
                 let calendarApi = this.newEventData.view.calendar;
                 this.apiAddReminder(this.event)
                     .then(response => {
@@ -301,10 +301,10 @@ export default {
                     <div class="col-12">
                         <div class="mb-3">
                             <label class="control-label">Category</label>
-                            <select v-model="event.status" class="form-control" name="status" :class="{ 'is-invalid': submitted && $v.event.status.errors }">
+                            <select v-model="event.category" class="form-control" name="category" :class="{ 'is-invalid': submitted && $v.event.category.errors }">
                                 <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
                             </select>
-                            <div v-if="submitted && !$v.event.status.required" class="invalid-feedback">This value is required.</div>
+                            <div v-if="submitted && !$v.event.category.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
                     <div class="col-12">
