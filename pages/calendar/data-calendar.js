@@ -1,4 +1,4 @@
-const categories = [
+const   categories = [
     {
         name: 'Cảnh báo',
         value: 'bg-danger text-white'
