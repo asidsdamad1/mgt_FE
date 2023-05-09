@@ -55,6 +55,7 @@ export default {
                 selectable: true,
                 selectMirror: true,
                 dayMaxEvents: true,
+                timezone: 'local'
             }
         }
     },
@@ -84,6 +85,14 @@ export default {
                 title: "",
                 classNames: "",
                 category: "",
+                from: {
+                    time: "",
+                    date: ""
+                },
+                to: {
+                    time: "",
+                    date: ""
+                },
                 start: new Date(),
                 end: new Date(),
                 teacher: {
@@ -96,7 +105,25 @@ export default {
             },
             editevent: {
                 editTitle: "",
-                editcategory: "",
+                editClassNames: "",
+                category: "",
+                editFrom: {
+                    time: "",
+                    date: ""
+                },
+                editTo: {
+                    time: "",
+                    date: ""
+                },
+                editStart: new Date(),
+                editEnd: new Date(),
+                editTeacher: {
+                    id: 0
+                },
+                session: {
+                    id: 0
+                },
+                status: "",
             },
             searchObj: {
                 valueSearch: '',
@@ -128,10 +155,16 @@ export default {
             let userInfo = JSON.parse(getUserInfo());
             let reminder = [];
             try {
+                var d = new Date(Date.now());
+                console.log("now: ", d.toString())
+
                 reminder = await this.apiGetReminder({
                     conditionSearch: "TEACHER",
                     valueSearch: userInfo.session + "," + userInfo.teacherId
                 })
+                for (var i = 0; i < reminder.length; i++) {
+                    reminder[i].timeZome = "UTC";
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -148,16 +181,17 @@ export default {
                 return;
             } else {
                 console.log("event: ", this.event)
-
-                const endDate = new Date(this.event.end);
+                console.log("new event: ", this.newEventData)
+                const startDate = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
+                const endDate = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
                 let userInfo = JSON.parse(getUserInfo());
-                console.log(endDate)
+                console.log("endDate: ", endDate)
                 this.event.teacher.id = userInfo?.teacherId;
 
-                this.event.session.id =  userInfo?.session;
-                this.event.start = this.newEventData?.date;
-                this.event.end = endDate.toISOString();
-                this.event.status =  this.event?.category;
+                this.event.session.id = userInfo?.session;
+                this.event.start = new Date(startDate.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+                this.event.end =  new Date(endDate.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+                this.event.status = this.event?.category;
                 let calendarApi = this.newEventData.view.calendar;
                 this.apiAddReminder(this.event)
                     .then(response => {
@@ -212,7 +246,12 @@ export default {
          * Modal open for add event
          */
         dateClicked(info) {
+            this.event.from.time = "";
             this.newEventData = info;
+            this.event.from.date = this.newEventData.dateStr;
+            this.event.to.time = "";
+            this.event.to.date = "";
+            console.log(this.newEventData)
             this.showModal = true;
         },
         /**
@@ -222,6 +261,7 @@ export default {
             this.edit = info.event;
             this.editevent.editTitle = this.edit.title;
             this.editevent.editcategory = this.edit.classNames[0];
+            this
             this.eventModal = true;
         },
 
@@ -295,30 +335,44 @@ export default {
                 <div class="row">
                     <div class="col-12">
                         <div class="mb-3">
-                            <label for="name">Event Name</label>
+                            <label for="name">Tên sự kiện</label>
                             <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="mb-3">
-                            <label class="control-label">Category</label>
+                            <label class="control-label">Trạng thái</label>
                             <select v-model="event.classNames" class="form-control" name="classNames" :class="{ 'is-invalid': submitted && $v.event.classNames.errors }">
                                 <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
                             </select>
                             <div v-if="submitted && !$v.event.classNames.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="mb-3">
-                            <label for="end">Event Name</label>
-                            <input id="end" v-model="event.end" type="date" class="form-control"/>
-                            <div v-if="submitted" class="invalid-feedback">This value is required.</div>
+                    <div class="row">
+                        <div class="col-5 d-flex mb-3">
+                            <label for="from-time" style="width: 80px">Từ</label>
+                            <input id="from-time" v-model="event.from.time" type="time" class="form-control"/>
                         </div>
+                        <div class="col-7  mb-3">
+                            <input id="from-date" v-model="event.from.date" type="date" class="form-control"/>
+                        </div>
+                        <div v-if="submitted" class="invalid-feedback">This value is required.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-5 d-flex  mb-3">
+                            <label for="to-time" style="width: 80px">Đến</label>
+                            <input id="to-time" v-model="event.to.time" type="time" class="form-control"/>
+                        </div>
+                        <div class="col-7">
+                            <input id="to-date" v-model="event.to.date" type="date" class="form-control"/>
+                        </div>
+                        <div v-if="submitted" class="invalid-feedback">This value is required.</div>
                     </div>
                 </div>
 
-                <div class="text-right pt-5 mt-3">
+                <div class="text-right pt-5 mt-3 " style="float: right">
                     <b-button variant="light" @click="hideModal">Close</b-button>
                     <b-button type="submit" variant="success" class="ml-1">Create event</b-button>
                 </div>
@@ -331,20 +385,44 @@ export default {
                 <div class="row">
                     <div class="col-12">
                         <div class="mb-3">
-                            <label for="name">Event Name</label>
-                            <input id="name" v-model="editevent.editTitle" type="text" class="form-control" placeholder="Insert Event name"/>
+                            <label for="name">Tên sự kiện</label>
+                            <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="mb-3">
-                            <label class="control-label">Category</label>
-                            <select v-model="editevent.editcategory" class="form-control" name="category">
+                            <label class="control-label">Trạng thái</label>
+                            <select v-model="event.classNames" class="form-control" name="classNames" :class="{ 'is-invalid': submitted && $v.event.classNames.errors }">
                                 <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
                             </select>
+                            <div v-if="submitted && !$v.event.classNames.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-5 d-flex mb-3">
+                            <label for="from-time" style="width: 80px">Từ</label>
+                            <input id="from-time" v-model="event.from.time" type="time" class="form-control"/>
+                        </div>
+                        <div class="col-7  mb-3">
+                            <input id="from-date" v-model="event.from.date" type="date" class="form-control"/>
+                        </div>
+                        <div v-if="submitted" class="invalid-feedback">This value is required.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-5 d-flex  mb-3">
+                            <label for="to-time" style="width: 80px">Đến</label>
+                            <input id="to-time" v-model="event.to.time" type="time" class="form-control"/>
+                        </div>
+                        <div class="col-7">
+                            <input id="to-date" v-model="event.to.date" type="date" class="form-control"/>
+                        </div>
+                        <div v-if="submitted" class="invalid-feedback">This value is required.</div>
+                    </div>
                 </div>
-                <div class="text-right p-3">
+
+                <div class="text-right p-3" style="float: right">
                     <b-button variant="light" @click="closeModal">Close</b-button>
                     <b-button class="ml-1" variant="danger" @click="confirm">Delete</b-button>
                     <b-button class="ml-1" variant="success" @click="editSubmit">Save</b-button>
