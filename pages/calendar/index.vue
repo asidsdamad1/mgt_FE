@@ -82,6 +82,7 @@ export default {
             deleteId: {},
             event: {
                 title: "",
+                classNames: "",
                 category: "",
                 start: new Date(),
                 end: new Date(),
@@ -91,7 +92,7 @@ export default {
                 session: {
                     id: 0
                 },
-                status: ""
+                status: "",
             },
             editevent: {
                 editTitle: "",
@@ -109,7 +110,7 @@ export default {
             title: {
                 required,
             },
-            category: {
+            classNames: {
                 required,
             },
         },
@@ -146,13 +147,17 @@ export default {
             if (this.$v.$invalid) {
                 return;
             } else {
-                const title = this.event.title;
-                const category = this.event.category;
+                console.log("event: ", this.event)
+
+                const endDate = new Date(this.event.end);
                 let userInfo = JSON.parse(getUserInfo());
-                this.event.teacher.id =  userInfo.teacherId;
-                this.event.session.id =  userInfo.session;
-                this.event.start = this.newEventData.date;
-                this.event.status =  this.event.category;
+                console.log(endDate)
+                this.event.teacher.id = userInfo?.teacherId;
+
+                this.event.session.id =  userInfo?.session;
+                this.event.start = this.newEventData?.date;
+                this.event.end = endDate.toISOString();
+                this.event.status =  this.event?.category;
                 let calendarApi = this.newEventData.view.calendar;
                 this.apiAddReminder(this.event)
                     .then(response => {
@@ -171,19 +176,16 @@ export default {
                 //     end: new Date(this.event.end),
                 //     classNames: [category],
                 // });
-                console.log(this.currentEvents)
                 this.successmsg();
                 this.showModal = false;
                 this.newEventData = {};
             }
             this.submitted = false;
-            this.event = {};
         },
         // eslint-disable-next-line no-unused-vars
         hideModal(e) {
             this.submitted = false;
             this.showModal = false;
-            this.event = {};
         },
         /**
          * Edit event modal submit
@@ -301,10 +303,10 @@ export default {
                     <div class="col-12">
                         <div class="mb-3">
                             <label class="control-label">Category</label>
-                            <select v-model="event.category" class="form-control" name="category" :class="{ 'is-invalid': submitted && $v.event.category.errors }">
+                            <select v-model="event.classNames" class="form-control" name="classNames" :class="{ 'is-invalid': submitted && $v.event.classNames.errors }">
                                 <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
                             </select>
-                            <div v-if="submitted && !$v.event.category.required" class="invalid-feedback">This value is required.</div>
+                            <div v-if="submitted && !$v.event.classNames.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
                     <div class="col-12">
