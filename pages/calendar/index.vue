@@ -83,6 +83,7 @@ export default {
             deleteId: {},
             event: {
                 title: "",
+                content: "",
                 classNames: "",
                 category: "",
                 from: {
@@ -140,13 +141,16 @@ export default {
             classNames: {
                 required,
             },
+
         },
     },
     middleware: "authentication",
     methods: {
         ...mapActions('reminder', {
             apiGetReminder: 'apiGetReminder',
-            apiAddReminder: 'apiAddReminder'
+            apiAddReminder: 'apiAddReminder',
+            apiDeleteReminder: 'apiDeleteReminder',
+            apiEditReminder: 'apiEditReminder'
         }),
         /**
          * Modal form submit
@@ -171,6 +175,30 @@ export default {
             this.calendarEvents = reminder;
             console.log(this.calendarEvents)
         },
+        checkDataInput() {
+            console.log("check data: ",this.event)
+            if (this.event.from.date === null || this.event.from.date.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập ngày bắt đầu", 'warn');
+                return false;
+            }
+
+            if (this.event.from.time === null || this.event.from.time.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập thời gian bắt đầu", 'warn');
+                return false;
+            }
+
+            if (this.event.from.date === null || this.event.to.date.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập thời gian kết thúc", 'warn');
+                return false;
+            }
+
+            if (this.event.to.time === null || this.event.to.time.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập thời gian kết thúc", 'warn');
+                return false;
+            }
+
+            return true;
+        },
         // eslint-disable-next-line no-unused-vars
         handleSubmit(e) {
             this.submitted = true;
@@ -180,39 +208,43 @@ export default {
             if (this.$v.$invalid) {
                 return;
             } else {
-                console.log("event: ", this.event)
-                console.log("new event: ", this.newEventData)
-                const startDate = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
-                const endDate = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
-                let userInfo = JSON.parse(getUserInfo());
-                console.log("endDate: ", endDate)
-                this.event.teacher.id = userInfo?.teacherId;
+                if(this.checkDataInput()) {
+                    console.log("event: ", this.event)
 
-                this.event.session.id = userInfo?.session;
-                this.event.start = new Date(startDate.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-                this.event.end =  new Date(endDate.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-                this.event.status = this.event?.category;
-                let calendarApi = this.newEventData.view.calendar;
-                this.apiAddReminder(this.event)
-                    .then(response => {
-                        this.handleInitData()
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    })
-                    .finally(() => {
-                        // this.commonLoadingPage(false);
-                    });
-                // this.currentEvents = calendarApi.addEvent({
-                //     id: this.newEventData.length + 1,
-                //     title,
-                //     start: this.newEventData.date,
-                //     end: new Date(this.event.end),
-                //     classNames: [category],
-                // });
-                this.successmsg();
-                this.showModal = false;
-                this.newEventData = {};
+                    console.log("new event: ", this.newEventData)
+                    const startDate = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
+                    const endDate = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
+                    let userInfo = JSON.parse(getUserInfo());
+                    console.log("endDate: ", endDate)
+                    this.event.teacher.id = userInfo?.teacherId;
+
+                    this.event.session.id = userInfo?.session;
+                    this.event.start = new Date(startDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
+                    this.event.end = new Date(endDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
+                    this.event.status = this.event?.category;
+                    let calendarApi = this.newEventData.view.calendar;
+                    this.apiAddReminder(this.event)
+                        .then(response => {
+                            this.handleInitData()
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        })
+                        .finally(() => {
+                            // this.commonLoadingPage(false);
+                        });
+                    // this.currentEvents = calendarApi.addEvent({
+                    //     id: this.newEventData.length + 1,
+                    //     title,
+                    //     start: this.newEventData.date,
+                    //     end: new Date(this.event.end),
+                    //     classNames: [category],
+                    // });
+                    this.successmsg();
+                    this.showModal = false;
+                    this.newEventData = {};
+                }
+
             }
             this.submitted = false;
         },
@@ -227,10 +259,17 @@ export default {
         // eslint-disable-next-line no-unused-vars
         editSubmit(e) {
             this.submit = true;
-            const editTitle = this.editevent.editTitle;
-            const editcategory = this.editevent.editcategory;
-            this.edit.setProp("title", editTitle);
-            this.edit.setProp("classNames", editcategory);
+            this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
+            this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
+            this.apiEditReminder(this.event).then(response => {
+                Swal.fire("", "Sửa thành công", "success");
+                this.handleInitData();
+            }).catch(err => {
+                console.log(err);
+                Swal.fire("", "Sửa không thành công", "error");
+            }).finally(() => {
+                // this.commonLoadingPage(false);
+            });
             this.successmsg();
             this.eventModal = false;
         },
@@ -258,10 +297,47 @@ export default {
          * Modal open for edit event
          */
         editEvent(info) {
+
             this.edit = info.event;
-            this.editevent.editTitle = this.edit.title;
-            this.editevent.editcategory = this.edit.classNames[0];
-            this
+
+            this.apiGetReminder({
+                valueSearch: info.event._def.publicId,
+                conditionSearch: "ID"
+            }).then(response => {
+                this.event.title = response[0].title;
+                this.event.classNames = response[0].classNames;
+                this.event.content = response[0].content;
+                this.event.teacher.id = response[0].teacher.id;
+                this.event.session.id = response[0].session.id;
+                this.event.id = response[0].id;
+                let startDate = new Date(response[0].start);
+                let endDate = new Date(response[0].end);
+                let startMonth = startDate.getMonth() + 1; // getMonth() returns a zero-based index
+                let paddedStartMonth = startMonth.toString().padStart(2, '0');
+                let paddedStartDate = startDate.getDate().toString().padStart(2, '0');
+                let paddedStartHour = startDate.getHours().toString().padStart(2, '0');
+                let paddedStartMinutes = startDate.getMinutes().toString().padStart(2, '0');
+
+                let endMonth = endDate.getMonth() + 1; // getMonth() returns a zero-based index
+                let paddedEndMonth = endMonth.toString().padStart(2, '0');
+                let paddedEndDate = endDate.getDate().toString().padStart(2, '0');
+                let paddedEndHour = endDate.getHours().toString().padStart(2, '0');
+                let paddedEndMinutes = endDate.getMinutes().toString().padStart(2, '0');
+
+                this.event.from.date = startDate.getFullYear() + "-"
+                    + paddedStartMonth + "-"
+                    + paddedStartDate;
+                this.event.from.time = paddedStartHour + ":" + paddedStartMinutes;
+
+                this.event.to.date = endDate.getFullYear() + "-"
+                    + paddedEndMonth + "-"
+                    + paddedEndDate;
+                this.event.to.time = paddedEndHour + ":" + paddedEndMinutes;
+
+            });
+            console.log(this.event)
+
+
             this.eventModal = true;
         },
 
@@ -279,10 +355,19 @@ export default {
                 cancelButtonColor: "#f46a6a",
                 confirmButtonText: "Yes, delete it!",
             }).then((result) => {
+                console.log(result)
                 if (result.value) {
-                    this.deleteEvent();
-                    Swal.fire("Deleted!", "Event has been deleted.", "success");
+                    this.apiDeleteReminder(this.event.id).then(response => {
+                        Swal.fire("", "Xoá thành công", "success");
+                        this.handleInitData();
+                    }).catch(err => {
+                        console.log(err);
+                        Swal.fire("", "Xoá không thành công", "error");
+                    }).finally(() => {
+                        // this.commonLoadingPage(false);
+                    });
                 }
+                this.eventModal = false;
             });
         },
 
@@ -336,12 +421,19 @@ export default {
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="name">Tên sự kiện</label>
-                            <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Thêm tên sự kiện" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="mb-3">
+                            <label for="content">Nội dung</label>
+                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-4">
                             <label class="control-label">Trạng thái</label>
                             <select v-model="event.classNames" class="form-control" name="classNames" :class="{ 'is-invalid': submitted && $v.event.classNames.errors }">
                                 <option v-for="option in categories" :key="option.backgroundColor" :value="`${option.value}`">{{ option.name }}</option>
@@ -387,6 +479,13 @@ export default {
                         <div class="mb-3">
                             <label for="name">Tên sự kiện</label>
                             <input id="name" v-model="event.title" type="text" class="form-control" placeholder="Insert Event name" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="content">Nội dung</label>
+                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
