@@ -4,10 +4,6 @@ const   categories = [
         value: 'bg-danger text-white'
     },
     {
-        name: 'Success',
-        value: 'bg-success text-white'
-    },
-    {
         name: 'Thông báo',
         value: 'bg-info text-white'
     },

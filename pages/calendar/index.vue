@@ -11,6 +11,7 @@ import {categories} from "./data-calendar";
 import {required} from "vuelidate/lib/validators";
 import {mapActions} from "vuex";
 import {getUserInfo} from "../../utils/cookieAuthen";
+import Multiselect from "vue-multiselect";
 
 /**
  * Calendar component
@@ -18,9 +19,9 @@ import {getUserInfo} from "../../utils/cookieAuthen";
 
 
 export default {
-
     components: {
         FullCalendar,
+        Multiselect
     },
     head() {
         return {
@@ -103,6 +104,7 @@ export default {
                     id: 0
                 },
                 status: "",
+                recipient: ""
             },
             editevent: {
                 editTitle: "",
@@ -130,7 +132,10 @@ export default {
                 valueSearch: '',
                 conditionSearch: ''
             },
-            calendarEvents: []
+            calendarEvents: [],
+            studentOptions: [],
+            allStudent: [],
+            studentMail: []
         };
     },
     validations: {
@@ -145,6 +150,10 @@ export default {
         },
     },
     middleware: "authentication",
+    mounted() {
+        this.handleInitData();
+        this.handleGetStudent();
+    },
     methods: {
         ...mapActions('reminder', {
             apiGetReminder: 'apiGetReminder',
@@ -152,9 +161,37 @@ export default {
             apiDeleteReminder: 'apiDeleteReminder',
             apiEditReminder: 'apiEditReminder'
         }),
+        ...mapActions('teachers', {
+            apiGetStudent: 'apiGetStudent'
+        }),
+        ...mapActions('email', {
+            apiSendMail: 'apiSendMail'
+        }),
         /**
          * Modal form submit
          */
+        async handleGetStudent() {
+            let students = [];
+            try {
+                students = await this.apiGetStudent({id: JSON.parse(getUserInfo()).teacherId})
+            } catch (err) {
+                console.error(err);
+            }
+            for(let i = 0; i < students.length; i++) {
+                let student = students[i];
+                this.studentOptions.push({
+                    name: student.code + " - " + student.fullName,
+                    value: student.email
+                })
+                this.allStudent.push(student.email);
+            }
+            this.studentOptions.push({
+                name: "Tất cả",
+                value: this.allStudent.join(",")
+            })
+            this.studentOptions.reverse()
+            console.log(this.studentOptions)
+        },
         async handleInitData() {
             let userInfo = JSON.parse(getUserInfo());
             let reminder = [];
@@ -175,8 +212,9 @@ export default {
             this.calendarEvents = reminder;
             console.log(this.calendarEvents)
         },
+
         checkDataInput() {
-            console.log("check data: ",this.event)
+            console.log("check data: ", this.event)
             if (this.event.from.date === null || this.event.from.date.trim() === '') {
                 this.commonNotifyVue("Bạn phải nhập ngày bắt đầu", 'warn');
                 return false;
@@ -208,7 +246,7 @@ export default {
             if (this.$v.$invalid) {
                 return;
             } else {
-                if(this.checkDataInput()) {
+                if (this.checkDataInput()) {
                     console.log("event: ", this.event)
 
                     console.log("new event: ", this.newEventData)
@@ -222,27 +260,35 @@ export default {
                     this.event.start = new Date(startDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
                     this.event.end = new Date(endDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
                     this.event.status = this.event?.category;
-                    let calendarApi = this.newEventData.view.calendar;
-                    this.apiAddReminder(this.event)
-                        .then(response => {
-                            this.handleInitData()
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
-                    // this.currentEvents = calendarApi.addEvent({
-                    //     id: this.newEventData.length + 1,
-                    //     title,
-                    //     start: this.newEventData.date,
-                    //     end: new Date(this.event.end),
-                    //     classNames: [category],
-                    // });
-                    this.successmsg();
-                    this.showModal = false;
-                    this.newEventData = {};
+                    this.event.recipient = this.studentMail[0].value;
+                    console.log(this.studentMail)
+                    this.apiSendMail({
+                        recipient: [this.event.recipient],
+                        msgBody: this.event.content,
+                        subject: this.event.title
+                    }).then(response => {
+                        this.apiAddReminder(this.event)
+                            .then(response => {
+                                this.handleInitData()
+                                this.successmsg();
+                                this.showModal = false;
+                                this.newEventData = {};
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                this.handleInitData()
+                                this.showModal = false;
+                                this.errormsg();
+                            })
+                            .finally(() => {
+                                // this.commonLoadingPage(false);
+                            });
+                    }).catch(err => {
+                        this.handleInitData()
+                        this.showModal = false;
+                        this.errormsg();
+                    })
+
                 }
 
             }
@@ -286,11 +332,15 @@ export default {
          */
         dateClicked(info) {
             this.event.from.time = "";
+            this.event.title = "";
+            this.event.content = "";
+            this.event.recipient = "";
             this.newEventData = info;
             this.event.from.date = this.newEventData.dateStr;
             this.event.to.time = "";
             this.event.to.date = "";
-            console.log(this.newEventData)
+            console.log(this.studentMail);
+            this.studentMail = "";
             this.showModal = true;
         },
         /**
@@ -388,16 +438,23 @@ export default {
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Event has been saved",
+                title: "Thông báo đã được tạo",
+                showConfirmButton: false,
+                timer: 1000,
+            });
+        },
+        errormsg() {
+            Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "Có lỗi khi gửi mail",
                 showConfirmButton: false,
                 timer: 1000,
             });
         },
     },
 
-    mounted() {
-        this.handleInitData();
-    }
+
 };
 </script>
 
@@ -463,8 +520,15 @@ export default {
                         <div v-if="submitted" class="invalid-feedback">This value is required.</div>
                     </div>
                 </div>
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label>Các option</label>
+                        <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
 
-                <div class="text-right pt-5 mt-3 " style="float: right">
+                        </multiselect>
+                    </div>
+                </div>
+                <div class="text-right mt-5 " style="float: right">
                     <b-button variant="light" @click="hideModal">Close</b-button>
                     <b-button type="submit" variant="success" class="ml-1">Create event</b-button>
                 </div>
@@ -520,6 +584,10 @@ export default {
                         <div v-if="submitted" class="invalid-feedback">This value is required.</div>
                     </div>
                 </div>
+
+                <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+
+                </multiselect>
 
                 <div class="text-right p-3" style="float: right">
                     <b-button variant="light" @click="closeModal">Close</b-button>
