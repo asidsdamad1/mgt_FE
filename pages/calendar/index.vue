@@ -12,6 +12,7 @@ import {required} from "vuelidate/lib/validators";
 import {mapActions} from "vuex";
 import {getUserInfo} from "../../utils/cookieAuthen";
 import Multiselect from "vue-multiselect";
+import {req} from "vuelidate/lib/validators/common";
 
 /**
  * Calendar component
@@ -177,7 +178,7 @@ export default {
             } catch (err) {
                 console.error(err);
             }
-            for(let i = 0; i < students.length; i++) {
+            for (let i = 0; i < students.length; i++) {
                 let student = students[i];
                 this.studentOptions.push({
                     name: student.code + " - " + student.fullName,
@@ -307,15 +308,33 @@ export default {
             this.submit = true;
             this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
             this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
-            this.apiEditReminder(this.event).then(response => {
-                Swal.fire("", "Sửa thành công", "success");
-                this.handleInitData();
-            }).catch(err => {
-                console.log(err);
-                Swal.fire("", "Sửa không thành công", "error");
-            }).finally(() => {
-                // this.commonLoadingPage(false);
-            });
+            this.event.recipient = this.studentMail[0].value;
+
+            this.apiSendMail({
+                recipient: [this.event.recipient],
+                msgBody: this.event.content,
+                subject: this.event.title
+            }).then(response => {
+                this.apiEditReminder(this.event).then(response => {
+                    Swal.fire("", "Sửa thành công", "success");
+                    this.handleInitData();
+                }).catch(err => {
+                    console.log(err);
+                    Swal.fire("", "Sửa không thành công", "error");
+                }).finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+            })
+                .catch(err => {
+                    console.log(err);
+                    this.handleInitData()
+                    this.showModal = false;
+                    this.errormsg();
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
             this.successmsg();
             this.eventModal = false;
         },
@@ -339,8 +358,7 @@ export default {
             this.event.from.date = this.newEventData.dateStr;
             this.event.to.time = "";
             this.event.to.date = "";
-            console.log(this.studentMail);
-            this.studentMail = "";
+            this.studentMail = [];
             this.showModal = true;
         },
         /**
@@ -350,41 +368,59 @@ export default {
 
             this.edit = info.event;
 
+
             this.apiGetReminder({
                 valueSearch: info.event._def.publicId,
                 conditionSearch: "ID"
-            }).then(response => {
-                this.event.title = response[0].title;
-                this.event.classNames = response[0].classNames;
-                this.event.content = response[0].content;
-                this.event.teacher.id = response[0].teacher.id;
-                this.event.session.id = response[0].session.id;
-                this.event.id = response[0].id;
-                let startDate = new Date(response[0].start);
-                let endDate = new Date(response[0].end);
-                let startMonth = startDate.getMonth() + 1; // getMonth() returns a zero-based index
-                let paddedStartMonth = startMonth.toString().padStart(2, '0');
-                let paddedStartDate = startDate.getDate().toString().padStart(2, '0');
-                let paddedStartHour = startDate.getHours().toString().padStart(2, '0');
-                let paddedStartMinutes = startDate.getMinutes().toString().padStart(2, '0');
+            })
+                .then(response => {
+                    this.studentMail = [];
+                    this.event.title = response[0].title;
+                    this.event.classNames = response[0].classNames;
+                    this.event.content = response[0].content;
+                    this.event.teacher.id = response[0].teacher.id;
+                    this.event.session.id = response[0].session.id;
+                    this.event.id = response[0].id;
+                    const recipients = response[0].recipient.split(",");
+                    console.log("studentMail: ", recipients)
+                    for(let i = 0; i < this.studentOptions.length; i++) {
+                        if(recipients.includes(this.studentOptions[i].value)) {
+                            this.studentMail.push(this.studentOptions[i]);
+                        }
+                    }
 
-                let endMonth = endDate.getMonth() + 1; // getMonth() returns a zero-based index
-                let paddedEndMonth = endMonth.toString().padStart(2, '0');
-                let paddedEndDate = endDate.getDate().toString().padStart(2, '0');
-                let paddedEndHour = endDate.getHours().toString().padStart(2, '0');
-                let paddedEndMinutes = endDate.getMinutes().toString().padStart(2, '0');
+                    let startDate = new Date(response[0].start);
+                    let endDate = new Date(response[0].end);
+                    let startMonth = startDate.getMonth() + 1; // getMonth() returns a zero-based index
+                    let paddedStartMonth = startMonth.toString().padStart(2, '0');
+                    let paddedStartDate = startDate.getDate().toString().padStart(2, '0');
+                    let paddedStartHour = startDate.getHours().toString().padStart(2, '0');
+                    let paddedStartMinutes = startDate.getMinutes().toString().padStart(2, '0');
 
-                this.event.from.date = startDate.getFullYear() + "-"
-                    + paddedStartMonth + "-"
-                    + paddedStartDate;
-                this.event.from.time = paddedStartHour + ":" + paddedStartMinutes;
+                    let endMonth = endDate.getMonth() + 1; // getMonth() returns a zero-based index
+                    let paddedEndMonth = endMonth.toString().padStart(2, '0');
+                    let paddedEndDate = endDate.getDate().toString().padStart(2, '0');
+                    let paddedEndHour = endDate.getHours().toString().padStart(2, '0');
+                    let paddedEndMinutes = endDate.getMinutes().toString().padStart(2, '0');
 
-                this.event.to.date = endDate.getFullYear() + "-"
-                    + paddedEndMonth + "-"
-                    + paddedEndDate;
-                this.event.to.time = paddedEndHour + ":" + paddedEndMinutes;
+                    this.event.from.date = startDate.getFullYear() + "-"
+                        + paddedStartMonth + "-"
+                        + paddedStartDate;
+                    this.event.from.time = paddedStartHour + ":" + paddedStartMinutes;
 
-            });
+                    this.event.to.date = endDate.getFullYear() + "-"
+                        + paddedEndMonth + "-"
+                        + paddedEndDate;
+                    this.event.to.time = paddedEndHour + ":" + paddedEndMinutes;
+
+
+                })
+                .catch(err => {
+                    this.handleInitData()
+                    this.showModal = false;
+                    this.errormsg();
+                })
+
             console.log(this.event)
 
 
@@ -522,7 +558,7 @@ export default {
                 </div>
                 <div class="col-12">
                     <div class="mb-3">
-                        <label>Các option</label>
+                        <label>Sinh viên nhận mail</label>
                         <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
 
                         </multiselect>
