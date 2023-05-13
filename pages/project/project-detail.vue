@@ -1,11 +1,11 @@
 <script>
 
 import {mapActions} from "vuex";
-import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
-import StudentModal from "../../../components/student/StudentModal.vue";
-import AddStudentModal from "../../../components/student/AddStudentModal.vue";
-import AddDetailModal from "../../../components/project/AddDetailModal";
+import AddDetailModal from "../../components/project/AddDetailModal";
+import {getUserInfo} from '../../utils/cookieAuthen';
+import Swal from "sweetalert2";
+import AddOutlineModal from "../../components/project/AddOutlineModal";
 
 export default {
     middleware: ['check-authen'],
@@ -13,7 +13,7 @@ export default {
     components: {
         Multiselect,
         AddDetailModal,
-
+        AddOutlineModal
     },
     data() {
         return {
@@ -44,33 +44,28 @@ export default {
                     sortable: true,
                 },
                 {
-                    key: "code",
-                    label: "Mã Sinh Viên",
+                    key: "title",
+                    label: "Nội dung",
                     sortable: true,
                 },
                 {
-                    key: "fullName",
-                    label: "Tên Sinh Viên",
+                    key: "startDate",
+                    label: "Ngày bắt đầu",
                     sortable: true,
                 },
                 {
-                    key: "studentClass.name",
-                    label: "Lớp ",
+                    key: "endDate",
+                    label: "Ngày kết thúc",
                     sortable: true,
                 },
                 {
-                    key: "dob",
-                    label: "Ngày sinh",
+                    key: "reportFile",
+                    label: "Báo cáo",
                     sortable: true,
                 },
                 {
-                    key: "studentClass.course",
-                    label: "Khóa",
-                    sortable: true,
-                },
-                {
-                    key: "email",
-                    label: "Email",
+                    key: "comment",
+                    label: "Nhận xét giảng viên",
                     sortable: true,
                 },
                 {
@@ -80,18 +75,24 @@ export default {
                 },
             ],
             tableData: [],
-            idStudent: 0,
+            idDetail: 0,
             codeStudent: '',
-            objGetStudent: {
-                id: 0,
-                code: "",
-                fullName: "",
-                dob: "",
-                gender: "",
-                phone: "",
-                email: "",
-                address: "",
-                class: ""
+            objProject: {
+                teacherId: 0,
+                conditionSearch: '',
+                valueSearch: ''
+            },
+            detailObj: {
+                id: -1,
+                title: '',
+                status: '',
+                comment: '',
+                reportFile: '',
+                startDate: '',
+                endDate: '',
+                project: {
+                    id: 0
+                },
             },
             objGetListStudent: {
                 id: 0
@@ -99,11 +100,19 @@ export default {
             modalActionType: -1,
             flagModal: false,
             studentClass: [],
-            myDateFormat: ''
+            status: '',
+            role: '',
+            projectObj: {
+                name: '',
+                student: {
+                    fullName: '',
+                    code: ''
+                }
+            }
         }
     },
     created() {
-
+        this.projectId = this.$route.query.id;
     },
     computed: {
         rows() {
@@ -112,17 +121,19 @@ export default {
     },
     mounted() {
         // this.searchContact();
-        this.handleGetStudent();
-
+        this.handleGetProjectDetail();
+        this.handleGetProject();
+        this.role = JSON.parse(getUserInfo()).role;
         // this.getStudentClass();
     },
     methods: {
-        ...mapActions('admin/students', {
-            apiGetStudent: 'apiGetStudent',
-            apiDeleteStudent: 'apiDeleteStudent',
-            apiSearchStudent: 'apiSearchStudent',
-            apiImportStudent: 'apiImportStudent',
-            apiGetStudentClass: 'apiGetStudentClass'
+        ...mapActions('project', {
+            apiGetProjectDetail: 'apiGetProjectDetail',
+            apiGetProject: 'apiGetProject',
+            apiGetDetailById: 'apiGetDetailById',
+            apiDeleteProjectDetail: 'apiDeleteProjectDetail',
+            apiAddReportFileDetail: 'apiAddReportFileDetail',
+            apiDeleteFileDetail: 'apiDeleteFileDetail'
         }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
@@ -160,10 +171,22 @@ export default {
 
             }
         },
-        handleGetStudent() {
-            this.apiGetStudent(this.objGetStudent)
+        handleGetProject() {
+            this.apiGetProject({
+                conditionSearch: "ID",
+                valueSearch: this.projectId
+            }).then(response => {
+                this.projectObj = response[0];
+                console.log(this.projectObj)
+            }).catch(err => {
+                console.log(err)
+            }).finally(() => {
+            })
+
+        },
+        handleGetProjectDetail() {
+            this.apiGetProjectDetail(this.projectId)
                 .then(response => {
-                    console.log('apiGetListContactGroup', response)
                     this.tableData = response;
                 })
                 .catch(err => {
@@ -172,8 +195,8 @@ export default {
                 .finally(() => {
                 })
         },
-        searchContact() {
-            let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+        searchStudent() {
+            let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
             if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {
@@ -199,78 +222,30 @@ export default {
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
-        viewStudent(id) {
-            this.isEditModalField = true;
-            this.disableAdd = true;
-            this.titleModal = 'Xem Chi Tiết';
-            this.typeSegment = 3;
-            this.idStudent = parseInt(id);
-            this.codeStudent = id;
-
-            this.flagModal = !this.flagModal;
-
-            this.apiGetStudent({
-                conditionSearch: 'ID',
-                valueSearch: id,
-            }).then(response => {
-                this.objGetStudent = response[0];
-
-                console.log("object student:: ", this.objGetStudent)
-
-                this.modalActionType = 3;
-
-                this.flagModal = !this.flagModal;
-                this.$bvModal.show('modal-add-event');
-
-            }).catch(err => {
-                console.log(err)
-            }).finally(() => {
-            })
-        },
-        showModalStudent() {
-            this.idStudent = -1;
-            this.modalActionType = 1;
-            this.objGetStudent.name = "";
-            this.objGetStudent.dob = "";
-            this.objGetStudent.gender = "";
-            this.objGetStudent.phone = "";
-            this.objGetStudent.email = "";
-            this.objGetStudent.address = "";
-            this.objGetStudent.code = "";
-            this.objGetStudent.class = "";
-            this.flagModal = !this.flagModal;
-            this.$bvModal.show('modal-add-event');
-        },
-        prepareEditStudent(id) {
+        prepareEditDetail(id) {
             this.isEditModalField = false;
             this.titleModal = 'Sửa thông tin';
-            this.typeStudent = 2;
-            this.objGetStudent.id = parseInt(id);
-            this.idStudent = parseInt(id);
+            this.detailObj.id = parseInt(id);
+            this.idDetail = parseInt(id);
 
-            this.apiGetStudent({
-                id: id,
-                valueSearch: '',
-                conditionSearch: ''
-            }).then(response => {
+            this.teachersValue = [];
+            this.listConditions = [];
+
+            this.apiGetDetailById(this.idDetail).then(response => {
                 console.log(response);
-                this.objGetStudent.code = response.code;
-                this.objGetStudent.name = response.fullName;
-                this.objGetStudent.dob = response.dob;
-                this.objGetStudent.gender = response.gender;
-                this.objGetStudent.phone = response.phone;
-                this.objGetStudent.email = response.email;
-                this.objGetStudent.address = response.address;
+                this.detailObj.title = response.title;
+                this.detailObj.startDate = response.startDate;
+                this.detailObj.endDate = response.endDate;
                 this.modalActionType = 2;
 
-                this.$bvModal.show('modal-add-event');
+                this.$bvModal.show('modal-add-detail-project');
 
             }).catch(err => {
                 console.log(err)
             }).finally(() => {
             })
         },
-        deleteStudent(id) {
+        deleteDetail(id) {
             console.log("id: ", id);
 
             Swal.fire({
@@ -284,12 +259,9 @@ export default {
                 cancelButtonText: "Hủy"
             }).then(result => {
                 if (result.isConfirmed) {
-                    this.apiDeleteStudent(id).then(response => {
-                        console.log("in")
-                        Swal.fire("", response.err_message, "success");
-                        this.handleGetStudent();
-
-
+                    this.apiDeleteProjectDetail(id).then(response => {
+                        Swal.fire("", "Xóa thành công", "success");
+                        this.handleGetProjectDetail();
                     }).catch(err => {
                         console.log(err);
                     }).finally(() => {
@@ -297,42 +269,69 @@ export default {
                     })
                 } else {
                 }
-                if (result.value) {
-                    Swal.fire("Deleted!", "Your file has been deleted.", "success");
+            });
+        },
+        showModalDetailProject() {
+            this.idDetail = -1;
+            this.modalActionType = 1;
+            this.detailObj.title = "";
+            this.detailObj.comment = "";
+            this.detailObj.startDate = "";
+            this.detailObj.endDate = "";
+            this.detailObj.status = "";
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
+        },
+        handleModalCall() {
+            this.searchStudent();
+        },
+        deleteFileDetail(id) {
+            Swal.fire({
+                title: "Bạn có chắc chắn muốn xóa?",
+                text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#34c38f",
+                cancelButtonColor: "#f46a6a",
+                confirmButtonText: "Đồng ý",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    this.apiDeleteFileDetail(id).then(response => {
+                        Swal.fire("", "Xóa thành công", "success");
+                        this.handleGetProjectDetail();
+                    }).catch(err => {
+                        console.log(err);
+                    }).finally(() => {
+                        // this.commonLoadingPage(false);
+                    })
+                } else {
                 }
             });
         },
-        changeContactGroupStatus(id, oldStatus) {
-            let status = -1;
-            if (oldStatus === 1)
-                status = 0;
-            if (oldStatus === 0)
-                status = 1;
-            let objInput = {id: id, status: status};
-            this.apiChangeContactGroupStatus(objInput)
-                .then(response => {
-                    console.log('apiChangeContactGroupStatus', response);
-                    if (response.err_code === 0) {
-                        Swal.fire("", response.err_message, "success");
-                        this.searchContact();
-                        // this.searchContact();
-                    } else {
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-
+        showModalReport(id) {
+            this.idDetail = id;
+            this.type = "REPORT_DETAIL";
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
         },
-        handleModalCall() {
-            this.searchContact();
+        getRowClass(row) {
+            if (row.value === 'ACTIVE') {
+                row.value = 'Đã duyệt';
+                return 'text-success';
+            } else if (row.value === 'RESERVE') {
+                row.value = 'Bảo lưu';
+                return 'text-danger';
+            } else if (row.value === 'INACTIVE') {
+                row.value = 'Chưa duyệt';
+                return 'text-warning';
+            } else {
+                return '';
+            }
         },
         formatDate(d) {
             return ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-        }
+        },
     }
 }
 </script>
@@ -346,37 +345,23 @@ export default {
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <div class="row">
-                    <div class="col-6"></div>
-                    <div class="col-6 text-end">
-                        <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-student><i class="uil uil-arrow-circle-up me-1"></i> Tải tập SV</button>
-                        <button type="button" class="btn btn-success" @click="showModalStudent"><i class="uil uil-plus me-1"></i> Tạo mới sinh viên</button>
+                <div class="row" style="float: right">
+                    <div class="col-12">
+                        <!--                        <button type="button" class="btn btn-primary" @click="showModalOutline" v-b-modal.modal-add-file-outline><i class="uil uil-arrow-circle-up me-1"></i> Tải file đề cương</button>-->
+                        <button type="button" class="btn btn-success" @click="showModalReport"><i class="uil uil-plus me-1"></i> Thêm chi tiết</button>
                     </div>
+
                 </div>
             </div>
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-5">
-                        <label>Điều kiện lọc</label>
-                        <select v-model="conditionSearch" class="form-control">
-                            <option value="ALL">Tất cả</option>
-                            <option value="NAME">Tên</option>
-                            <option value="PHONE">Số điện thoại</option>
-                            <option value="EMAIL">Email</option>
-                            <option value="CLASS">Lớp</option>
-                            <option value="CODE">Mã sinh viên</option>
-                        </select>
+                        <label>Tên đồ án</label>
+                        <h5>{{ this.projectObj.name }}</h5>
                     </div>
                     <div class="col-7">
-                        <label>Từ khóa tìm kiếm</label>
-                        <div class="row">
-                            <div class="col-10">
-                                <input type="text" v-model="valueSearch" class="form-control"/>
-                            </div>
-                            <div class="col-2">
-                                <button type="button" class="btn btn-primary d-block" @click="searchContact"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
-                            </div>
-                        </div>
+                        <label>Thông tin sinh viên</label>
+                        <h5>{{ this.projectObj.student.fullName + " - " + this.projectObj.student.code }}</h5>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -384,29 +369,40 @@ export default {
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
-                        <template #cell(dob)="row">
+                        <template #cell(startDate)="row">
                             {{ formatDate(new Date(row.value)) }}
+                        </template>
+                        <template #cell(endDate)="row">
+                            {{ formatDate(new Date(row.value)) }}
+                        </template>
+                        <template v-slot:cell(reportFile)="data">
+                            <a :href="data.value" :hidden="data.value === ''">
+                                Tải xuống
+                            </a>
+                            <button :hidden="data.value === ''" @click="deleteFileDetail(data.item.id)" class="btn btn-gray btn-block view-cart col-auto">
+                                <i class="uil uil-trash me-1"></i>
+                            </button>
+
+                            <button :hidden="data.value !== ''"
+                                    class="btn btn-block view-cart col-auto text-white"
+                                    style="background-color: #5b73e8"
+                                    @click="showModalReport(data.item.id)" v-b-modal.modal-add-file-outline>
+                                Upload
+                            </button>
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem chi tiết"
-                                        @click="viewStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-eye me-1"></i>
-                                </button>
-
-                                <button title="Sửa Segment"
-                                        @click="prepareEditStudent(data.item.id)"
+                                <button title="Sửa chi tiết"
+                                        @click="prepareEditDetail(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
 
-                                <button title="Xóa Segment"
-                                        @click="deleteStudent(data.item.id)"
+                                <button title="Xóa chi tiết"
+                                        @click="deleteDetail(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>
                                 </button>
-
                             </div>
                         </template>
                     </b-table>
@@ -430,22 +426,24 @@ export default {
             </div>
         </div>
 
-        <student-modal
-            :idStudent="idStudent"
+        <add-detail-modal
+            :idDetail="idDetail"
+            :idProject="this.projectId"
+            :role="role"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetStudent="handleGetStudent"
+            @handleGetProjectDetail="handleGetProjectDetail"
         >
-        </student-modal>
+        </add-detail-modal>
+        <add-outline-modal
+            :idDetail="idDetail"
+            :type="this.type"
+            :actionType="modalActionType"
+            :flagModal="flagModal"
+            @handleGetProjectDetail="handleGetProjectDetail"
+        >
+        </add-outline-modal>
 
-        <add-student-modal
-            :idStudent="idStudent"
-            :codeStudent="codeStudent"
-            :actionType="modalActionType"
-            :flagModal="flagModal"
-            @handleGetStudent="handleGetStudent"
-        >
-        </add-student-modal>
     </div>
 
 </template>

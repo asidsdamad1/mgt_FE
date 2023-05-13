@@ -19,6 +19,36 @@ const actions = {
         }
     },
 
+    async apiGetProjectDetail({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiGetProjectDetail}`+`/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiGetDetailById({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiGetDetailById}`+`/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiAddOutlineFile({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_PROJECT.apiAddOutlineFile}`, payload);
@@ -64,9 +94,9 @@ const actions = {
         }
     },
 
-    async apiEditTeacher({commit, state}, payload) {
+    async apiAddProjectDetail({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_PROJECT.apiEditTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_PROJECT.apiAddProjectDetail}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -79,9 +109,9 @@ const actions = {
         }
     },
 
-    async apiDeleteTeacher({commit, state}, payload) {
+    async apiEditProjectDetail({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteTeacher}`+`/${parseInt(payload)}`);
+            let {data} = await this.$axios.post(`${API_PROJECT.apiEditProjectDetail}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -94,9 +124,9 @@ const actions = {
         }
     },
 
-    async apiSearchTeacher({commit, state}, payload) {
+    async apiDeleteProjectDetail({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_PROJECT.apiSearchTeacher}`, payload);
+            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteProjectDetail}`+`/${payload}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -109,9 +139,24 @@ const actions = {
         }
     },
 
-    async apiGetBySession({commit, state}, payload) {
+    async apiDeleteFileDetail({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_PROJECT.apiGetBySession}`, payload);
+            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteFileDetail}`+`/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiAddReportFileDetail({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiAddReportFileDetail}`, payload);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

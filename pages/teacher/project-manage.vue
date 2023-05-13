@@ -53,18 +53,13 @@ export default {
                     sortable: true,
                 },
                 {
+                    key: "student.code",
+                    label: "Mã sinh viên",
+                    sortable: true,
+                },
+                {
                     key: "student.fullName",
                     label: "Sinh viên",
-                    sortable: true,
-                },
-                {
-                    key: "createDate",
-                    label: "Ngày bắt đầu",
-                    sortable: true,
-                },
-                {
-                    key: "endDate",
-                    label: "Ngày kết thúc",
                     sortable: true,
                 },
                 {
@@ -327,7 +322,7 @@ export default {
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem Segment"
+                                <button title="Xem chi tiết"
                                         @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
@@ -363,15 +358,6 @@ export default {
             @handleGetStudent="handleGetProject"
         >
         </student-modal>
-
-        <add-student-modal
-            :idStudent="idStudent"
-            :codeStudent="codeStudent"
-            :actionType="modalActionType"
-            :flagModal="flagModal"
-            @handleGetStudent="handleGetProject"
-        >
-        </add-student-modal>
     </div>
 
 </template>

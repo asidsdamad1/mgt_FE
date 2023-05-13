@@ -235,6 +235,10 @@ export default {
                 this.commonNotifyVue("Bạn phải nhập thời gian kết thúc", 'warn');
                 return false;
             }
+            if (this.studentMail.length === 0) {
+                this.commonNotifyVue("Bạn phải chọn sinh viên nhận mail", 'warn');
+                return false;
+            }
 
             return true;
         },
@@ -305,38 +309,40 @@ export default {
          */
         // eslint-disable-next-line no-unused-vars
         editSubmit(e) {
-            this.submit = true;
-            this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
-            this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
-            this.event.recipient = this.studentMail[0].value;
-
-            this.apiSendMail({
-                recipient: [this.event.recipient],
-                msgBody: this.event.content,
-                subject: this.event.title
-            }).then(response => {
-                this.apiEditReminder(this.event).then(response => {
-                    Swal.fire("", "Sửa thành công", "success");
-                    this.handleInitData();
-                }).catch(err => {
-                    console.log(err);
-                    Swal.fire("", "Sửa không thành công", "error");
-                }).finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-            })
-                .catch(err => {
-                    console.log(err);
-                    this.handleInitData()
-                    this.showModal = false;
-                    this.errormsg();
+            if (this.checkDataInput()) {
+                this.submit = true;
+                this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
+                this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
+                this.event.recipient = this.studentMail[0].value;
+                this.apiSendMail({
+                    recipient: [this.event.recipient],
+                    msgBody: this.event.content,
+                    subject: this.event.title
+                }).then(response => {
+                    this.apiEditReminder(this.event).then(response => {
+                        Swal.fire("", "Sửa thành công", "success");
+                        this.handleInitData();
+                    }).catch(err => {
+                        console.log(err);
+                        Swal.fire("", "Sửa không thành công", "error");
+                    }).finally(() => {
+                        // this.commonLoadingPage(false);
+                    });
                 })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
+                    .catch(err => {
+                        console.log(err);
+                        this.handleInitData()
+                        this.showModal = false;
+                        this.errormsg();
+                    })
+                    .finally(() => {
+                        // this.commonLoadingPage(false);
+                    });
 
-            this.successmsg();
-            this.eventModal = false;
+                this.successmsg();
+                this.eventModal = false;
+            }
+
         },
 
         /**
@@ -383,8 +389,8 @@ export default {
                     this.event.id = response[0].id;
                     const recipients = response[0].recipient.split(",");
                     console.log("studentMail: ", recipients)
-                    for(let i = 0; i < this.studentOptions.length; i++) {
-                        if(recipients.includes(this.studentOptions[i].value)) {
+                    for (let i = 0; i < this.studentOptions.length; i++) {
+                        if (recipients.includes(this.studentOptions[i].value)) {
                             this.studentMail.push(this.studentOptions[i]);
                         }
                     }

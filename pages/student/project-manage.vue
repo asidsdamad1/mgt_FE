@@ -53,18 +53,13 @@ export default {
                     sortable: true,
                 },
                 {
+                    key: "student.code",
+                    label: "Mã sinh viên",
+                    sortable: true,
+                },
+                {
                     key: "student.fullName",
                     label: "Sinh viên",
-                    sortable: true,
-                },
-                {
-                    key: "createDate",
-                    label: "Ngày bắt đầu",
-                    sortable: true,
-                },
-                {
-                    key: "endDate",
-                    label: "Ngày kết thúc",
                     sortable: true,
                 },
                 {
@@ -122,6 +117,7 @@ export default {
             flagModal: false,
             status: '',
             teacherId: 0,
+            type: ''
         }
     },
     created() {
@@ -146,34 +142,6 @@ export default {
             this.$bvModal.hide('modal-add-list-tb');
         },
 
-        addListSub() {
-            this.errorValidate = [];
-            let formData = new FormData();
-            if (this.fileUpload === null) {
-                this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
-            } else {
-                formData.append('fileExcel', this.fileUpload);
-                console.log(formData);
-
-                this.apiImportStudent(formData)
-                    .then(response => {
-                        console.log('apiAddBlacklist', response);
-                        if (response === null) {
-                            this.$emit('handleGetStudent');
-                            this.$bvModal.hide('modal-add-file-student');
-                        } else {
-                            this.commonWarningVue("bug");
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    })
-                    .finally(() => {
-                        // this.commonLoadingPage(false);
-                    });
-
-            }
-        },
         handleGetTeacher() {
             this.objSearch.valueSearch = JSON.parse(getUserInfo()).studentId + "," + JSON.parse(getUserInfo()).session;
             this.objSearch.conditionSearch = 'TEACHER';
@@ -322,7 +290,24 @@ export default {
                 })
                 .finally(() => {
                 })
-
+            this.type = "OUTLINE"
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
+        },
+        showModalReport() {
+            this.objSearch.conditionSearch = 'STUDENT';
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).studentId;
+            this.apiGetProject(this.objSearch)
+                .then(response => {
+                    console.log(response[0].id)
+                    this.idProject = response[0].id;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+            this.type = "REPORT"
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-file-outline');
         },
@@ -345,6 +330,7 @@ export default {
                 <div class="row" style="float: right">
                     <div class="col-12">
                         <button type="button" class="btn btn-primary" @click="showModalOutline" v-b-modal.modal-add-file-outline><i class="uil uil-arrow-circle-up me-1"></i> Tải file đề cương</button>
+                        <button type="button" class="btn btn-primary" @click="showModalReport" v-b-modal.modal-add-file-outline><i class="uil uil-arrow-circle-up me-1"></i> Tải file báo cáo</button>
                         <button type="button" class="btn btn-success" @click="showModalProject"><i class="uil uil-plus me-1"></i> Tạo đồ án</button>
                     </div>
 
@@ -383,20 +369,31 @@ export default {
                             </div>
                         </template>
                         <template #cell(outlineFile)="row">
-                            <a :href="row.value">
-                                {{ row.value !== '' ? 'Tải xuống' : 'Chưa có đề cương' }}
+                            <a :href="row.value" :hidden="row.value === ''">
+                                Tải xuống
                             </a>
+                            <span :hidden="row.value !== ''">
+                                Chưa có file
+                            </span>
+                        </template>
+                        <template #cell(reportFile)="row">
+                            <a :href="row.value" :hidden="row.value === ''">
+                                Tải xuống
+                            </a>
+                            <span :hidden="row.value !== ''">
+                                Chưa có file
+                            </span>
                         </template>
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem Segment"
-                                        @click="viewStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-eye me-1"></i>
-                                </button>
+                                <nuxt-link title="Xem chi tiết"
+                                           :to="{ path: '/project/project-detail', query: { id: data.item.id}}"
+                                           class="text-secondary p-2"
+                                ><i class="uil uil-eye font-size-18"></i>
+                                </nuxt-link>
 
                             </div>
                         </template>
@@ -431,6 +428,7 @@ export default {
 
         <add-outline-modal
             :idProject="idProject"
+            :type="this.type"
             :actionType="modalActionType"
             :flagModal="flagModal"
             @handleGetProject="handleGetProject"

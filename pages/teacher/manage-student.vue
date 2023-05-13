@@ -291,7 +291,7 @@ export default {
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem Segment"
+                                <button title="Xem chi tiết"
                                         @click="viewStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-eye me-1"></i>
