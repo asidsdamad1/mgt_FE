@@ -3,9 +3,68 @@ import {CONSTANTS} from '@/utils/constant';
 
 const actions = {
 
-    async apiGetListUser({commit, state}, payload) {
+    async apiGetUser({commit, state}, payload) {
         try {
-            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiGetListUser}`, payload);
+            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiGetUser}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiSaveUser({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiSaveUser}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiUpdateUser({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiUpdateUser}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiDeleteUser({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiDeleteUser}`+ `/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+    async apiGetRole({commit, state}) {
+        try {
+            let {data} = await this.$axios.get(`${API_USER_MANAGE.apiGetRole}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

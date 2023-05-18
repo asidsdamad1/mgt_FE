@@ -1,3 +1,7 @@
 export const API_USER_MANAGE = {
-    apiGetListUser: 'user/get-list-user'
+    apiGetUser: 'user/get-user',
+    apiSaveUser: 'user/save-user',
+    apiUpdateUser: 'user/update-user',
+    apiDeleteUser: 'user/delete-user',
+    apiGetRole: 'user/get-role',
 };
