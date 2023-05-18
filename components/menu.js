@@ -62,6 +62,72 @@ export const menuItems = [
         link: "/student/project-manage",
         role: "ROLE_STUDENT"
     },
+    {
+        id: 10,
+        label: "Cài đặt chung",
+        icon: "uil-setting",
+        role: "ROLE_ADMIN",
+        subItems: [
+            {
+                id: 11,
+                label: "Danh sách người dùng",
+                link: "/user/groupuser",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+            {
+                id: 12,
+                label: "Danh sách quyền",
+                link: "/user/permission",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+        ]
+    },
+    {
+        id: 10,
+        label: "Cài đặt chung",
+        icon: "uil-setting",
+        role: "ROLE_ADMIN",
+        subItems: [
+            {
+                id: 11,
+                label: "Danh sách người dùng",
+                link: "/user/groupuser",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+            {
+                id: 12,
+                label: "Danh sách quyền",
+                link: "/user/permission",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+        ]
+    },
+    {
+        id: 10,
+        label: "Cài đặt chung",
+        icon: "uil-setting",
+        role: "ROLE_ADMIN",
+        subItems: [
+            {
+                id: 11,
+                label: "Danh sách người dùng",
+                link: "/user/groupuser",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+            {
+                id: 12,
+                label: "Danh sách quyền",
+                link: "/user/permission",
+                role: "ROLE_ADMIN",
+                parentId: 10
+            },
+        ]
+    }
     // {
     //     id: 13,
     //     label: "Quản lý người dùng",

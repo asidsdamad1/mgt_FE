@@ -2,9 +2,9 @@
 
 import {mapActions} from "vuex";
 import Multiselect from "vue-multiselect";
-import {getUserInfo} from "@/utils/cookieAuthen";
 import ProjectStudentModal from "../../components/project/ProjectStudentModal";
 import AddOutlineModal from "../../components/project/AddOutlineModal";
+import {getUserInfo} from "../../utils/cookieAuthen";
 
 export default {
     middleware: ['check-authen'],
@@ -132,6 +132,7 @@ export default {
         this.handleGetProject();
     },
     methods: {
+        getUserInfo,
         ...mapActions('project', {
             apiGetProject: 'apiGetProject'
         }),
@@ -390,6 +391,7 @@ export default {
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
                                 <nuxt-link title="Xem chi tiết"
+                                           :hidden="JSON.parse(getUserInfo()).studentId !== data.item.student.id"
                                            :to="{ path: '/project/project-detail', query: { id: data.item.id}}"
                                            class="text-secondary p-2"
                                 ><i class="uil uil-eye font-size-18"></i>
