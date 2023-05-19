@@ -315,6 +315,11 @@ export default {
             this.flagModal = !this.flagModal;
             this.$bvModal.show('modal-add-file-outline');
         },
+        showModalDetail(id) {
+            this.modalActionType = 1;
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-detail-project');
+        },
         getRowClass(row) {
             if (row.value === 'ACTIVE') {
                 row.value = 'Đã duyệt';
@@ -348,7 +353,7 @@ export default {
                 <div class="row" style="float: right">
                     <div class="col-12">
                         <!--                        <button type="button" class="btn btn-primary" @click="showModalOutline" v-b-modal.modal-add-file-outline><i class="uil uil-arrow-circle-up me-1"></i> Tải file đề cương</button>-->
-                        <button type="button" class="btn btn-success" @click="showModalReport"><i class="uil uil-plus me-1"></i> Thêm chi tiết</button>
+                        <button type="button" class="btn btn-success" @click="showModalDetail"><i class="uil uil-plus me-1"></i> Thêm chi tiết</button>
                     </div>
 
                 </div>
