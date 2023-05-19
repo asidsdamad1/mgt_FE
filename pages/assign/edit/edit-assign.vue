@@ -110,7 +110,6 @@ export default {
             this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
                 .then(response => {
                     this.tableData = response;
-                    console.log('apiGetListSub', this.tableData);
                     if (response.err_code === 0) {
                     } else {
                     }
@@ -172,7 +171,6 @@ export default {
                 this.objAssignment.teacher.id = this.teacherId;
                 this.apiAddAssignment(this.objAssignment)
                     .then(response => {
-                        console.log('apiAddSub', response);
                         this.searchSub();
                         this.$bvModal.hide('modal-add-one');
 

@@ -86,13 +86,11 @@ export default {
         searchSub(){
             let objInput={conditionSearch:this.conditionSearch,valueSearch:this.valueSearch,startDate:this.startDate,endDate:this.endDate,assignmentId:this.assignmentId};
 
-            console.log('apiGetListContact', objInput);
 
             this.apiGetAssignment(objInput)
                 .then(response => {
                     let data = response['data'];
                     this.tableData = data;
-                    console.log('apiGetListSub', data);
                     if (response.err_code === 0) {
                     } else {
                     }
@@ -112,11 +110,9 @@ export default {
     },
     mounted() {
         let objInput = {conditionSearch: 'ID', valueSearch: this.assignmentId}
-        console.log("teacher id: ", this.teacherId);
         this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
             .then(response => {
                 this.tableData = response;
-                console.log('apiGetListSub', this.tableData);
                 if (response.err_code === 0) {
                 } else {
                 }

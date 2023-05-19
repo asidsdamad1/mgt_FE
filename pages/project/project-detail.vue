@@ -108,7 +108,8 @@ export default {
                     fullName: '',
                     code: ''
                 }
-            }
+            },
+            user: JSON.parse(getUserInfo())
         }
     },
     created() {
@@ -229,21 +230,22 @@ export default {
             this.idDetail = parseInt(id);
 
             this.teachersValue = [];
-            this.listConditions = [];
-
             this.apiGetDetailById(this.idDetail).then(response => {
-                console.log(response);
+                this.detailObj.id = response.id;
                 this.detailObj.title = response.title;
                 this.detailObj.startDate = response.startDate;
                 this.detailObj.endDate = response.endDate;
+                this.detailObj.comment = response.comment === null ? "" : response.comment;
+                console.log(this.detailObj);
                 this.modalActionType = 2;
-
                 this.$bvModal.show('modal-add-detail-project');
-
             }).catch(err => {
                 console.log(err)
             }).finally(() => {
             })
+            this.listConditions = [];
+
+
         },
         deleteDetail(id) {
             console.log("id: ", id);
@@ -388,12 +390,16 @@ export default {
                                 <i class="uil uil-trash me-1"></i>
                             </button>
 
-                            <button :hidden="data.value !== ''"
+                            <button :hidden="data.value !== '' || user.role === 'ROLE_TEACHER'"
                                     class="btn btn-block view-cart col-auto text-white"
                                     style="background-color: #5b73e8"
                                     @click="showModalReport(data.item.id)" v-b-modal.modal-add-file-outline>
                                 Upload
                             </button>
+                            <span :hidden="user.role !== 'ROLE_TEACHER'">Chưa có báo cáo</span>
+                        </template>
+                        <template v-slot:cell(comment)=data>
+                            <div v-html="data.item.comment"></div>
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
@@ -401,12 +407,6 @@ export default {
                                         @click="prepareEditDetail(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
-                                </button>
-
-                                <button title="Xóa chi tiết"
-                                        @click="deleteDetail(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-trash me-1"></i>
                                 </button>
                             </div>
                         </template>

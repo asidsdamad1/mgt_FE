@@ -149,9 +149,7 @@ export default {
 
             return this.apiGetAssignment(this.objSearch)
                 .then(response => {
-                    console.log(response[0])
                     this.teacherId = response[0].teacher.id;
-                    console.log(this.teacherId)
                 })
                 .catch(err => {
                     console.log(err)

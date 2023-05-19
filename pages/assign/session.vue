@@ -100,11 +100,9 @@ export default {
                     return;
                 }
             }
-            console.log('searchSession', objInput);
 
             this.apiGetSession(objInput)
                 .then(response => {
-                    console.log('apiGetListSession', response);
 
 
                     let data = response;
@@ -139,7 +137,6 @@ export default {
                 if (result.value) {
                     this.apiDeleteSession(parseInt(id))
                         .then(response => {
-                            console.log('apiDeleteSession', response);
                             if (!response) {
                                 Swal.fire("", "Xóa thất bại", "warning");
                             } else {
@@ -166,7 +163,6 @@ export default {
             let objInput = {id: id, status: status};
             this.apiChangeSessionStatus(objInput)
                 .then(response => {
-                    console.log('apiChangeSessionStatus', response);
                     Swal.fire("", "Thành công", "success");
                     this.searchSession();
                 })
@@ -194,7 +190,6 @@ export default {
         addEditOneSub() {
             this.apiAddSession({year: this.year})
                 .then(response => {
-                    console.log('apiAddSession', response);
 
                     this.searchSession();
                     this.$bvModal.hide('modal-add-one-tb');

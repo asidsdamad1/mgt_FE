@@ -85,46 +85,46 @@ export const menuItems = [
         ]
     },
     {
-        id: 10,
+        id: 13,
         label: "Cài đặt chung",
         icon: "uil-setting",
-        role: "ROLE_ADMIN",
+        role: "ROLE_TEACHER",
         subItems: [
             {
-                id: 11,
+                id: 14,
                 label: "Danh sách người dùng",
                 link: "/user/groupuser",
                 role: "ROLE_ADMIN",
-                parentId: 10
+                parentId: 13
             },
             {
-                id: 12,
+                id: 15,
                 label: "Danh sách quyền",
                 link: "/user/permission",
                 role: "ROLE_ADMIN",
-                parentId: 10
+                parentId: 13
             },
         ]
     },
     {
-        id: 10,
+        id: 16,
         label: "Cài đặt chung",
         icon: "uil-setting",
-        role: "ROLE_ADMIN",
+        role: "ROLE_STUDENT",
         subItems: [
             {
-                id: 11,
+                id: 17,
                 label: "Danh sách người dùng",
                 link: "/user/groupuser",
                 role: "ROLE_ADMIN",
-                parentId: 10
+                parentId: 16
             },
             {
-                id: 12,
+                id: 18,
                 label: "Danh sách quyền",
                 link: "/user/permission",
                 role: "ROLE_ADMIN",
-                parentId: 10
+                parentId: 16
             },
         ]
     }

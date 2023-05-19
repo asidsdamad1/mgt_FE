@@ -316,17 +316,24 @@ export default {
                             {{ data.index + 1 }}
                         </template>
                         <template #cell(outlineFile)="row">
-                            <a :href="row.value">
-                                {{ row.value !== '' ? 'Tải xuống' : 'Chưa có đề cương' }}
+                            <a :href="row.value" :hidden="row.value === ''">
+                                {{ 'Tải xuống' }}
                             </a>
+                            <span :hidden="row.value !== ''">Chưa có đề cương</span>
+                        </template>
+                        <template #cell(reportFile)="row">
+                            <a :href="row.value" :hidden="row.value === ''">
+                                {{ 'Tải xuống' }}
+                            </a>
+                            <span :hidden="row.value !== ''">Chưa có đề cương</span>
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem chi tiết"
-                                        @click="viewStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-eye me-1"></i>
-                                </button>
+                                <nuxt-link title="Xem chi tiết"
+                                           :to="{ path: '/project/project-detail', query: { id: data.item.id}}"
+                                           class="text-secondary p-2"
+                                ><i class="uil uil-eye font-size-18"></i>
+                                </nuxt-link>
 
                             </div>
                         </template>

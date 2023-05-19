@@ -137,11 +137,9 @@ export default {
                 this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
             } else {
                 formData.append('fileExcel', this.fileUpload);
-                console.log(formData);
 
                 this.apiImportStudent(formData)
                     .then(response => {
-                        console.log('apiAddBlacklist', response);
                         if (response === null) {
                             this.$emit('handleGetStudent');
                             this.$bvModal.hide('modal-add-file-student');

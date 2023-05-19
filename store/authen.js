@@ -86,7 +86,6 @@ const actions = {
 
             let {data} = await this.$axios.post(uri_build, payload);
 
-            console.log('test: ', data)
             if (data !== null) {
                 setAccessToken(data.accessToken, data.expired);
                 setRefreshToken(data.refreshToken);

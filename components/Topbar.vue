@@ -1,6 +1,6 @@
 <script>
 import {menuItems} from "./menu";
-import {removeAccessToken, removeRefreshToken} from '../utils/cookieAuthen';
+import {getUserInfo} from '../utils/cookieAuthen';
 import {mapActions} from "vuex";
 
 /**
@@ -45,20 +45,52 @@ export default {
             text: null,
             flag: null,
             value: null,
+            user: {
+                id: -1,
+                name: ""
+            }
         };
     },
     mounted() {
         this.value = this.languages.find((x) => x.language === this.$i18n.locale);
         this.text = this.value.title;
         this.flag = this.value.flag;
+        this.handleInitUser();
+
     },
     methods: {
         ...mapActions('authen', {
             apiLogout: 'apiLogout'
         }),
+        ...mapActions('admin/students', {
+            apiGetStudent: 'apiGetStudent'
+        }),
+        ...mapActions('admin/teachers', {
+            apiGetTeacher: 'apiGetTeacher'
+        }),
         /**
          * Toggle menu
          */
+        handleInitUser() {
+            if(JSON.parse(getUserInfo()).role === "ROLE_STUDENT") {
+                this.apiGetStudent({
+                    conditionSearch: "ID",
+                    valueSearch: JSON.parse(getUserInfo()).studentId
+                }).then(res => {
+
+                    this.user.name = res[0].fullName
+                })
+            }
+            if(JSON.parse(getUserInfo()).role === "ROLE_TEACHER") {
+                this.apiGetTeacher({
+                    conditionSearch: "ID",
+                    valueSearch: JSON.parse(getUserInfo()).teacherId
+                }).then(res => {
+
+                    this.user.name = res[0].fullName
+                })
+            }
+        },
         menuGetNameActive() {
             let path = $nuxt.$route.path;
             let menuName = '';
@@ -86,7 +118,6 @@ export default {
                 }
             }
 
-            console.log(menuName);
             return menuName;
         },
         toggleMenu() {
@@ -288,7 +319,7 @@ export default {
                 <b-dropdown class="d-inline-block" toggle-class="header-item" right variant="white" menu-class="dropdown-menu-end">
                     <template v-slot:button-content>
                         <img class="rounded-circle header-profile-user" src="~/assets/images/users/avatar-7.jpg" alt="Header Avatar"/>
-                        <span class="d-none d-xl-inline-block ms-1 fw-medium font-size-15">TRUNG HIEU</span>
+                        <span class="d-none d-xl-inline-block ms-1 fw-medium font-size-15">{{ user.name !== "" ? user.name : "ADMIN" }}</span>
                         <i class="uil-angle-down d-none d-xl-inline-block font-size-15"></i>
                     </template>
 

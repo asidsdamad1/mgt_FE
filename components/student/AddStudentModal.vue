@@ -42,7 +42,6 @@ export default {
 
                 this.apiImportStudent(formData)
                     .then(response => {
-                        console.log('apiAddBlacklist', response);
                         this.$emit('handleGetStudent');
                         this.$bvModal.hide('modal-add-file-student');
 
@@ -62,7 +61,6 @@ export default {
         },
         onFileChange(e) {
             let files = e.target.files || e.dataTransfer.files;
-            console.log('add blacklist onchange file', files);
             if (files != null)
                 this.fileUpload = files[0];
         }

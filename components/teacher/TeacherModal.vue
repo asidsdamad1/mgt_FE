@@ -68,7 +68,6 @@ export default {
         },
         handleInitData() {
             this.$nextTick(() => {
-                console.log('handleInitData', this.idTeacher);
                 let objInput = {id: 0};
 
                 // alert(this.actionType);

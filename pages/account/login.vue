@@ -80,11 +80,9 @@ export default {
             this.commonLoadingPage(true);
             this.apiLogin(this.objInfo)
                 .then(response => {
-                    console.log('handleActionLogin response', response);
                     this.$router.push('/');
                 })
                 .catch(err => {
-                    console.log('handleActionLogin err', err);
                     this.commonErrorVue(err);
                 })
                 .finally(() => {

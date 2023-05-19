@@ -41,7 +41,7 @@ File: Main Css File
 @import "custom/components/widgets";
 @import "custom/components/demos";
 @import "custom/components/print";
-
+@import "custom/components/modal";
 
 // Plugins
 @import "custom/plugins/custom-scrollbar";
@@ -82,6 +82,7 @@ File: Main Css File
 @import "custom/pages/timeline";
 @import "custom/pages/extras-pages";
 
+
 // rtl
 // @import "custom/rtl/structure-rtl";
 // @import "custom/rtl/float-rtl";
@@ -92,3 +93,7 @@ File: Main Css File
 // @import "custom/rtl/text-rtl";
 // @import "custom/rtl/components-rtl";
 // @import "custom/rtl/bootstrap-rtl";
+
+body.modal-open {
+    overflow: hidden;
+}

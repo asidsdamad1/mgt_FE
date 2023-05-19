@@ -22,7 +22,8 @@ import {req} from "vuelidate/lib/validators/common";
 export default {
     components: {
         FullCalendar,
-        Multiselect
+        Multiselect,
+        'ckeditor-nuxt': () => { if (process.client) { return import('@blowstack/ckeditor-nuxt') } },
     },
     head() {
         return {
@@ -65,12 +66,12 @@ export default {
 
         return {
             reminders: [],
-            title: "Calendar",
+            title: "Lịch",
             items: [{
                 text: "Apps",
             },
                 {
-                    text: "Calendar",
+                    text: "Lịch",
                     active: true,
                 },
             ],
@@ -136,7 +137,17 @@ export default {
             calendarEvents: [],
             studentOptions: [],
             allStudent: [],
-            studentMail: []
+            studentMail: [],
+            user: JSON.parse(getUserInfo()),
+            editorConfig: {
+                removePlugins: ['Title'],
+                simpleUpload: {
+                    uploadUrl: '/assets/images',
+                    headers: {
+                        'Authorization': 'optional_token'
+                    }
+                }
+            },
         };
     },
     validations: {
@@ -191,14 +202,12 @@ export default {
                 value: this.allStudent.join(",")
             })
             this.studentOptions.reverse()
-            console.log(this.studentOptions)
         },
         async handleInitData() {
             let userInfo = JSON.parse(getUserInfo());
             let reminder = [];
             try {
                 var d = new Date(Date.now());
-                console.log("now: ", d.toString())
 
                 reminder = await this.apiGetReminder({
                     conditionSearch: "TEACHER",
@@ -211,11 +220,9 @@ export default {
                 console.error(err);
             }
             this.calendarEvents = reminder;
-            console.log(this.calendarEvents)
         },
 
         checkDataInput() {
-            console.log("check data: ", this.event)
             if (this.event.from.date === null || this.event.from.date.trim() === '') {
                 this.commonNotifyVue("Bạn phải nhập ngày bắt đầu", 'warn');
                 return false;
@@ -252,13 +259,10 @@ export default {
                 return;
             } else {
                 if (this.checkDataInput()) {
-                    console.log("event: ", this.event)
 
-                    console.log("new event: ", this.newEventData)
                     const startDate = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
                     const endDate = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
                     let userInfo = JSON.parse(getUserInfo());
-                    console.log("endDate: ", endDate)
                     this.event.teacher.id = userInfo?.teacherId;
 
                     this.event.session.id = userInfo?.session;
@@ -266,7 +270,6 @@ export default {
                     this.event.end = new Date(endDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
                     this.event.status = this.event?.category;
                     this.event.recipient = this.studentMail[0].value;
-                    console.log(this.studentMail)
                     this.apiSendMail({
                         recipient: [this.event.recipient],
                         msgBody: this.event.content,
@@ -514,7 +517,7 @@ export default {
                 </div>
             </div>
         </div>
-        <b-modal v-model="showModal" title="Add Event" title-class="text-black font-18" body-class="p-3" hide-footer>
+        <b-modal id="add-modal" v-model="showModal" title="Thêm sự kiện" title-class="text-black font-18" body-class="p-3" hide-footer >
             <form @submit.prevent="handleSubmit">
                 <div class="row">
                     <div class="col-12">
@@ -527,7 +530,10 @@ export default {
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="content">Nội dung</label>
-                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <client-only placeholder="Thêm nội dung" :hidden="user.role!=='ROLE_TEACHER'">
+                                <ckeditor-nuxt v-model="event.content" :config="editorConfig" />
+                            </client-only>
+<!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
@@ -571,14 +577,14 @@ export default {
                     </div>
                 </div>
                 <div class="text-right mt-5 " style="float: right">
-                    <b-button variant="light" @click="hideModal">Close</b-button>
-                    <b-button type="submit" variant="success" class="ml-1">Create event</b-button>
+                    <b-button variant="light" @click="hideModal">Đóng</b-button>
+                    <b-button type="submit" variant="success" class="ml-1">Tạo mới</b-button>
                 </div>
             </form>
         </b-modal>
 
         <!-- Edit Modal -->
-        <b-modal v-model="eventModal" title="Edit Event" title-class="text-black font-18" hide-footer body-class="p-3">
+        <b-modal id="add-modal" v-model="eventModal" title="Edit Event" title-class="text-black font-18" hide-footer body-class="p-3">
             <form @submit.prevent="editSubmit">
                 <div class="row">
                     <div class="col-12">
@@ -591,7 +597,10 @@ export default {
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="content">Nội dung</label>
-                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>
+                            <client-only placeholder="Thêm nội dung" :hidden="user.role!=='ROLE_TEACHER'">
+                                <ckeditor-nuxt v-model="event.content" :config="editorConfig" />
+                            </client-only>
+                            <!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
@@ -632,9 +641,9 @@ export default {
                 </multiselect>
 
                 <div class="text-right p-3" style="float: right">
-                    <b-button variant="light" @click="closeModal">Close</b-button>
-                    <b-button class="ml-1" variant="danger" @click="confirm">Delete</b-button>
-                    <b-button class="ml-1" variant="success" @click="editSubmit">Save</b-button>
+                    <b-button variant="light" @click="closeModal">Đóng</b-button>
+                    <b-button class="ml-1" variant="danger" @click="confirm">Xóa</b-button>
+                    <b-button class="ml-1" variant="success" @click="editSubmit">Sửa</b-button>
                 </div>
             </form>
         </b-modal>

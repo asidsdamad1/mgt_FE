@@ -47,11 +47,21 @@ export default {
             },
             modalTitle: '',
             optionClass: [],
-            objClass: []
+            objClass: [],
+            editorConfig: {
+                removePlugins: ['Title'],
+                simpleUpload: {
+                    uploadUrl: '/assets/images',
+                    headers: {
+                        'Authorization': 'optional_token'
+                    }
+                }
+            },
         }
     },
     components: {
-        Multiselect
+        Multiselect,
+        'ckeditor-nuxt': () => { if (process.client) { return import('@blowstack/ckeditor-nuxt') } },
     },
     updated() {
 
@@ -81,7 +91,7 @@ export default {
         },
         handleInitData() {
             this.$nextTick(() => {
-                console.log('handleInitData', this.idDetail);
+                console.log('handleInitData', this.detailObj);
                 // alert(this.actionType);
                 if (this.actionType === 1) {
                     this.modalTitle = 'Thêm chi tiết';
@@ -92,7 +102,11 @@ export default {
                     else if (this.actionType === 3)
                         this.modalTitle = 'Xem thông tin chi tiết';
                     this.apiGetDetailById(this.idDetail).then(response => {
-                        this.detailObj = response;
+                        this.detailObj.id = response.id;
+                        this.detailObj.title = response.title;
+                        this.detailObj.startDate = response.startDate;
+                        this.detailObj.endDate = response.endDate;
+                        this.detailObj.comment = response.comment === null ? "" : response.comment;
                     })
                         .catch(err => {
                             console.log(err);
@@ -207,31 +221,36 @@ export default {
 </style>
 
 <template>
+
     <b-modal id="modal-add-detail-project"
              size="lg" :title="modalTitle"
              title-class="font-18" hide-footer
              @show="handleInitData"
     >
+
         <div class="row pb-3">
             <div class="col-12">
                 <label>Nội dung</label>
-                <input type="text" maxlength="200" v-model="detailObj.title" :disabled="actionType===3" placeholder="Nội dung" class="form-control form-control multiselect__tags"/>
+                <input type="text" maxlength="200" v-model="detailObj.title" :disabled="actionType===3 || role==='ROLE_TEACHER'" placeholder="Nội dung" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
         <div class="row pb-3">
             <div class="col-6">
                 <label>Ngày bắt đầu</label>
-                <input type="date" v-model="detailObj.startDate" :disabled="actionType===3" class="form-control form-control multiselect__tags"/>
+                <input type="date" v-model="detailObj.startDate" :disabled="actionType===3 || role==='ROLE_TEACHER'" class="form-control form-control multiselect__tags"/>
             </div>
             <div class="col-6">
                 <label>Ngày kết thúc</label>
-                <input type="date" v-model="detailObj.endDate" :disabled="actionType===3" class="form-control form-control multiselect__tags"/>
+                <input type="date" v-model="detailObj.endDate" :disabled="actionType===3 || role==='ROLE_TEACHER'" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
         <div class="row pb-3">
             <div class="col-12">
-                <label :hidden="role!=='TEACHER'">Nhận xét</label>
-                <textarea type="text" maxlength="200" v-model="detailObj.comment" :hidden="role!=='TEACHER'" :disabled="actionType===3" placeholder="Nhận xét" class="form-control form-control multiselect__tags"/>
+                <label :hidden="role!=='ROLE_TEACHER'">Nhận xét</label>
+                <client-only placeholder="loading..." :hidden="role!=='ROLE_TEACHER'" :disabled="actionType===3">
+                    <ckeditor-nuxt v-model="detailObj.comment" :config="editorConfig" />
+                </client-only>
+<!--                <textarea  type="text" maxlength="200" v-model="detailObj.comment"  placeholder="Nhận xét" class="form-control form-control multiselect__tags"/>-->
             </div>
         </div>
         <!-- end card-body -->
