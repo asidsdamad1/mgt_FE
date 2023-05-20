@@ -2,6 +2,7 @@
 import {menuItems} from "./menu";
 import {getUserInfo} from '../utils/cookieAuthen';
 import {mapActions} from "vuex";
+import Swal from "sweetalert2";
 
 /**
  * Topbar component
@@ -12,8 +13,17 @@ export default {
             title: this.menuGetNameActive()
         };
     },
+    components: {
+        'ckeditor-nuxt': () => {
+            if (process.client) {
+                return import('@blowstack/ckeditor-nuxt')
+            }
+        },
+
+    },
     data() {
         return {
+            titleModal: "Nội quy",
             menuItems: menuItems,
             languages: [{
                 flag: require("~/assets/images/flags/us.jpg"),
@@ -48,7 +58,25 @@ export default {
             user: {
                 id: -1,
                 name: ""
-            }
+            },
+            showModal: false,
+            eventModal: false,
+            teacher: {
+                id: -1,
+                regulation: ""
+            },
+            editorConfig: {
+                removePlugins: ['Title'],
+                simpleUpload: {
+                    uploadUrl: '/assets/images',
+                    headers: {
+                        'Authorization': 'optional_token'
+                    }
+                }
+            },
+
+            isEditModalField: false,
+            userInfo: JSON.parse(getUserInfo())
         };
     },
     mounted() {
@@ -65,14 +93,18 @@ export default {
         ...mapActions('admin/students', {
             apiGetStudent: 'apiGetStudent'
         }),
+        ...mapActions('assign/assignment', {
+            apiGetAssignment: 'apiGetAssignment'
+        }),
         ...mapActions('admin/teachers', {
-            apiGetTeacher: 'apiGetTeacher'
+            apiGetTeacherById: 'apiGetTeacherById',
+            apiAddRegulation: 'apiAddRegulation'
         }),
         /**
          * Toggle menu
          */
         handleInitUser() {
-            if(JSON.parse(getUserInfo()).role === "ROLE_STUDENT") {
+            if (JSON.parse(getUserInfo()).role === "ROLE_STUDENT") {
                 this.apiGetStudent({
                     conditionSearch: "ID",
                     valueSearch: JSON.parse(getUserInfo()).studentId
@@ -81,13 +113,9 @@ export default {
                     this.user.name = res[0].fullName
                 })
             }
-            if(JSON.parse(getUserInfo()).role === "ROLE_TEACHER") {
-                this.apiGetTeacher({
-                    conditionSearch: "ID",
-                    valueSearch: JSON.parse(getUserInfo()).teacherId
-                }).then(res => {
-
-                    this.user.name = res[0].fullName
+            if (JSON.parse(getUserInfo()).role === "ROLE_TEACHER") {
+                this.apiGetTeacherById({id: JSON.parse(getUserInfo()).teacherId}).then(res => {
+                    this.user.name = res.fullName
                 })
             }
         },
@@ -177,6 +205,59 @@ export default {
                 path: "/account/login",
             });
         },
+        editSubmit(e) {
+            this.submit = true;
+            this.event.recipient = this.studentMail[0].value;
+
+            this.apiEditReminder(this.event).then(response => {
+                Swal.fire("", "Sửa thành công", "success");
+                this.handleInitData();
+            }).catch(err => {
+                console.log(err);
+                Swal.fire("", "Sửa không thành công", "error");
+            }).finally(() => {
+                // this.commonLoadingPage(false);
+            });
+
+
+            this.successmsg();
+            this.eventModal = false;
+
+
+        },
+        prepareAddOne() {
+            this.isEditModalField = false;
+            this.isViewModalFileField = false;
+            this.titleModal = 'Nội quy';
+
+            this.apiGetTeacherById({id: JSON.parse(getUserInfo()).teacherId}).then(res => {
+                this.teacher.regulation = res.regulation
+            })
+            console.log("user: ", this.teacher)
+
+            this.$bvModal.show('modal-add-one');
+        },
+        closeModalSub() {
+            this.$bvModal.hide('modal-add-one');
+        },
+        addEditOneSub() {
+            this.teacher.id = JSON.parse(getUserInfo()).teacherId;
+            this.apiAddRegulation(this.teacher)
+                .then(response => {
+                    this.teacher.regulation = response;
+                    this.$bvModal.hide('modal-add-one');
+
+                })
+                .catch(err => {
+                    console.log(err.message);
+
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
+
+        },
     },
 };
 </script>
@@ -206,6 +287,9 @@ export default {
                     </nuxt-link>
                 </div>
                 <h4 class="px-3 mb-0">{{ menuGetNameActive() }}</h4>
+                <div class="px-3" :hidden="userInfo.role === 'ROLE_ADMIN'">
+                    <button type="button" class="btn btn-primary d-block" @click="prepareAddOne"> Nội quy</button>
+                </div>
                 <!--            <button @click="toggleMenu" type="button" class="btn btn-sm px-3 font-size-16 header-item vertical-menu-btn" id="vertical-menu-btn">-->
                 <!--                <i class="fa fa-fw fa-bars"></i>-->
                 <!--            </button>-->
@@ -345,5 +429,34 @@ export default {
                 <!--            </div>-->
             </div>
         </div>
+        <b-modal id="modal-add-one"
+                 size="lg"
+                 :title="titleModal"
+                 title-class="font-18"
+                 hide-footer>
+            <div class="card-body">
+                <div class="row mb-3" :hidden="userInfo.role==='ROLE_STUDENT'">
+                    <div class="col-12">
+                        <label>Nội dung</label>
+                        <client-only placeholder="Thêm nội quy" :hidden="user.role!=='ROLE_ADMIN'">
+                            <ckeditor-nuxt v-model="teacher.regulation" :config="editorConfig"/>
+                        </client-only>
+                    </div>
+                </div>
+                <div class="row mb-3" :hidden="userInfo.role==='ROLE_TEACHER'">
+                    <div class="col-12">
+                        <label>Nội dung</label>
+                        <span v-html="teacher.regulation"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end" :hidden="userInfo.role !== 'ROLE_TEACHER'">
+                    <button type="button" class="btn btn-primary" @click="closeModalSub" v-show="!isEditModalField">Bỏ qua</button>
+                    <button type="button" class="btn btn-success" @click="addEditOneSub" v-show="!isEditModalField"><i class="uil uil-save me-1"></i> Lưu lại</button>
+
+                </div>
+            </div>
+
+        </b-modal>
     </header>
 </template>

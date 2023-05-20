@@ -13,7 +13,8 @@ export default {
     components: {
         Multiselect,
         AddDetailModal,
-
+        AddStudentModal,
+        StudentModal
     },
     data() {
         return {

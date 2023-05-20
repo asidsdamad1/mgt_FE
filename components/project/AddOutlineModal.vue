@@ -47,9 +47,9 @@ export default {
                 this.commonNotifyVue('Bạn phải chọn file đề cương', 'warn');
             } else {
                 formData.append('file', this.fileUpload);
+                formData.append('type', this.type);
                 if(this.type === "REPORT_DETAIL") {
                     formData.append('id', this.idDetail);
-                    formData.append('type', this.type);
                     this.apiAddReportFileDetail(formData)
                         .then(response => {
                             this.$emit('handleGetProjectDetail');

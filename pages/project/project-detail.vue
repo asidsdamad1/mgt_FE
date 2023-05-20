@@ -148,7 +148,7 @@ export default {
             this.errorValidate = [];
             let formData = new FormData();
             if (this.fileUpload === null) {
-                this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
+                this.commonNotifyVue('Bạn phải chọn file chứa báo cáo', 'warn');
             } else {
                 formData.append('fileExcel', this.fileUpload);
                 console.log(formData);

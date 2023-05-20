@@ -531,7 +531,7 @@ export default {
                         <div class="mb-3">
                             <label for="content">Nội dung</label>
                             <client-only placeholder="Thêm nội dung" :hidden="user.role!=='ROLE_TEACHER'">
-                                <ckeditor-nuxt v-model="event.content" :config="editorConfig" />
+                                <ckeditor-nuxt id="content" v-model="event.content" :config="editorConfig" />
                             </client-only>
 <!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>

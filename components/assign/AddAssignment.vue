@@ -80,7 +80,7 @@ export default {
 </style>
 
 <template>
-    <b-modal id="modal-add-file-assigment" size="lg" title="Tải tập SV" title-class="font-18" hide-footer>
+    <b-modal id="modal-add-file-assigment" size="lg" title="Tải tập excel" title-class="font-18" hide-footer>
         <div class="card">
             <div class="card-body">
 
