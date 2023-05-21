@@ -4,4 +4,5 @@ export const API_USER_MANAGE = {
     apiUpdateUser: 'user/update-user',
     apiDeleteUser: 'user/delete-user',
     apiGetRole: 'user/get-role',
+    apiChangePassword: 'user/change-password'
 };

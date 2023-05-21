@@ -89,7 +89,6 @@ export default {
                     valueSearch: ''
                 }).then(response => {
                     this.optionClass = response;
-                    console.log("option class: " , this.optionClass);
                 })
                 // alert(this.actionType);
                 if (this.actionType === 1) {

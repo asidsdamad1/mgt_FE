@@ -408,7 +408,7 @@ export default {
                     </template>
 
                     <!-- item-->
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="/profile">
                         <i class="uil uil-user-circle font-size-18 align-middle text-muted me-1"></i>
                         <span class="align-middle">Tài khoản</span>
                     </a>

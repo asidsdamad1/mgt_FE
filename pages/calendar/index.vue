@@ -174,7 +174,7 @@ export default {
             apiEditReminder: 'apiEditReminder'
         }),
         ...mapActions('teachers', {
-            apiGetStudent: 'apiGetStudent'
+            apiGetStudent: 'apiGetStudentByTeacher'
         }),
         ...mapActions('email', {
             apiSendMail: 'apiSendMail'
@@ -185,7 +185,7 @@ export default {
         async handleGetStudent() {
             let students = [];
             try {
-                students = await this.apiGetStudent({id: JSON.parse(getUserInfo()).teacherId})
+                students = await this.apiGetStudentByTeacher({id: JSON.parse(getUserInfo()).teacherId})
             } catch (err) {
                 console.error(err);
             }

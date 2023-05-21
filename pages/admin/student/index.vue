@@ -396,13 +396,13 @@ export default {
                                 ><i class="uil uil-eye me-1"></i>
                                 </button>
 
-                                <button title="Sửa Segment"
+                                <button title="Sửa chi tiết"
                                         @click="prepareEditStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
 
-                                <button title="Xóa Segment"
+                                <button title="Xóa chi tiết"
                                         @click="deleteStudent(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>

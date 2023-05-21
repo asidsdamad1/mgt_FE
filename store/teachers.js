@@ -34,7 +34,7 @@ const actions = {
         }
     },
 
-    async apiGetStudent({commit, state}, payload) {
+    async apiGetStudentByTeacher({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_TEACHER_MANAGE.apiGetStudent}`, payload);
 

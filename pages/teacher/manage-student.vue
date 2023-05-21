@@ -120,7 +120,7 @@ export default {
     },
     methods: {
         ...mapActions('teachers', {
-            apiGetStudent: 'apiGetStudent'
+            apiGetStudentByTeacher: 'apiGetStudentByTeacher'
         }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
@@ -158,7 +158,7 @@ export default {
         },
         handleGetStudent() {
             this.objTeacher.id = JSON.parse(getUserInfo()).teacherId;
-            this.apiGetStudent(this.objTeacher)
+            this.apiGetStudentByTeacher(this.objTeacher)
                 .then(response => {
                     this.tableData = response;
                 })
@@ -177,7 +177,7 @@ export default {
                     return;
                 }
             }
-            this.apiGetStudent(objInput)
+            this.apiGetStudentByTeacher(objInput)
                 .then(response => {
                     let data = response;
                     this.tableData = data;
@@ -205,7 +205,7 @@ export default {
 
             this.flagModal = !this.flagModal;
 
-            this.apiGetStudent({
+            this.apiGetStudentByTeacher({
                 conditionSearch: 'ID',
                 valueSearch: id,
             }).then(response => {

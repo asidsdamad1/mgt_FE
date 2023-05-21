@@ -92,15 +92,15 @@ export const menuItems = [
         subItems: [
             {
                 id: 14,
-                label: "Danh sách người dùng",
-                link: "/user/groupuser",
+                label: "Thông tin cá nhân",
+                link: "/profile",
                 role: "ROLE_ADMIN",
                 parentId: 13
             },
             {
                 id: 15,
-                label: "Danh sách quyền",
-                link: "/user/permission",
+                label: "Đổi mật khẩu",
+                link: "/user/change-password",
                 role: "ROLE_ADMIN",
                 parentId: 13
             },
@@ -114,15 +114,15 @@ export const menuItems = [
         subItems: [
             {
                 id: 17,
-                label: "Danh sách người dùng",
-                link: "/user/groupuser",
+                label: "Thông tin cá nhân",
+                link: "/profile",
                 role: "ROLE_ADMIN",
                 parentId: 16
             },
             {
                 id: 18,
-                label: "Danh sách quyền",
-                link: "/user/permission",
+                label: "Đổi mật khẩu",
+                link: "/user/change-password",
                 role: "ROLE_ADMIN",
                 parentId: 16
             },

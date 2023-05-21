@@ -18,6 +18,21 @@ const actions = {
         }
     },
 
+    async apiChangePassword({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_USER_MANAGE.apiChangePassword}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiSaveUser({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_USER_MANAGE.apiSaveUser}`, payload);
