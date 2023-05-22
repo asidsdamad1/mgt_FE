@@ -12,7 +12,6 @@ import {required} from "vuelidate/lib/validators";
 import {mapActions} from "vuex";
 import {getAccessToken, getUserInfo} from "../../utils/cookieAuthen";
 import Multiselect from "vue-multiselect";
-import {req} from "vuelidate/lib/validators/common";
 
 /**
  * Calendar component
@@ -23,7 +22,11 @@ export default {
     components: {
         FullCalendar,
         Multiselect,
-        'ckeditor-nuxt': () => { if (process.client) { return import('@blowstack/ckeditor-nuxt') } },
+        'ckeditor-nuxt': () => {
+            if (process.client) {
+                return import('@blowstack/ckeditor-nuxt')
+            }
+        },
     },
     head() {
         return {
@@ -165,6 +168,9 @@ export default {
     mounted() {
         this.handleInitData();
         this.handleGetStudent();
+        if (JSON.parse(getUserInfo()).role === "ROLE_STUDENT") {
+            this.getNotify();
+        }
     },
     methods: {
         ...mapActions('reminder', {
@@ -179,9 +185,34 @@ export default {
         ...mapActions('email', {
             apiSendMail: 'apiSendMail'
         }),
+        ...mapActions('notify', {
+            apiGetNotify: 'apiGetNotify',
+            apiGetNotifyDay: 'apiGetNotifyDay',
+            apiGetNotifyHour: 'apiGetNotifyHour',
+        }),
         /**
          * Modal form submit
          */
+        getNotify() {
+            this.apiGetNotify(JSON.parse(getUserInfo()).studentId)
+                .then(res => {
+                    if (res > 0) {
+                        Swal.fire("Bạn có " + res + " thông báo mới", "Xem chi tiết trong lịch", "info");
+                    }
+                });
+            this.apiGetNotifyDay(JSON.parse(getUserInfo()).studentId)
+                .then(res => {
+                    if (res > 0) {
+                        Swal.fire("Thông báo", "Bạn có lịch hẹn vào ngày mai", "info");
+                    }
+                });
+            this.apiGetNotifyHour(JSON.parse(getUserInfo()).studentId)
+                .then(res => {
+                    if (res > 0) {
+                        Swal.fire("Thông báo", "Bạn có lịch hẹn vào 2 tiếng sắp tới", "warning");
+                    }
+                })
+        },
         async handleGetStudent() {
             let students = [];
             try {
@@ -225,6 +256,11 @@ export default {
         checkDataInput() {
             if (this.event.from.date === null || this.event.from.date.trim() === '') {
                 this.commonNotifyVue("Bạn phải nhập ngày bắt đầu", 'warn');
+                return false;
+            }
+
+            if (this.event.content === null || this.event.content.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập nội dung", 'warn');
                 return false;
             }
 
@@ -317,30 +353,33 @@ export default {
                 this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
                 this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
                 this.event.recipient = this.studentMail[0].value;
-                this.apiSendMail({
-                    recipient: [this.event.recipient],
-                    msgBody: this.event.content,
-                    subject: this.event.title
-                }).then(response => {
-                    this.apiEditReminder(this.event).then(response => {
-                        Swal.fire("", "Sửa thành công", "success");
-                        this.handleInitData();
-                    }).catch(err => {
-                        console.log(err);
-                        Swal.fire("", "Sửa không thành công", "error");
-                    }).finally(() => {
-                        // this.commonLoadingPage(false);
-                    });
-                })
-                    .catch(err => {
-                        console.log(err);
-                        this.handleInitData()
-                        this.showModal = false;
-                        this.errormsg();
+                this.apiEditReminder(this.event).then(response => {
+                    Swal.fire("", "Sửa thành công", "success");
+                    this.handleInitData();
+                    this.apiSendMail({
+                        recipient: [this.event.recipient],
+                        msgBody: this.event.content,
+                        subject: this.event.title
+                    }).then(response => {
+
                     })
-                    .finally(() => {
-                        // this.commonLoadingPage(false);
-                    });
+                        .catch(err => {
+                            console.log(err);
+                            Swal.fire("", "Sửa không thành công", "error");
+                        })
+                        .finally(() => {
+                            // this.commonLoadingPage(false);
+                        });
+                }).catch(err => {
+                    console.log(err);
+                    this.handleInitData()
+                    this.showModal = false;
+                    this.errormsg();
+
+                }).finally(() => {
+                    // this.commonLoadingPage(false);
+                });
+
 
                 this.successmsg();
                 this.eventModal = false;
@@ -517,7 +556,7 @@ export default {
                 </div>
             </div>
         </div>
-        <b-modal id="add-modal" v-model="showModal" title="Thêm sự kiện" title-class="text-black font-18" body-class="p-3" hide-footer >
+        <b-modal id="add-modal" v-model="showModal" title="Thêm sự kiện" title-class="text-black font-18" body-class="p-3" hide-footer>
             <form @submit.prevent="handleSubmit">
                 <div class="row">
                     <div class="col-12">
@@ -531,9 +570,9 @@ export default {
                         <div class="mb-3">
                             <label for="content">Nội dung</label>
                             <client-only placeholder="Thêm nội dung" :hidden="user.role!=='ROLE_TEACHER'">
-                                <ckeditor-nuxt id="content" v-model="event.content" :config="editorConfig" />
+                                <ckeditor-nuxt id="content" v-model="event.content" :config="editorConfig"/>
                             </client-only>
-<!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
+                            <!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>
                         </div>
                     </div>
@@ -571,7 +610,7 @@ export default {
                 <div class="col-12">
                     <div class="mb-3">
                         <label>Sinh viên nhận mail</label>
-                            <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                        <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
 
                         </multiselect>
                     </div>
@@ -598,7 +637,7 @@ export default {
                         <div class="mb-3">
                             <label for="content">Nội dung</label>
                             <client-only placeholder="Thêm nội dung" :hidden="user.role!=='ROLE_TEACHER'">
-                                <ckeditor-nuxt v-model="event.content" :config="editorConfig" />
+                                <ckeditor-nuxt v-model="event.content" :config="editorConfig"/>
                             </client-only>
                             <!--                            <textarea id="content" v-model="event.content" type="text" class="form-control" placeholder="Thêm nội dung" :class="{ 'is-invalid': submitted && $v.event.title.$error }"/>-->
                             <div v-if="submitted && !$v.event.title.required" class="invalid-feedback">This value is required.</div>

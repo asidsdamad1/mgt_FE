@@ -1,6 +1,6 @@
 <script>
 import {mapActions, mapMutations} from "vuex";
-import {getAccessToken} from "../../utils/cookieAuthen";
+import {getAccessToken, getUserInfo} from "../../utils/cookieAuthen";
 
 /**
  * Login component
@@ -25,7 +25,7 @@ export default {
                 loginType: 0
             },
             flagPassword: false,
-            showPassword: false
+            showPassword: false,
         };
     },
     // validations: {
@@ -80,7 +80,11 @@ export default {
             this.commonLoadingPage(true);
             this.apiLogin(this.objInfo)
                 .then(response => {
-                    this.$router.push('/');
+                    if(JSON.parse(getUserInfo()).role === "ROLE_ADMIN") {
+                        this.$router.push('/');
+                    } else {
+                        this.$router.push('/calendar');
+                    }
                 })
                 .catch(err => {
                     this.commonErrorVue(err);

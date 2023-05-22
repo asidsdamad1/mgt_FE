@@ -29,8 +29,8 @@ export const menuItems = [
     },
     {
         id: 5,
-        label: "Dashboard",
-        icon: "uil-home-alt",
+        label: "Lịch",
+        icon: "uil-calendar-alt",
         link: "/calendar",
         role: "ROLE_TEACHER"
     },
@@ -50,8 +50,8 @@ export const menuItems = [
     },
     {
         id: 8,
-        label: "Dashboard",
-        icon: "uil-home-alt",
+        label: "Lịch",
+        icon: "uil-calendar-alt",
         link: "/calendar",
         role: "ROLE_STUDENT"
     },
