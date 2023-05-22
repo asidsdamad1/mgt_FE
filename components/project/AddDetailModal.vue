@@ -4,6 +4,7 @@ import Multiselect from "vue-multiselect";
 
 import "vue-multiselect/dist/vue-multiselect.min.css";
 import Swal from "sweetalert2";
+import {getAccessToken} from "@/utils/cookieAuthen";
 
 export default {
     name: "AddDetailModal",
@@ -51,17 +52,21 @@ export default {
             editorConfig: {
                 removePlugins: ['Title'],
                 simpleUpload: {
-                    uploadUrl: '/assets/images',
+                    uploadUrl: 'http://localhost:8088/file/upload',
                     headers: {
-                        'Authorization': 'optional_token'
-                    }
+                        'Authorization': 'Bearer ' + getAccessToken()
+                    },
                 }
             },
         }
     },
     components: {
         Multiselect,
-        'ckeditor-nuxt': () => { if (process.client) { return import('@blowstack/ckeditor-nuxt') } },
+        'ckeditor-nuxt': () => {
+            if (process.client) {
+                return import('@blowstack/ckeditor-nuxt')
+            }
+        },
     },
     updated() {
 
@@ -91,7 +96,7 @@ export default {
         },
         handleInitData() {
             this.$nextTick(() => {
-                console.log('handleInitData', this.detailObj);
+                console.log('handleInitData', this.role);
                 // alert(this.actionType);
                 if (this.actionType === 1) {
                     this.modalTitle = 'Thêm chi tiết';
@@ -122,39 +127,7 @@ export default {
             let ids = [];
             if (this.checkDataInput()) {
 
-                // console.log('addEvent', this.callOptionsSelected);
-                //     if (this.studentObj.dataType === 'call') {
-                //         for (let i = 0; i < this.callOptionsSelected.length; i++) {
-                //             ids.push(this.callOptionsSelected[i].value);
-                //         }
-                //         if (this.callOptionsSelected.length > 1) {
-                //             optionEvent = ids.join(',') + ';time_wait:' + this.timeWaitCall;
-                //         } else {
-                //             optionEvent = ids.join(',');
-                //         }
-                //     } else if (this.eventObj.dataType === 'ussd') {
-                //         optionEvent = this.ussdType + "," + this.ussdValue;
-                //     } else if (this.eventObj.dataType === 'package') {
-                //         optionEvent = 'pkg_code:' + this.pkgCode + ',pkg_capacity:' + this.pkgCapacity + ',pkg_warning:' + this.pkgWarning + ',pkg_startdate:' + this.pkgStartDate + ',pkg_enddate:' + this.pkgEndDate;
-                //     } else if (this.eventObj.dataType === 'sub_location') {
-                //         let provinceIds = [];
-                //         let proIds = '';
-                //
-                //         for (let i = 0; i < this.provinceOptionsSelected.length; i++) {
-                //             provinceIds.push(this.provinceOptionsSelected[i].id);
-                //         }
-                //         proIds = provinceIds.join(',');
-                //         let districtIds = [];
-                //         let distIds = '';
-                //         for (let j = 0; j < this.districtOptionsSelected.length; j++) {
-                //             districtIds.push(this.districtOptionsSelected[j].id);
-                //         }
-                //         distIds = districtIds.join(',');
-                //         optionEvent = 'provinces:' + proIds + ';districts:' + distIds;
-                //
-                //     }
-                //     console.log('addEvent', optionEvent);
-                //     this.eventObj.eventOption = optionEvent;
+                this.detailObj.title = this.detailObj.title.replaceAll('\n', '<br/>');
                 if (this.actionType === 2) {
                     this.detailObj.project.id = this.idProject;
                     this.apiEditProjectDetail(this.detailObj)
@@ -211,7 +184,6 @@ export default {
 
             return true;
         },
-
     }
 }
 </script>
@@ -231,7 +203,7 @@ export default {
         <div class="row pb-3">
             <div class="col-12">
                 <label>Nội dung</label>
-                <input type="text" maxlength="200" v-model="detailObj.title" :disabled="actionType===3 || role==='ROLE_TEACHER'" placeholder="Nội dung" class="form-control form-control multiselect__tags"/>
+                <textarea id="txtArea" type="text" maxlength="200" v-model="detailObj.title" :disabled="actionType===3 || role==='ROLE_TEACHER'" placeholder="Nội dung" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
         <div class="row pb-3">
@@ -244,13 +216,13 @@ export default {
                 <input type="date" v-model="detailObj.endDate" :disabled="actionType===3 || role==='ROLE_TEACHER'" class="form-control form-control multiselect__tags"/>
             </div>
         </div>
-        <div class="row pb-3">
+        <div class="row pb-3" :hidden="role!=='ROLE_TEACHER'">
             <div class="col-12">
-                <label :hidden="role!=='ROLE_TEACHER'">Nhận xét</label>
+                <label>Nhận xét</label>
                 <client-only placeholder="loading..." :hidden="role!=='ROLE_TEACHER'" :disabled="actionType===3">
-                    <ckeditor-nuxt v-model="detailObj.comment" :config="editorConfig" />
+                    <ckeditor-nuxt v-model="detailObj.comment" :config="editorConfig"/>
                 </client-only>
-<!--                <textarea  type="text" maxlength="200" v-model="detailObj.comment"  placeholder="Nhận xét" class="form-control form-control multiselect__tags"/>-->
+                <!--                <textarea  type="text" maxlength="200" v-model="detailObj.comment"  placeholder="Nhận xét" class="form-control form-control multiselect__tags"/>-->
             </div>
         </div>
         <!-- end card-body -->

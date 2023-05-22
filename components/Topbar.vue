@@ -1,6 +1,6 @@
 <script>
 import {menuItems} from "./menu";
-import {getUserInfo} from '../utils/cookieAuthen';
+import {getAccessToken, getUserInfo} from '../utils/cookieAuthen';
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 
@@ -68,10 +68,10 @@ export default {
             editorConfig: {
                 removePlugins: ['Title'],
                 simpleUpload: {
-                    uploadUrl: '/assets/images',
+                    uploadUrl: 'http://localhost:8088/file/upload',
                     headers: {
-                        'Authorization': 'optional_token'
-                    }
+                        'Authorization': 'Bearer ' + getAccessToken()
+                    },
                 }
             },
 
@@ -84,7 +84,6 @@ export default {
         this.text = this.value.title;
         this.flag = this.value.flag;
         this.handleInitUser();
-
     },
     methods: {
         ...mapActions('authen', {
@@ -262,6 +261,9 @@ export default {
 };
 </script>
 
+<style>
+
+</style>
 <template>
     <header id="page-topbar">
         <div class="navbar-header">
@@ -438,7 +440,7 @@ export default {
                 <div class="row mb-3" :hidden="userInfo.role==='ROLE_STUDENT'">
                     <div class="col-12">
                         <label>Nội dung</label>
-                        <client-only placeholder="Thêm nội quy" :hidden="user.role!=='ROLE_ADMIN'">
+                        <client-only  id="ckeditor" placeholder="Thêm nội quy" :hidden="user.role!=='ROLE_ADMIN'">
                             <ckeditor-nuxt v-model="teacher.regulation" :config="editorConfig"/>
                         </client-only>
                     </div>

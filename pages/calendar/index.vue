@@ -10,7 +10,7 @@ import listPlugin from "@fullcalendar/list";
 import {categories} from "./data-calendar";
 import {required} from "vuelidate/lib/validators";
 import {mapActions} from "vuex";
-import {getUserInfo} from "../../utils/cookieAuthen";
+import {getAccessToken, getUserInfo} from "../../utils/cookieAuthen";
 import Multiselect from "vue-multiselect";
 import {req} from "vuelidate/lib/validators/common";
 
@@ -142,10 +142,10 @@ export default {
             editorConfig: {
                 removePlugins: ['Title'],
                 simpleUpload: {
-                    uploadUrl: '/assets/images',
+                    uploadUrl: 'http://localhost:8088/file/upload',
                     headers: {
-                        'Authorization': 'optional_token'
-                    }
+                        'Authorization': 'Bearer ' + getAccessToken()
+                    },
                 }
             },
         };
@@ -174,7 +174,7 @@ export default {
             apiEditReminder: 'apiEditReminder'
         }),
         ...mapActions('teachers', {
-            apiGetStudent: 'apiGetStudentByTeacher'
+            apiGetStudentByTeacher: 'apiGetStudentByTeacher'
         }),
         ...mapActions('email', {
             apiSendMail: 'apiSendMail'
@@ -571,7 +571,7 @@ export default {
                 <div class="col-12">
                     <div class="mb-3">
                         <label>Sinh viên nhận mail</label>
-                        <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                            <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
 
                         </multiselect>
                     </div>
@@ -635,7 +635,7 @@ export default {
                         <div v-if="submitted" class="invalid-feedback">This value is required.</div>
                     </div>
                 </div>
-
+                <label>Sinh viên nhận mail</label>
                 <multiselect v-model="studentMail" :options="studentOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
 
                 </multiselect>

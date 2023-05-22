@@ -361,8 +361,7 @@ export default {
                         <div class="tab-pane active" id="project" role="tabpanel">
                             <div>
                                 <div>
-                                    <h5 :hidden="userInfo.role !== 'ROLE_TEACHER'" class="font-size-16 mb-4">Danh sách đồ án hướng dẫn</h5>
-                                    <h5 :hidden="userInfo.role !== 'ROLE_STUDENT'" class="font-size-16 mb-4">Danh sách đồ án</h5>
+                                    <h5 :hidden="userInfo.role !== 'ROLE_STUDENT'" class="font-size-16 mb-4">Thông tin liên hệ</h5>
 
                                     <div class="table-responsive">
                                         <b-table striped bordered :items="tableData" :fields="userInfo.role === 'ROLE_TEACHER' ? fields : fieldsTeacher" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">

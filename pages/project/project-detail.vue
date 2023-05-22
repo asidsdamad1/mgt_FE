@@ -87,6 +87,7 @@ export default {
                 title: '',
                 status: '',
                 comment: '',
+                content: '',
                 reportFile: '',
                 startDate: '',
                 endDate: '',
@@ -382,6 +383,9 @@ export default {
                         <template #cell(endDate)="row">
                             {{ formatDate(new Date(row.value)) }}
                         </template>
+                        <template v-slot:cell(title)=data>
+                            <div v-html="data.item.title"></div>
+                        </template>
                         <template v-slot:cell(reportFile)="data">
                             <a :href="data.value" :hidden="data.value === ''">
                                 Tải xuống
@@ -407,6 +411,11 @@ export default {
                                         @click="prepareEditDetail(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
+                                </button>
+                                <button title="Xóa chi tiết"
+                                        @click="deleteDetail(data.item.id)"
+                                        class="btn btn-gray btn-block view-cart col-auto"
+                                ><i class="uil uil-trash me-1"></i>
                                 </button>
                             </div>
                         </template>
