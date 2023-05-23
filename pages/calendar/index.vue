@@ -679,7 +679,7 @@ export default {
 
                 </multiselect>
 
-                <div class="text-right p-3" style="float: right">
+                <div class="text-right p-3" style="float: right" :hidden="this.user.role !== 'ROLE_TEACHER'">
                     <b-button variant="light" @click="closeModal">Đóng</b-button>
                     <b-button class="ml-1" variant="danger" @click="confirm">Xóa</b-button>
                     <b-button class="ml-1" variant="success" @click="editSubmit">Sửa</b-button>
