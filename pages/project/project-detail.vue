@@ -400,7 +400,7 @@ export default {
                                     @click="showModalReport(data.item.id)" v-b-modal.modal-add-file-outline>
                                 Upload
                             </button>
-                            <span :hidden="user.role !== 'ROLE_TEACHER'">Chưa có báo cáo</span>
+                            <span :hidden="user.role !== 'ROLE_TEACHER'">{{ data.value !== '' ? '' : 'Chưa có báo cáo'}}</span>
                         </template>
                         <template v-slot:cell(comment)=data>
                             <div v-html="data.item.comment"></div>
