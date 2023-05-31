@@ -234,17 +234,17 @@ export default {
             })
             console.log("user: ", this.teacher)
 
-            this.$bvModal.show('modal-add-one');
+            this.$bvModal.show('modal-add-rule');
         },
         closeModalSub() {
-            this.$bvModal.hide('modal-add-one');
+            this.$bvModal.hide('modal-add-rule');
         },
         addEditOneSub() {
             this.teacher.id = JSON.parse(getUserInfo()).teacherId;
             this.apiAddRegulation(this.teacher)
                 .then(response => {
                     this.teacher.regulation = response;
-                    this.$bvModal.hide('modal-add-one');
+                    this.$bvModal.hide('modal-add-rule');
 
                 })
                 .catch(err => {
@@ -337,7 +337,7 @@ export default {
                 <!--            </div>-->
             </div>
         </div>
-        <b-modal id="modal-add-one"
+        <b-modal id="modal-add-rule"
                  size="lg"
                  :title="titleModal"
                  title-class="font-18"

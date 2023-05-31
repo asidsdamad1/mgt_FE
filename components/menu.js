@@ -3,7 +3,7 @@ export const menuItems = [
         id: 1,
         label: "Dashboard",
         icon: "uil-home-alt",
-        link: "/admin/",
+        link: "/",
         role: "ROLE_ADMIN"
     },
     {

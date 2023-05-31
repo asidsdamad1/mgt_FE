@@ -1,205 +1,152 @@
 <script>
-import CreateEditRole from "@/components/admin/modal/CreateEditRole";
+
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
-export default {
-    name: "permission-groups",
-    components:{
-        CreateEditRole
-    },
-    mounted() {
-        this.getListRole();
-    },
-    methods: {
-        ...mapActions('admin/role', {
-            apiGetListRole: 'apiGetListRole',
-            apiDeleteRole: 'apiDeleteRole'
-        }),
-        getListRole(){
-            let objInput= {id: -1};
-            this.apiGetListRole(objInput)
-                .then(response => {
-                    console.log('getListRole', response);
-                    if (response.err_code === 0) {
-                        let data = response['data'];
-                        this.tableData = data;
-                        console.log('init dữ liệu', data);
-                    } else {
-                        this.commonWarningVue(response.err_message);
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-        },
-        handleAfterAction(){
-            this.getListRole();
-        },
-        onFiltered(filteredItems) {
-            // Trigger pagination to update the number of buttons/pages due to filtering
-            this.totalRows = filteredItems.length;
-            this.currentPage = 1;
-        },
-        prepareAddRoleGroup(){
-            this.actionType=1;
-            this.$bvModal.show('modal-add-usergroup');
-        },
-        prepareEditRoleGroup(roleId){
-            this.roleEditId = roleId;
-            this.actionType=2;
-            this.$bvModal.show('modal-add-usergroup');
-        },
-        viewRoleGroup(roleId){
-            this.actionType=3;
-            this.roleEditId = roleId;
-            this.$bvModal.show('modal-add-usergroup');
-        },
-        deleteRoleGroup(val){
-            Swal.fire({
-                title: "Bạn có chắc chắn muốn xóa?",
-                text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#34c38f",
-                cancelButtonColor: "#f46a6a",
-                confirmButtonText: "Đồng ý",
-                cancelButtonText: "Hủy"
-            }).then(result => {
-                if(result.value){
-                    let objDel ={id:val};
-                    this.apiDeleteRole(objDel)
-                        .then(response => {
-                            console.log('apiDeleteRole', response);
-                            if (response.err_code === 0) {
-                                Swal.fire("", response.err_message, "success");
-                                this.getListRole();
-                            } else {
-                                this.commonWarningVue(response.err_message);
-                            }
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
-                    if (result.value) {
-                        Swal.fire("Deleted!", "Your file has been deleted.", "success");
-                    }
-                }
+import Multiselect from "vue-multiselect";
+import UserModal from "../../components/admin/UserModal.vue";
 
-            });
-        }
+export default {
+    middleware: ['check-authen'],
+    name: "subscriber",
+    components: {
+        Multiselect,
+        UserModal
     },
-    computed: {
-        /**
-         * Total no. of records
-         */
-        rows() {
-            return this.tableData.length;
-        }
-    },data() {
+    data() {
         return {
-            fields: [
+            fileUpload: null,
+            items: [{
+                text: "Forms",
+                href: "/"
+            },
                 {
-                    key: "index",
-                    label: "STT",
-                    sortable: true,
-                    thStyle: {width: "3%"},
-                },
-                {
-                    key: "name",
-                    label: "Tên nhóm quyền",
-                    sortable: true,
-                    thStyle: {width: "20%"},
-                },
-                {
-                    key: "description",
-                    label: "Mô tả",
-                    sortable: true,
-                    thStyle: {width: "20%"},
-                },
-                {
-                    key: "createdBy",
-                    label: 'Người tạo',
-                    sortable: true,
-                    thStyle: {width: "20%"},
-                },
-                {
-                    key: "createdDate",
-                    label: 'Ngày tạo',
-                    sortable: true,
-                    thStyle: {width: "10%"},
-                },
-                {
-                    key: "action",
-                    label: 'Thao tác',
-                    thStyle: {width: "10%"},
-                    tdClass: 'text-center',
-                },
+                    text: "Form File Upload",
+                    active: true
+                }
             ],
-            tableData: [],
+            conditionSearch: '',
+            valueSearch: '',
             totalRows: 1,
             currentPage: 1,
             perPage: 10,
             pageOptions: [10, 25, 50, 100],
             filter: null,
             filterOn: [],
-            sortBy: "name",
+            sortBy: "age",
             sortDesc: false,
-            actionType:-1,
-            roleEditId:-1
+            fields: [
+                {
+                    key: "index",
+                    label: "STT",
+                    sortable: true,
+                },
+                {
+                    key: "name",
+                    label: "Quyền",
+                    sortable: true,
+                }
+            ],
+            tableData: [],
+            idUser: 0,
+            codeUser: '',
+            objGetUser: {
+                id: 0,
+                code: "",
+                fullName: "",
+                dob: "",
+                gender: "",
+                phone: "",
+                email: "",
+                address: "",
+                class: ""
+            },
+            objUser: {
+                id: 0,
+                username: "",
+                password: "",
+                email: "",
+                status: "",
+                roles: [],
+                role: {
+                    id: "",
+                    name: ""
+                }
+            },
+            objGetListUser: {
+                id: 0
+            },
+            modalActionType: -1,
+            flagModal: false,
+            myDateFormat: ''
+        }
+    },
+    created() {
+
+    },
+    computed: {
+        rows() {
+            return this.tableData.length;
+        }
+    },
+    mounted() {
+        // this.searchContact();
+        this.handleGetRole();
+
+    },
+    methods: {
+        ...mapActions('admin/role', {
+            apiGetListRole: 'apiGetListRole'
+        }),
+        closeModalListSub() {
+            this.$bvModal.hide('modal-add-list-tb');
+        },
+        handleGetRole() {
+            this.apiGetListRole()
+                .then(response => {
+                    this.tableData = response;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+        },
+        onFiltered(filteredItems) {
+            // Trigger pagination to update the number of buttons/pages due to filtering
+            this.totalRows = filteredItems.length;
+            this.currentPage = 1;
+        },
+        formatDate(d) {
+            return ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+        },
+        searchContact() {
+
         }
     }
 }
 </script>
 
+<style scoped>
+
+</style>
+
+
 <template>
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <div class="row" style="float: right">
-                    <div class="col-12">
-                        <button type="button" class="btn btn-success" @click="prepareAddRoleGroup"><i class="uil uil-plus me-1"></i> Tạo mới nhóm quyền</button>
-                    </div>
 
-                </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive mb-1">
+
+                <div class="table-responsive">
                     <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
-                        <template v-slot:cell(action)=data>
-                            <ul class="list-inline mb-0">
-                                <a title="Xem nhóm quyền"
-                                   @click="viewRoleGroup(data.item.id)"
-                                   class="text-secondary p-2"
-                                ><i class="uil uil-eye font-size-18"></i>
-                                </a>
-                                <a title="Sửa nhóm quyền"
-                                   @click="prepareEditRoleGroup(data.item.id)"
-                                   class="text-secondary pe-2"
-                                ><i class="uil uil-pen font-size-18"></i>
-                                </a>
-                                <li class="list-inline-item">
-                                    <a
-                                        @click="deleteRoleGroup(data.item.id)"
-                                        class="text-secondary"
-                                        v-b-tooltip.hover
-                                        title="Xóa nhóm quyền"
-                                    >
-                                        <i class="uil uil-trash-alt font-size-18"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </template>
                     </b-table>
                 </div>
+
                 <div class="row">
                     <div class="col-6 d-inline-flex">
                         <label class="d-inline-flex align-items-center mb-0 pb-0">
@@ -217,12 +164,10 @@ export default {
                 </div>
             </div>
         </div>
-        <create-edit-role @handleAfterAction="handleAfterAction" :actionType="actionType" :roleEditId="roleEditId"></create-edit-role>
+
+
     </div>
+
 </template>
 
 
-
-<style scoped>
-
-</style>
