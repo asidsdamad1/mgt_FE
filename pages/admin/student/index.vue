@@ -207,7 +207,6 @@ export default {
             this.typeSegment = 3;
             this.idStudent = parseInt(id);
             this.codeStudent = id;
-
             this.flagModal = !this.flagModal;
 
             this.apiGetStudent({

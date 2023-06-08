@@ -100,8 +100,8 @@ export default {
                     else if (this.actionType === 3)
                         this.modalTitle = 'Xem thông tin Sinh viên';
                     this.apiGetStudent({
-                        conditionSearch: 'CODE',
-                        valueSearch: this.codeStudent
+                        conditionSearch: 'ID',
+                        valueSearch: this.idStudent
                     }).then(response => {
                         this.studentObj = response[0];
                     })
