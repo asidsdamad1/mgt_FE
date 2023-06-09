@@ -8,9 +8,9 @@ import {getUserInfo} from "@/utils/cookieAuthen";
 
 export default {
     middleware: ['check-authen'],
-    name: "TeacherModal",
+    name: "ProjectModal",
     props: {
-        idTeacher: {
+        idProject: {
             type: Number,
             default: 0
         },
@@ -48,6 +48,8 @@ export default {
             },
             modalTitle: '',
             optionTopic: [],
+            optionSession: [],
+            optionTeacher: [],
             pkgStartDate: '',
             pkgEndDate: '',
             objProject: {
@@ -55,9 +57,11 @@ export default {
                 name: '',
                 student: {
                     id: 0,
-                    name: ''
+                    name: '',
+                    code: ''
                 },
                 teacher: {
+                    fullName: '',
                     id: 0
                 },
                 session: {
@@ -85,6 +89,7 @@ export default {
     methods: {
         ...mapActions('teachers', {
             apiAddTeacher: 'apiAddTeacher',
+            apiGetListTeacher: 'apiGetListTeacher',
             apiEditTeacher: 'apiEditTeacher',
             apiGetTeacherById: 'apiGetTeacherById',
         }),
@@ -92,7 +97,12 @@ export default {
             apiGetTopic: 'apiGetTopic'
         }),
         ...mapActions('project', {
-            apiAddProject: 'apiAddProject'
+            apiAddProject: 'apiAddProject',
+            apiGetProject: 'apiGetProject',
+            apiEditProject: 'apiEditProject',
+        }),
+        ...mapActions('assign/session', {
+            apiGetSession: 'apiGetSession'
         }),
         resetForm() {
             this.teacherObj = {
@@ -108,82 +118,46 @@ export default {
         },
         handleInitData() {
             this.$nextTick(() => {
-                console.log('handleInitData', this.idTeacher);
-                let objInput = {id: 0};
+                console.log('handleInitData', this.idProject);
                 this.apiGetTopic({
                     conditionSearch: '',
                     valueSearch: ''
                 }).then(response => {
                     this.optionTopic = response;
+                });
+                this.apiGetListTeacher({
+                    conditionSearch: '',
+                    valueSearch: ''
+                }).then(res => {
+                    this.optionTeacher = res;
                 })
-                // alert(this.actionType);
-                if (this.actionType === 1) {
-                    this.modalTitle = 'Thêm Event';
-                    this.resetForm();
-                } else if (this.actionType === 2 || this.actionType === 3) {
-                    objInput = {id: this.idTeacher};
-                    if (this.actionType === 2)
-                        this.modalTitle = 'Sửa Event';
-                    else if (this.actionType === 3)
-                        this.modalTitle = 'Xem thông tin Event';
-                    this.apiGetTeacherById(objInput)
-                        .then(response => {
-                            this.teacherObj = response;
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
+                this.apiGetSession({
+                    conditionSearch: '',
+                    valueSearch: ''
+                }).then(res => {
+                    this.optionSession = res;
+                })
+                if (this.idProject !== -1) {
+                    this.apiGetProject({
+                        valueSearch: this.idProject,
+                        conditionSearch: 'ID'
+                    }).then(res => {
+                        this.objProject = res[0];
+
+                    })
                 }
+
             });
         },
-        addEvent() {
+        addProject() {
             let optionEvent = '';
             let ids = [];
             if (this.checkDataInput()) {
-
-                // console.log('addEvent', this.callOptionsSelected);
-                //     if (this.teacherObj.dataType === 'call') {
-                //         for (let i = 0; i < this.callOptionsSelected.length; i++) {
-                //             ids.push(this.callOptionsSelected[i].value);
-                //         }
-                //         if (this.callOptionsSelected.length > 1) {
-                //             optionEvent = ids.join(',') + ';time_wait:' + this.timeWaitCall;
-                //         } else {
-                //             optionEvent = ids.join(',');
-                //         }
-                //     } else if (this.eventObj.dataType === 'ussd') {
-                //         optionEvent = this.ussdType + "," + this.ussdValue;
-                //     } else if (this.eventObj.dataType === 'package') {
-                //         optionEvent = 'pkg_code:' + this.pkgCode + ',pkg_capacity:' + this.pkgCapacity + ',pkg_warning:' + this.pkgWarning + ',pkg_startdate:' + this.pkgStartDate + ',pkg_enddate:' + this.pkgEndDate;
-                //     } else if (this.eventObj.dataType === 'sub_location') {
-                //         let provinceIds = [];
-                //         let proIds = '';
-                //
-                //         for (let i = 0; i < this.provinceOptionsSelected.length; i++) {
-                //             provinceIds.push(this.provinceOptionsSelected[i].id);
-                //         }
-                //         proIds = provinceIds.join(',');
-                //         let districtIds = [];
-                //         let distIds = '';
-                //         for (let j = 0; j < this.districtOptionsSelected.length; j++) {
-                //             districtIds.push(this.districtOptionsSelected[j].id);
-                //         }
-                //         distIds = districtIds.join(',');
-                //         optionEvent = 'provinces:' + proIds + ';districts:' + distIds;
-                //
-                //     }
-                //     console.log('addEvent', optionEvent);
-                //     this.eventObj.eventOption = optionEvent;
                 if (this.actionType === 2) {
-                    this.teacherObj.id = this.idTeacher;
-                    this.apiEditTeacher(this.teacherObj)
+                    this.apiEditProject(this.objProject)
                         .then(response => {
-                            console.log('apiEditTeacher', response);
-                            this.$emit('handleGetTeacher');
-                            this.$bvModal.hide('modal-add-event');
+                            this.$emit('handleGetProject');
+                            this.$bvModal.hide('modal-add-project-admin');
                         })
                         .catch(err => {
                             console.log(err);
@@ -193,19 +167,23 @@ export default {
                         });
                 }
                 if (this.actionType === 1) {
-                    this.objProject.teacher.id = JSON.parse(getUserInfo()).teacherId;
-                    this.objProject.student.id = JSON.parse(getUserInfo()).studentId;
-                    this.objProject.session.id = JSON.parse(getUserInfo()).session;
-                    this.objProject.status = 0;
+                    this.objProject.status = 1;
                     this.apiAddProject(this.objProject)
                         .then(response => {
-                            this.$emit('handleGetTeacher');
-                            Swal.fire("", response, "success");
+                            Swal.fire("Thêm thành công", response, "success");
 
-                            this.$bvModal.hide('modal-add-event');
+                            this.$bvModal.hide('modal-add-project-admin');
+                            this.$emit('handleGetProject');
                         })
                         .catch(err => {
+                            if (err.toString().includes('400')) {
+                                Swal.fire("Thêm thất bại", "Sinh viên đã có đồ án", "error");
+                            }
+                            if (err.toString().includes('404')) {
+                                Swal.fire("Thêm thất bại", "Mã sinh viên không tồn tại", "error");
+                            }
                             console.log(err);
+
                         })
                         .finally(() => {
                             // this.commonLoadingPage(false);
@@ -214,11 +192,27 @@ export default {
             }
         },
         closeModal() {
-            this.$bvModal.hide('modal-add-project');
+            this.$bvModal.hide('modal-add-project-admin');
         },
         checkDataInput() {
             if (this.objProject.name === null || this.objProject.name.trim() === '') {
-                this.commonNotifyVue("Bạn phải nhập tên giảng viên", 'warn');
+                this.commonNotifyVue("Bạn phải nhập tên đồ án", 'warn');
+                return false;
+            }
+            if (this.objProject.topic.id === 0) {
+                this.commonNotifyVue("Bạn phải chọn chủ đề", 'warn');
+                return false;
+            }
+            if (this.objProject.session.id === 0) {
+                this.commonNotifyVue("Bạn phải chọn năm học", 'warn');
+                return false;
+            }
+            if (this.objProject.student.code === null || this.objProject.student.code.trim() === '') {
+                this.commonNotifyVue("Bạn phải nhập mã sinh viên thực hiện", 'warn');
+                return false;
+            }
+            if (this.objProject.teacher.id === 0) {
+                this.commonNotifyVue("Bạn phải chọn giảng viên hướng dẫn", 'warn');
                 return false;
             }
             return true;
@@ -237,7 +231,7 @@ export default {
 </style>
 
 <template>
-    <b-modal id="modal-add-project"
+    <b-modal id="modal-add-project-admin"
              size="lg" :title="modalTitle"
              title-class="font-18" hide-footer
              @cancel="flagModal = false"
@@ -250,19 +244,42 @@ export default {
             </div>
         </div>
         <div class="row pb-3">
-            <div class="col-12">
+            <div class="col-6">
                 <label>Chủ đề</label>
                 <select v-model="objProject.topic.id" :disabled="actionType===3" class="form-control">
-                    <option v-for="option in optionTopic" :value="option.id" >
-                        {{ option.name  }}
+                    <option v-for="option in optionTopic" :value="option.id">
+                        {{ option.name }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-6">
+                <label>Năm học</label>
+                <select v-model="objProject.session.id" :disabled="actionType===3" class="form-control">
+                    <option v-for="option in optionSession" :value="option.id">
+                        {{ option.year }}
                     </option>
                 </select>
             </div>
         </div>
+        <div class="row pb-3">
+            <div class="col-6">
+                <label>Sinh viên thực hiện</label>
+                <input type="text" maxlength="200" v-model="objProject.student.code" :disabled="actionType===2" placeholder="Nhập mã sinh viên" class="form-control form-control multiselect__tags"/>
+            </div>
+            <div class="col-6">
+                <label>Giảng viên hướng dẫn</label>
+                <select v-model="objProject.teacher.id" :disabled="actionType===3" class="form-control">
+                    <option v-for="option in optionTeacher" :value="option.id">
+                        {{ option.fullName }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <!-- end card-body -->
         <div class="text-end mt-4">
             <button type="button" class="btn btn-default" @click="closeModal">Bỏ qua</button>
-            <button type="button" class="btn btn-primary px-4" @click="addEvent">Lưu</button>
+            <button type="button" class="btn btn-primary px-4" @click="addProject">Lưu</button>
         </div>
     </b-modal>
 </template>

@@ -8,7 +8,7 @@ export const menuItems = [
     },
     {
         id: 19,
-        label: "Danh mục",
+        label: "Danh mục quản lý",
         icon: "uil-list-ul",
         role: "ROLE_ADMIN",
         subItems: [
@@ -156,18 +156,6 @@ export const menuItems = [
                 parentId: 16
             },
         ]
-    },
-    {
-        id: 22,
-        label: "Phân công hướng dẫn",
-        link: "/assign/edit/edit-session",
-        role: "ROLE_ADMIN"
-    },
-    {
-        id: 23,
-        label: "Phân công hướng dẫn",
-        link: "/assign/view/view-session",
-        role: "ROLE_ADMIN"
     }
     // {
     //     id: 13,

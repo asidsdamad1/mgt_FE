@@ -320,7 +320,7 @@ export default {
                         <i class="uil uil-user-circle font-size-18 align-middle text-muted me-1"></i>
                         <span class="align-middle">Tài khoản</span>
                     </a>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="/user/change-password">
                         <i class="uil uil-wallet font-size-18 align-middle me-1 text-muted"></i>
                         <span class="align-middle">Đổi mật khẩu</span>
                     </a>

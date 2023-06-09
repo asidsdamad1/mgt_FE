@@ -39,7 +39,9 @@ export default {
     methods: {
         ...mapActions('project', {
             apiAddOutlineFile: 'apiAddOutlineFile',
-            apiAddReportFileDetail: 'apiAddReportFileDetail'
+            apiAddReportFileDetail: 'apiAddReportFileDetail',
+            apiDeleteReportFile: 'apiDeleteReportFile',
+            apiDeleteOutlineFile: 'apiDeleteOutlineFile',
         }),
         addOutlineFile() {
             let formData = new FormData();
@@ -49,35 +51,72 @@ export default {
                 formData.append('file', this.fileUpload);
                 formData.append('type', this.type);
                 if(this.type === "REPORT_DETAIL") {
-                    formData.append('id', this.idDetail);
-                    this.apiAddReportFileDetail(formData)
-                        .then(response => {
-                            this.$emit('handleGetProjectDetail');
-                            this.$bvModal.hide('modal-add-file-outline');
+                    if(this.idDetail !== 0) {
+                        formData.append('id', this.idDetail);
+                        this.apiAddReportFileDetail(formData)
+                            .then(response => {
+                                this.$emit('handleGetProjectDetail');
+                                this.$bvModal.hide('modal-add-file-outline');
 
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            })
+                            .finally(() => {
+                                // this.commonLoadingPage(false);
+                            });
 
+                    }
+                    if(this.idProject !== 0) {
+                        formData.append('id', this.idProject);
+                        this.apiAddOutlineFile(formData)
+                            .then(response => {
+                                this.$emit('handleGetProject');
+                                this.$bvModal.hide('modal-add-file-outline');
+
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            })
+                            .finally(() => {
+                                // this.commonLoadingPage(false);
+                            });
+
+                    }
                 } else {
-                    formData.append('id', this.idProject);
-                    this.apiAddOutlineFile(formData)
-                        .then(response => {
-                            console.log('apiAddBlacklist', response);
-                            this.$emit('handleGetProject');
-                            this.$bvModal.hide('modal-add-file-outline');
+                    if(this.idDetail !== 0) {
+                        formData.append('id', this.idDetail);
+                        this.apiAddReportFileDetail(formData)
+                            .then(response => {
+                                console.log('apiAddBlacklist', response);
+                                this.$emit('handleGetProjectDetail');
+                                this.$bvModal.hide('modal-add-file-outline');
 
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        })
-                        .finally(() => {
-                            // this.commonLoadingPage(false);
-                        });
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            })
+                            .finally(() => {
+                                // this.commonLoadingPage(false);
+                            });
+                    }
+                    if(this.idProject !== 0) {
+                        formData.append('id', this.idProject);
+                        this.apiAddOutlineFile(formData)
+                            .then(response => {
+                                this.$emit('handleGetProject');
+                                this.$bvModal.hide('modal-add-file-outline');
+
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            })
+                            .finally(() => {
+                                // this.commonLoadingPage(false);
+                            });
+
+                    }
+
                 }
             }
         },

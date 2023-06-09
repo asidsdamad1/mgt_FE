@@ -19,6 +19,21 @@ const actions = {
         }
     },
 
+    async apiEditProject({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiEditProject}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiGetProjectDetail({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_PROJECT.apiGetProjectDetail}`+`/${payload}`);
@@ -37,6 +52,36 @@ const actions = {
     async apiGetDetailById({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_PROJECT.apiGetDetailById}`+`/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiDeleteReportFile({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteReportFile}`+`/${payload}`);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
+    async apiDeleteOutlineFile({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteOutlineFile}`+`/${payload}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }
@@ -157,6 +202,20 @@ const actions = {
     async apiAddReportFileDetail({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_PROJECT.apiAddReportFileDetail}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+    async apiDeleteProject({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiDeleteProject}`+`/${payload}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

@@ -413,6 +413,7 @@ export default {
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
                                 <button title="Xóa chi tiết"
+                                        :hidden="user.role !== 'ROLE_TEACHER'"
                                         @click="deleteDetail(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>

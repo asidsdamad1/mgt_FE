@@ -1,20 +1,19 @@
 <script>
 
 import {mapActions} from "vuex";
-import Swal from "sweetalert2";
 import Multiselect from "vue-multiselect";
-import StudentModal from "../../../components/student/StudentModal.vue";
-import AddStudentModal from "../../../components/student/AddStudentModal.vue";
-import AddDetailModal from "../../../components/project/AddDetailModal";
+import AddOutlineModal from "../../../components/project/AddOutlineModal";
+import {getUserInfo} from "../../../utils/cookieAuthen";
+import Swal from "sweetalert2";
+import ProjectModal from "../../../components/admin/ProjectModal.vue";
 
 export default {
     middleware: ['check-authen'],
-    name: "subscriber",
+    name: "project-admin",
     components: {
         Multiselect,
-        AddDetailModal,
-        AddStudentModal,
-        StudentModal
+        ProjectModal,
+        AddOutlineModal
     },
     data() {
         return {
@@ -45,34 +44,49 @@ export default {
                     sortable: true,
                 },
                 {
-                    key: "code",
-                    label: "Mã Sinh Viên",
+                    key: "topic.name",
+                    label: "Chủ đề",
                     sortable: true,
                 },
                 {
-                    key: "fullName",
-                    label: "Tên Sinh Viên",
+                    key: "name",
+                    label: "Tên đề tài",
                     sortable: true,
                 },
                 {
-                    key: "studentClass.name",
-                    label: "Lớp ",
+                    key: "session.year",
+                    label: "Năm học",
                     sortable: true,
                 },
                 {
-                    key: "dob",
-                    label: "Ngày sinh",
+                    key: "student.code",
+                    label: "Mã sinh viên",
                     sortable: true,
                 },
                 {
-                    key: "studentClass.course",
-                    label: "Khóa",
+                    key: "student.fullName",
+                    label: "Sinh viên",
                     sortable: true,
                 },
                 {
-                    key: "email",
-                    label: "Email",
+                    key: "student.studentClass.course",
+                    label: "Khoá",
                     sortable: true,
+                },
+                {
+                    key: "outlineFile",
+                    label: "Đề cương",
+                    sortable: true,
+                },
+                {
+                    key: "reportFile",
+                    label: "Báo cáo",
+                    sortable: true,
+                },
+                {
+                    key: "status",
+                    label: "Trạng thái",
+                    sortable: true
                 },
                 {
                     key: "action",
@@ -81,26 +95,41 @@ export default {
                 },
             ],
             tableData: [],
-            idStudent: 0,
+            idProject: 0,
             codeStudent: '',
-            objGetStudent: {
+            objSearch: {
+                conditionSearch: '',
+                valueSearch: ''
+            },
+            objProject: {
                 id: 0,
-                code: "",
-                fullName: "",
-                dob: "",
-                gender: "",
-                phone: "",
-                email: "",
-                address: "",
-                class: ""
+                name: '',
+                student: {
+                    id: 0,
+                    name: ''
+                },
+                teacher: {
+                    id: 0
+                },
+                session: {
+                    id: 0,
+                    name: ''
+                },
+                topic: {
+                    id: 0, name: ''
+
+                },
+                status: 0
             },
             objGetListStudent: {
                 id: 0
             },
             modalActionType: -1,
             flagModal: false,
-            studentClass: [],
-            myDateFormat: ''
+            status: '',
+            teacherId: 0,
+            type: '',
+            user: JSON.parse(getUserInfo())
         }
     },
     created() {
@@ -112,69 +141,33 @@ export default {
         }
     },
     mounted() {
-        // this.searchContact();
-        this.handleGetStudent();
-
-        // this.getStudentClass();
+        this.handleGetProject();
     },
     methods: {
-        ...mapActions('admin/students', {
-            apiGetStudent: 'apiGetStudent',
-            apiDeleteStudent: 'apiDeleteStudent',
-            apiSearchStudent: 'apiSearchStudent',
-            apiImportStudent: 'apiImportStudent',
-            apiGetStudentClass: 'apiGetStudentClass'
+        getUserInfo,
+        ...mapActions('project', {
+            apiGetProject: 'apiGetProject',
+            apiDeleteProject: 'apiDeleteProject',
+            apiDeleteReportFile: 'apiDeleteReportFile',
+            apiDeleteOutlineFile: 'apiDeleteOutlineFile',
+        }),
+        ...mapActions('assign/assignment', {
+            apiGetAssignment: 'apiGetAssignment'
         }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
         },
-        getStudentClass() {
-            this.apiGetStudentClass().then(response => {
-                this.studentClass = response;
+
+        handleGetProject() {
+            this.apiGetProject({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                this.tableData = res;
             })
         },
-        addListSub() {
-            this.errorValidate = [];
-            let formData = new FormData();
-            if (this.fileUpload === null) {
-                this.commonNotifyVue('Bạn phải chọn file chứa danh sách thuê bao', 'warn');
-            } else {
-                formData.append('fileExcel', this.fileUpload);
-                console.log(formData);
-
-                this.apiImportStudent(formData)
-                    .then(response => {
-                        console.log('apiAddBlacklist', response);
-                        if (response === null) {
-                            this.$emit('handleGetStudent');
-                            this.$bvModal.hide('modal-add-file-student');
-                        } else {
-                            this.commonWarningVue("bug");
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    })
-                    .finally(() => {
-                        // this.commonLoadingPage(false);
-                    });
-
-            }
-        },
-        handleGetStudent() {
-            this.apiGetStudent(this.objGetStudent)
-                .then(response => {
-                    console.log('apiGetListContactGroup', response)
-                    this.tableData = response;
-                })
-                .catch(err => {
-                    console.log(err)
-                })
-                .finally(() => {
-                })
-        },
-        searchContact() {
-            let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+        searchStudent() {
+            let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
             console.log('apiGetListContactGroup', objInput);
             if (this.conditionSearch !== '' && this.conditionSearch !== 'ALL') {
                 if (this.valueSearch.trim() === '') {
@@ -200,77 +193,63 @@ export default {
             this.totalRows = filteredItems.length;
             this.currentPage = 1;
         },
-        viewStudent(id) {
-            this.isEditModalField = true;
-            this.disableAdd = true;
-            this.titleModal = 'Xem Chi Tiết';
-            this.typeSegment = 3;
-            this.idStudent = parseInt(id);
-            this.codeStudent = id;
-            this.flagModal = !this.flagModal;
-
-            this.apiGetStudent({
-                conditionSearch: 'ID',
-                valueSearch: id,
-            }).then(response => {
-                this.objGetStudent = response[0];
-
-                console.log("object student:: ", this.objGetStudent)
-
-                this.modalActionType = 3;
-
-                this.flagModal = !this.flagModal;
-                this.$bvModal.show('modal-add-event');
-
-            }).catch(err => {
-                console.log(err)
-            }).finally(() => {
-            })
+        handleModalCall() {
+            this.searchStudent();
         },
-        showModalStudent() {
-            this.idStudent = -1;
+        getRowClass(row) {
+            if (row.value === 'ACTIVE') {
+                row.value = 'Đã duyệt';
+                return 'text-success';
+            } else if (row.value === 'RESERVE') {
+                row.value = 'Bảo lưu';
+                return 'text-danger';
+            } else if (row.value === 'INACTIVE') {
+                row.value = 'Chưa duyệt';
+                return 'text-warning';
+            } else {
+                return '';
+            }
+        },
+        showModalProject() {
+            this.idProject = -1;
             this.modalActionType = 1;
-            this.objGetStudent.name = "";
-            this.objGetStudent.dob = "";
-            this.objGetStudent.gender = "";
-            this.objGetStudent.phone = "";
-            this.objGetStudent.email = "";
-            this.objGetStudent.address = "";
-            this.objGetStudent.code = "";
-            this.objGetStudent.class = "";
             this.flagModal = !this.flagModal;
-            this.$bvModal.show('modal-add-event');
+            this.$bvModal.show('modal-add-project-admin');
         },
-        prepareEditStudent(id) {
+        showModalOutline() {
+            this.objSearch.conditionSearch = 'STUDENT';
+            this.objSearch.valueSearch = JSON.parse(getUserInfo()).studentId;
+            this.apiGetProject(this.objSearch)
+                .then(response => {
+                    console.log(response[0].id)
+                    this.idProject = response[0].id;
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+                .finally(() => {
+                })
+            this.type = "OUTLINE"
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
+        },
+        showModalReport(id, type) {
+            this.idProject = id;
+            this.type = type;
+            this.flagModal = !this.flagModal;
+            this.$bvModal.show('modal-add-file-outline');
+        },
+        getValue(row) {
+            console.log(row.value)
+        },
+        editProject(id) {
             this.isEditModalField = false;
             this.titleModal = 'Sửa thông tin';
-            this.typeStudent = 2;
-            this.objGetStudent.id = parseInt(id);
-            this.idStudent = parseInt(id);
-
-            this.apiGetStudent({
-                id: id,
-                valueSearch: '',
-                conditionSearch: ''
-            }).then(response => {
-                console.log(response);
-                this.objGetStudent.code = response.code;
-                this.objGetStudent.name = response.fullName;
-                this.objGetStudent.dob = response.dob;
-                this.objGetStudent.gender = response.gender;
-                this.objGetStudent.phone = response.phone;
-                this.objGetStudent.email = response.email;
-                this.objGetStudent.address = response.address;
-                this.modalActionType = 2;
-
-                this.$bvModal.show('modal-add-event');
-
-            }).catch(err => {
-                console.log(err)
-            }).finally(() => {
-            })
+            this.idProject = parseInt(id);
+            this.modalActionType = 2;
+            this.$bvModal.show('modal-add-project-admin');
         },
-        deleteStudent(id) {
+        deleteProject(id) {
             console.log("id: ", id);
 
             Swal.fire({
@@ -284,55 +263,59 @@ export default {
                 cancelButtonText: "Hủy"
             }).then(result => {
                 if (result.isConfirmed) {
-                    this.apiDeleteStudent(id).then(response => {
+                    this.apiDeleteProject(id).then(response => {
                         console.log("in")
-                        Swal.fire("", response.err_message, "success");
-                        this.handleGetStudent();
-
-
+                        Swal.fire("Xóa thành công", response, "success");
+                        this.handleGetProject();
                     }).catch(err => {
+                        if(err.toString().includes('404')) {
+                            Swal.fire("Xóa thất bại", "Đồ án không tồn tại", "error");
+                        }
                         console.log(err);
                     }).finally(() => {
                         // this.commonLoadingPage(false);
                     })
                 } else {
                 }
-                if (result.value) {
-                    Swal.fire("Deleted!", "Your file has been deleted.", "success");
+            });
+        },
+        deleteFile(id, type) {
+            Swal.fire({
+                title: "Bạn có chắc chắn muốn xóa?",
+                text: "Bạn sẽ không lấy lại được dữ liệu đã xóa!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#34c38f",
+                cancelButtonColor: "#f46a6a",
+                confirmButtonText: "Đồng ý",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    if(type === 'REPORT') {
+                        this.apiDeleteReportFile(id).then(response => {
+                            Swal.fire("", "Xóa thành công", "success");
+                            this.handleGetProject();
+                        }).catch(err => {
+                            console.log(err);
+                        }).finally(() => {
+                            // this.commonLoadingPage(false);
+                        })
+                    }
+                    if(type === 'OUTLINE') {
+                        this.apiDeleteOutlineFile(id).then(response => {
+                            Swal.fire("", "Xóa thành công", "success");
+                            this.handleGetProject();
+                        }).catch(err => {
+                            console.log(err);
+                        }).finally(() => {
+                            // this.commonLoadingPage(false);
+                        })
+                    }
+
+                } else {
                 }
             });
         },
-        changeContactGroupStatus(id, oldStatus) {
-            let status = -1;
-            if (oldStatus === 1)
-                status = 0;
-            if (oldStatus === 0)
-                status = 1;
-            let objInput = {id: id, status: status};
-            this.apiChangeContactGroupStatus(objInput)
-                .then(response => {
-                    console.log('apiChangeContactGroupStatus', response);
-                    if (response.err_code === 0) {
-                        Swal.fire("", response.err_message, "success");
-                        this.searchContact();
-                        // this.searchContact();
-                    } else {
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
-
-        },
-        handleModalCall() {
-            this.searchContact();
-        },
-        formatDate(d) {
-            return ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-        }
     }
 }
 </script>
@@ -346,74 +329,104 @@ export default {
     <div class="row">
         <div class="card">
             <div class="card-header">
-                <div class="row">
-                    <div class="col-6"></div>
-                    <div class="col-6 text-end">
-                        <button type="button" class="btn btn-primary" v-b-modal.modal-add-file-student><i class="uil uil-arrow-circle-up me-1"></i> Tải tập SV</button>
-                        <button type="button" class="btn btn-success" @click="showModalStudent"><i class="uil uil-plus me-1"></i> Tạo mới sinh viên</button>
+                <div class="row" style="float: right">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-success" @click="showModalProject"><i class="uil uil-plus me-1"></i> Tạo đồ án</button>
                     </div>
+
                 </div>
             </div>
             <div class="card-body">
                 <div class="row mb-3">
-                    <div class="col-3">
+                    <div class="col-5">
                         <label>Điều kiện lọc</label>
                         <select v-model="conditionSearch" class="form-control">
-                            <option value=""></option>
-                            <option value="-1">Tất cả</option>
-                            <option value="ID">ID SĐT</option>
-                            <option value="SDT">Số điện thoại</option>
+                            <option value="ALL">Tất cả</option>
+                            <option value="NAME">Tên đề tài</option>
+                            <option value="STUDENT_NAME">Tên sinh viên</option>
+                            <option value="PHONE">Mã sinh viên</option>
+                            <option value="EMAIL">Năm học</option>
+                            <option value="CLASS">Khóa</option>
                         </select>
                     </div>
-                    <div class="col-2">
-                        <label>Giá trị tìm kiếm</label>
+                    <div class="col-7">
+                        <label>Từ khóa tìm kiếm</label>
                         <div class="row">
-                            <input type="text" v-model="valueSearch" class="form-control"/>
-
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <label>Thời gian bắt đầu</label>
-                        <input type="date" v-model="startDate" class="form-control"/>
-                    </div>
-                    <div class="col-4">
-                        <label>Thời gian kết thúc</label>
-                        <div class="row">
-                            <div class="col-8">
-
-                                <input type="date" v-model="endDate" class="form-control"/>
+                            <div class="col-10">
+                                <input type="text" v-model="valueSearch" class="form-control"/>
                             </div>
-                            <div class="col-4">
-                                <button type="button" class="btn btn-primary d-block" @click="searchSub"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
+                            <div class="col-2">
+                                <button type="button" class="btn btn-primary d-block" @click="searchStudent"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="table-responsive">
                     <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
+                        <template #cell(status)="row">
+                            <div :class="getRowClass(row)">
+                                {{ row.value }}
+                            </div>
+                        </template>
+                        <template #cell(outlineFile)="row">
+                            <a :href="row.value" :hidden="row.value === ''">
+                                Tải xuống
+                            </a>
+                            <span :hidden="row.value !== ''">
+                                Chưa có file
+                            </span>
+                        </template>
+                        <template #cell(reportFile)="row">
+                            <a :href="row.value" :hidden="row.value === ''">
+                                Tải xuống
+                            </a>
+                            <span :hidden="row.value !== ''">
+                                Chưa có file
+                            </span>
+                        </template>
                         <template v-slot:cell(index)="data">
                             {{ data.index + 1 }}
                         </template>
-                        <template #cell(dob)="row">
-                            {{ formatDate(new Date(row.value)) }}
+                        <template v-slot:cell(reportFile)="data">
+                            <a :href="data.value" :hidden="data.value === ''">
+                                Tải xuống
+                            </a>
+                            <button :hidden="data.value === ''" @click="deleteFile(data.item.id, 'REPORT')" class="btn btn-gray btn-block view-cart col-auto">
+                                <i class="uil uil-trash me-1"></i>
+                            </button>
+
+                            <button :hidden="data.value !== '' || user.role === 'ROLE_TEACHER'"
+                                    class="btn btn-block view-cart col-auto text-white"
+                                    style="background-color: #5b73e8"
+                                    @click="showModalReport(data.item.id, 'REPORT')" v-b-modal.modal-add-file-outline>
+                                Upload
+                            </button>
+                        </template>
+                        <template v-slot:cell(outlineFile)="data">
+                            <a :href="data.value" :hidden="data.value === ''">
+                                Tải xuống
+                            </a>
+                            <button :hidden="data.value === ''" @click="deleteFile(data.item.id, 'OUTLINE')" class="btn btn-gray btn-block view-cart col-auto">
+                                <i class="uil uil-trash me-1"></i>
+                            </button>
+
+                            <button :hidden="data.value !== '' || user.role === 'ROLE_TEACHER'"
+                                    class="btn btn-block view-cart col-auto text-white"
+                                    style="background-color: #5b73e8"
+                                    @click="showModalReport(data.item.id, 'OUTLINE')" v-b-modal.modal-add-file-outline>
+                                Upload
+                            </button>
                         </template>
                         <template v-slot:cell(action)=data>
                             <div class="row align-items-center">
-                                <button title="Xem chi tiết"
-                                        @click="viewStudent(data.item.id)"
-                                        class="btn btn-gray btn-block view-cart col-auto"
-                                ><i class="uil uil-eye me-1"></i>
-                                </button>
-
                                 <button title="Sửa chi tiết"
-                                        @click="prepareEditStudent(data.item.id)"
+                                        @click="editProject(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-pen me-1"></i>
                                 </button>
 
                                 <button title="Xóa chi tiết"
-                                        @click="deleteStudent(data.item.id)"
+                                        @click="deleteProject(data.item.id)"
                                         class="btn btn-gray btn-block view-cart col-auto"
                                 ><i class="uil uil-trash me-1"></i>
                                 </button>
@@ -441,22 +454,22 @@ export default {
             </div>
         </div>
 
-        <student-modal
-            :idStudent="idStudent"
+        <project-modal
+            :idProject="idProject"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetStudent="handleGetStudent"
+            @handleGetProject="handleGetProject"
         >
-        </student-modal>
+        </project-modal>
 
-        <add-student-modal
-            :idStudent="idStudent"
-            :codeStudent="codeStudent"
+        <add-outline-modal
+            :idProject="this.idProject"
+            :type="this.type"
             :actionType="modalActionType"
             :flagModal="flagModal"
-            @handleGetStudent="handleGetStudent"
+            @handleGetProject="handleGetProject"
         >
-        </add-student-modal>
+        </add-outline-modal>
     </div>
 
 </template>

@@ -8,7 +8,7 @@ import {getUserInfo} from "../../utils/cookieAuthen";
 
 export default {
     middleware: ['check-authen'],
-    name: "subscriber",
+    name: "project",
     components: {
         Multiselect,
         ProjectStudentModal,
