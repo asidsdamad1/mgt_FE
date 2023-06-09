@@ -153,7 +153,7 @@ export default {
                     <div class="card-body">
 
                         <div class="row mb-3">
-                            <div class="col-3">
+                            <div class="col-5">
                                 <label>Điều kiện lọc</label>
                                 <select v-model="conditionSearch" class="form-control">
                                     <option value=""></option>
@@ -162,25 +162,13 @@ export default {
                                     <option value="SDT">Số điện thoại</option>
                                 </select>
                             </div>
-                            <div class="col-2">
+                            <div class="col-7">
                                 <label>Giá trị tìm kiếm</label>
                                 <div class="row">
-                                    <input type="text" v-model="valueSearch" class="form-control"/>
-
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <label>Thời gian bắt đầu</label>
-                                <input type="date" v-model="startDate" class="form-control"/>
-                            </div>
-                            <div class="col-4">
-                                <label>Thời gian kết thúc</label>
-                                <div class="row">
-                                    <div class="col-8">
-
-                                        <input type="date" v-model="endDate" class="form-control"/>
+                                    <div class="col-10">
+                                        <input type="text" v-model="valueSearch" class="form-control"/>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-2">
                                         <button type="button" class="btn btn-primary d-block" @click="searchSub"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
                                     </div>
                                 </div>

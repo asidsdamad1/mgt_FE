@@ -615,9 +615,9 @@ export default {
                         </multiselect>
                     </div>
                 </div>
-                <div class="text-right mt-5 " style="float: right">
+                <div class="text-right mt-5 " :hidden="user.role !== 'ROLE_TEACHER'" style="float: right">
                     <b-button variant="light" @click="hideModal">Đóng</b-button>
-                    <b-button type="submit" variant="success" class="ml-1">Tạo mới</b-button>
+                    <b-button type="submit" variant="success" class="ml-1" >Tạo mới</b-button>
                 </div>
             </form>
         </b-modal>

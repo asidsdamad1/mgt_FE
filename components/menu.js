@@ -7,6 +7,35 @@ export const menuItems = [
         role: "ROLE_ADMIN"
     },
     {
+        id: 19,
+        label: "Danh mục",
+        icon: "uil-list-ul",
+        role: "ROLE_ADMIN",
+        subItems: [
+            {
+                id: 2,
+                label: "Danh sách giảng viên",
+                link: "/admin/teacher",
+                role: "ROLE_ADMIN",
+                parentId: 19
+            },
+            {
+                id: 3,
+                label: "Danh sách sinh viên",
+                link: "/admin/student",
+                role: "ROLE_ADMIN",
+                parentId: 19
+            },
+            {
+                id: 21,
+                label: "Danh sách đồ án",
+                link: "/admin/project",
+                role: "ROLE_ADMIN",
+                parentId: 19
+            },
+        ]
+    },
+    /*{
         id: 2,
         label: "Danh sách giáo viên",
         icon: "uil-list-ul",
@@ -19,7 +48,7 @@ export const menuItems = [
         icon: "uil-list-ul",
         link: "/admin/student",
         role: "ROLE_ADMIN"
-    },
+    },*/
     {
         id: 4,
         icon: "uil-browser",
@@ -127,6 +156,18 @@ export const menuItems = [
                 parentId: 16
             },
         ]
+    },
+    {
+        id: 22,
+        label: "Phân công hướng dẫn",
+        link: "/assign/edit/edit-session",
+        role: "ROLE_ADMIN"
+    },
+    {
+        id: 23,
+        label: "Phân công hướng dẫn",
+        link: "/assign/view/view-session",
+        role: "ROLE_ADMIN"
     }
     // {
     //     id: 13,

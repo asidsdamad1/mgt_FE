@@ -3,6 +3,8 @@
  * Dashboard component
  */
 export default {
+    middleware: ['check-authen'],
+
     data() {
         return {
             title: "Dashboard",
@@ -16,7 +18,6 @@ export default {
             ],
         };
     },
-    middleware: "authentication",
 
 };
 </script>
