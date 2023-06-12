@@ -327,6 +327,128 @@ export default {
 
 <template>
     <div class="row">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-2">
+                                <label>Thời gian báo cáo</label>
+                                <select class="form-select" v-model="objSearch.timeReport">
+                                    <option :value="1">Từ Ngày-Đến ngày</option>
+                                    <option :value="2">Hôm nay</option>
+                                    <option :value="3">Hôm qua</option>
+                                    <option :value="4">Tuần này</option>
+                                    <option :value="5">Tuần trước</option>
+                                    <option :value="6">Tháng này</option>
+                                    <option :value="7">Tháng trước</option>
+                                    <option :value="8">Năm nay</option>
+                                </select>
+                            </div>
+                            <div class="col-2" v-if="objSearch.timeReport === 1">
+                                <label>Từ ngày</label>
+                                <b-input-group>
+                                    <b-form-datepicker
+                                        calendar-width="400px"
+                                        placeholder="DD/MM/YYYY"
+                                        v-model="objSearch.startTime"
+                                        locale="vi"
+                                        :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+                                        class="form-select">
+                                    </b-form-datepicker>
+                                    <template #prepend>
+                                        <b-btn @click="objSearch.startTime = ''">Clear</b-btn>
+                                    </template>
+                                </b-input-group>
+                            </div>
+                            <div class="col-2" v-if="objSearch.timeReport === 1">
+                                <label>Đến ngày</label>
+                                <b-input-group>
+                                    <b-form-datepicker
+                                        calendar-width="400px"
+                                        placeholder="DD/MM/YYYY"
+                                        v-model="objSearch.endTime"
+                                        locale="vi"
+                                        :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+                                        class="form-select">
+                                    </b-form-datepicker>
+                                    <template #prepend>
+                                        <b-btn @click="objSearch.endTime = ''">Clear</b-btn>
+                                    </template>
+                                </b-input-group>
+                            </div>
+                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">
+                                <label>Lọc theo phân khúc đối tượng</label>
+                                <multiselect :select-label="'Select'" v-model="filterOptionSegmentSelected" :options="arrTypeSegment" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="segmentName" track-by="id">
+                                </multiselect>
+                            </div>
+                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">
+                                <label>Lọc theo khu vực địa lý</label>
+                                <multiselect :select-label="'Select'" v-model="filterOptionAreaSelected" :options="dataCtkvCode" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="ctkvName" track-by="ctkvCode">
+                                </multiselect>
+                            </div>
+                            <div class="col">
+                                <div class="row">
+                                    <label>&ensp;</label>
+                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" @click="initData" type="button" class="custom-btn-search btn btn-primary d-block me-2"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
+                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" type="button" class="btn btn-outline-primary" @click="isFilter = !isFilter">
+                                        <i class="uil uil-filter me-1"></i> Lọc
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3" v-show="isFilter">
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <label>Loại chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(1)" v-model="filterOptionTypeSelected" :options="arrTypeCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignType" track-by="campaignType">
+                                    </multiselect>
+                                </div>
+                                <div class="col">
+                                    <label>Tên chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(2)" v-model="filterOptionNameSelected" :options="arrNameCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignName" track-by="campaignName">
+                                    </multiselect>
+                                </div>
+                                <div class="col">
+                                    <label>Tag chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(3)" v-model="filterOptionTagSelected" :options="arrTagCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="tagName" track-by="tagName">
+                                    </multiselect>
+                                </div>
+                                <div class="col">
+                                    <label>Nhóm chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(4)" v-model="filterOptionGroupSelected" :options="arrCampaignGroup" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignGroupName"
+                                                 track-by="campaignGroupName">
+                                    </multiselect>
+                                </div>
+                                <div class="col">
+                                    <label>Trạng thái chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(5)" v-model="filterOptionStatusSelected" :options="arrStatusCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="status" track-by="status">
+                                    </multiselect>
+                                </div>
+                                <div class="col">
+                                    <label>Loại hình chiến dịch</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(6)" v-model="filterOptionNewTypeSelected" :options="arrNewsTypeCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignNewsType"
+                                                 track-by="campaignNewsType">
+                                    </multiselect>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    <label>Theo sản lượng quảng cáo</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(7)" v-model="filterOptionAdsSelected" :options="arrAdsOutput" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="numberAdv" track-by="numberAdv">
+                                    </multiselect>
+                                </div>
+                                <div class="col-2">
+                                    <label>Theo các chỉ số KPI</label>
+                                    <multiselect :select-label="'Select'" @input="onchangeFilter(8)" v-model="filterOptionKpiSelected" :options="arrKpiCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="name" track-by="id">
+                                    </multiselect>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-header">
                 <div class="row" style="float: right">
