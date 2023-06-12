@@ -52,6 +52,7 @@ export default {
                     key: "name",
                     label: "Tên đề tài",
                     sortable: true,
+                    thStyle: {width: "20%"},
                 },
                 {
                     key: "session.year",
@@ -99,14 +100,20 @@ export default {
             codeStudent: '',
             objSearch: {
                 conditionSearch: '',
-                valueSearch: ''
+                valueSearch: '',
+                startTime: '',
+                endTime: '',
+                timeReport: 1,
             },
             objProject: {
                 id: 0,
                 name: '',
                 student: {
                     id: 0,
-                    name: ''
+                    name: '',
+                    studentClass: {
+                        id: 0
+                    }
                 },
                 teacher: {
                     id: 0
@@ -129,7 +136,9 @@ export default {
             status: '',
             teacherId: 0,
             type: '',
-            user: JSON.parse(getUserInfo())
+            user: JSON.parse(getUserInfo()),
+            isFilter: false,
+            classOptions: []
         }
     },
     created() {
@@ -154,6 +163,9 @@ export default {
         ...mapActions('assign/assignment', {
             apiGetAssignment: 'apiGetAssignment'
         }),
+        ...mapActions('admin/students', {
+            apiGetStudentClass: 'apiGetStudentClass'
+        }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
         },
@@ -164,6 +176,13 @@ export default {
                 conditionSearch: ''
             }).then(res => {
                 this.tableData = res;
+            });
+
+            this.apiGetStudentClass({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                this.classOptions = res;
             })
         },
         searchStudent() {
@@ -316,6 +335,86 @@ export default {
                 }
             });
         },
+        initData() {
+            if (this.objSearch.timeReport === 1 && (this.objSearch.startTime === '' || this.objSearch.endTime === '')) {
+                Swal.fire('', 'Vui lòng nhập ngày', "warning")
+                return;
+            }
+            if (this.filterOptionAreaSelected !== null) {
+                this.objSearch.ctkvCode = this.filterOptionAreaSelected.ctkvCode.toString();
+            } else {
+                this.objSearch.ctkvCode = '-1';
+            }
+            if (this.filterOptionSegmentSelected !== null) {
+                this.objSearch.segmentCust = this.filterOptionSegmentSelected.segmentCode;
+            } else {
+                this.objSearch.segmentCust = '-1';
+            }
+
+            this.filterOptionNameSelected = [];
+            this.filterOptionTagSelected = [];
+            this.filterOptionGroupSelected = [];
+            this.filterOptionStatusSelected = [];
+            this.filterOptionKpiSelected = [];
+            this.filterOptionAdsSelected = [];
+            this.filterOptionTypeSelected = [];
+            this.filterOptionNewTypeSelected = [];
+
+            this.showBtnChart = true;
+            this.showBtnTable = false;
+
+            this.apiReportCampaignGroup(this.objSearch).then(response => {
+                if (response.err_code === 0) {
+                    this.tableData = response.data;
+                    this.arrDefaultTable = response.data;
+                    console.log('table: ', this.tableData);
+                    this.arrTypeCampaignScript1 = response.data;
+                    this.arrNameCampaign = response.data;
+                    this.arrStatusCampaignScript = response.data;
+                    this.arrAdsOutputScript = response.data;
+                    this.arrGroupCampaignScript = response.data;
+                    this.arrTagCampaignScript = response.data;
+                    this.arrNewsTypeCampaignScript = response.data;
+
+                    this.arrTypeCampaign = response.data.filter(
+                        (item, index, self) => self.findIndex((m) => m.campaignType === item.campaignType) === index
+                    );
+
+                    let tagConvert = response.data
+
+                    tagConvert.forEach(item => {
+                        const tags = item.campaignTag.split(" "); // Tách các từ khóa trong tag thành một mảng
+                        tags.forEach(tag => {
+                            const existingTag = this.arrTagCampaign.find(dataTagItem => dataTagItem.tagName === tag); // Kiểm tra xem tag đã tồn tại trong mảng dataTag chưa
+                            if (!existingTag) {
+                                // Nếu tag chưa tồn tại trong mảng dataTag, thêm mới nó
+                                this.arrTagCampaign.push({tagName: tag});
+                            }
+                        });
+                    });
+
+                    this.arrStatusCampaign = response.data.filter(
+                        (item, index, self) => self.findIndex((m) => m.status === item.status) === index
+                    );
+                    this.arrNewsTypeCampaign = response.data.filter(
+                        (item, index, self) => self.findIndex((m) => m.campaignNewsType === item.campaignNewsType) === index
+                    );
+                    this.arrAdsOutput = response.data.filter(
+                        (item, index, self) => self.findIndex((m) => m.numberAdv === item.numberAdv) === index
+                    );
+
+                    this.arrCampaignGroup = response.data.filter(
+                        (item, index, self) => self.findIndex((m) => m.campaignGroupName === item.campaignGroupName) === index
+                    );
+
+                } else {
+                    Swal.fire('', response.err_message, 'warning');
+                }
+            }).catch(err => {
+                console.log(err);
+            }).finally(() => {
+            })
+        },
     }
 }
 </script>
@@ -332,115 +431,55 @@ export default {
                 <div class="card">
                     <div class="card-body">
                         <div class="row mb-4">
-                            <div class="col-2">
-                                <label>Thời gian báo cáo</label>
-                                <select class="form-select" v-model="objSearch.timeReport">
-                                    <option :value="1">Từ Ngày-Đến ngày</option>
-                                    <option :value="2">Hôm nay</option>
-                                    <option :value="3">Hôm qua</option>
-                                    <option :value="4">Tuần này</option>
-                                    <option :value="5">Tuần trước</option>
-                                    <option :value="6">Tháng này</option>
-                                    <option :value="7">Tháng trước</option>
-                                    <option :value="8">Năm nay</option>
-                                </select>
+                            <div class="col-3">
+                                <label>Tên đồ án</label>
+                                 <input type="text" v-model="valueSearch" class="form-control"/>
+                            </div>
+                            <div class="col-3" v-if="objSearch.timeReport === 1">
+                                <label>Tên đồ án</label>
+                                 <input type="text" v-model="valueSearch" class="form-control"/>
                             </div>
                             <div class="col-2" v-if="objSearch.timeReport === 1">
-                                <label>Từ ngày</label>
-                                <b-input-group>
-                                    <b-form-datepicker
-                                        calendar-width="400px"
-                                        placeholder="DD/MM/YYYY"
-                                        v-model="objSearch.startTime"
-                                        locale="vi"
-                                        :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                                        class="form-select">
-                                    </b-form-datepicker>
-                                    <template #prepend>
-                                        <b-btn @click="objSearch.startTime = ''">Clear</b-btn>
-                                    </template>
-                                </b-input-group>
-                            </div>
-                            <div class="col-2" v-if="objSearch.timeReport === 1">
-                                <label>Đến ngày</label>
-                                <b-input-group>
-                                    <b-form-datepicker
-                                        calendar-width="400px"
-                                        placeholder="DD/MM/YYYY"
-                                        v-model="objSearch.endTime"
-                                        locale="vi"
-                                        :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                                        class="form-select">
-                                    </b-form-datepicker>
-                                    <template #prepend>
-                                        <b-btn @click="objSearch.endTime = ''">Clear</b-btn>
-                                    </template>
-                                </b-input-group>
-                            </div>
-                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">
-                                <label>Lọc theo phân khúc đối tượng</label>
-                                <multiselect :select-label="'Select'" v-model="filterOptionSegmentSelected" :options="arrTypeSegment" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="segmentName" track-by="id">
-                                </multiselect>
-                            </div>
-                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">
-                                <label>Lọc theo khu vực địa lý</label>
-                                <multiselect :select-label="'Select'" v-model="filterOptionAreaSelected" :options="dataCtkvCode" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="ctkvName" track-by="ctkvCode">
-                                </multiselect>
+                                <label>Tên đồ án</label>
+                                 <input type="text" v-model="valueSearch" class="form-control"/>
                             </div>
                             <div class="col">
-                                <div class="row">
+                                <div class="row justify-content-between">
                                     <label>&ensp;</label>
                                     <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" @click="initData" type="button" class="custom-btn-search btn btn-primary d-block me-2"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
                                     <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" type="button" class="btn btn-outline-primary" @click="isFilter = !isFilter">
                                         <i class="uil uil-filter me-1"></i> Lọc
+                                    </button>
+                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-1'" class="btn btn-outline-danger ml-3">
+                                        <i class="uil uil-backspace me-1"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3" v-show="isFilter">
                             <div class="row mb-2">
-                                <div class="col">
-                                    <label>Loại chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(1)" v-model="filterOptionTypeSelected" :options="arrTypeCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignType" track-by="campaignType">
+                                <div class="col-3">
+                                    <label>Lớp</label>
+                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+
                                     </multiselect>
                                 </div>
                                 <div class="col">
-                                    <label>Tên chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(2)" v-model="filterOptionNameSelected" :options="arrNameCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignName" track-by="campaignName">
+                                    <label>Lớp</label>
+                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+
                                     </multiselect>
                                 </div>
                                 <div class="col">
-                                    <label>Tag chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(3)" v-model="filterOptionTagSelected" :options="arrTagCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="tagName" track-by="tagName">
+                                    <label>Lớp</label>
+                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+
                                     </multiselect>
                                 </div>
                                 <div class="col">
-                                    <label>Nhóm chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(4)" v-model="filterOptionGroupSelected" :options="arrCampaignGroup" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignGroupName"
-                                                 track-by="campaignGroupName">
-                                    </multiselect>
-                                </div>
-                                <div class="col">
-                                    <label>Trạng thái chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(5)" v-model="filterOptionStatusSelected" :options="arrStatusCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="status" track-by="status">
-                                    </multiselect>
-                                </div>
-                                <div class="col">
-                                    <label>Loại hình chiến dịch</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(6)" v-model="filterOptionNewTypeSelected" :options="arrNewsTypeCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="campaignNewsType"
-                                                 track-by="campaignNewsType">
-                                    </multiselect>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-2">
-                                    <label>Theo sản lượng quảng cáo</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(7)" v-model="filterOptionAdsSelected" :options="arrAdsOutput" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="numberAdv" track-by="numberAdv">
-                                    </multiselect>
-                                </div>
-                                <div class="col-2">
-                                    <label>Theo các chỉ số KPI</label>
-                                    <multiselect :select-label="'Select'" @input="onchangeFilter(8)" v-model="filterOptionKpiSelected" :options="arrKpiCampaign" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="name" track-by="id">
+                                    <label>Lớp</label>
+                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+
                                     </multiselect>
                                 </div>
                             </div>

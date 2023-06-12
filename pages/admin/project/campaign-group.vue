@@ -2716,7 +2716,7 @@
 <!--            <div class="col-12">-->
 <!--                <div class="card">-->
 <!--                    <div class="card-body">-->
-<!--                        <div class="row mb-4">-->
+<!--                         <div class="row mb-4" >-->
 <!--                            <div class="col-2">-->
 <!--                                <label>Thời gian báo cáo</label>-->
 <!--                                <select class="form-select" v-model="objSearch.timeReport">-->
@@ -2764,7 +2764,7 @@
 <!--                            </div>-->
 <!--                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">-->
 <!--                                <label>Lọc theo phân khúc đối tượng</label>-->
-<!--                                <multiselect :select-label="'Select'" v-model="filterOptionSegmentSelected" :options="arrTypeSegment" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="segmentName" track-by="id">-->
+<!--                                < iselect :select-label="'Select'" v-model="filterOptionSegmentSelected" :options="arrTypeSegment" :close-on-select="true" :clear-on-select="true" :preserve-search="true" label="segmentName" track-by="id">-->
 <!--                                </multiselect>-->
 <!--                            </div>-->
 <!--                            <div :class="objSearch.timeReport !== 1 ? 'col-2' : 'col'">-->
