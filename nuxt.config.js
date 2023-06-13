@@ -100,7 +100,7 @@ export default {
      ** See https://nuxtjs.org/api/configuration-build/
      */
     build: {
-        transpile: ['drawflow'],
+        transpile: ['drawflow']
         // publicPath:'ads'
     },
     server: {

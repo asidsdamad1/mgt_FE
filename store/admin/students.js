@@ -68,9 +68,9 @@ const actions = {
         }
     },
 
-    async apiGetStudentById({commit, state}, payload) {
+    async apiGetCourse({commit, state}) {
         try {
-            let {data} = await this.$axios.post(`${API_STUDENT_MANAGE.apiGetStudentById}`, payload);
+            let {data} = await this.$axios.get(`${API_STUDENT_MANAGE.apiGetCourse}`);
 
             if (data.code === CONSTANTS.SUCCESS) {
             }

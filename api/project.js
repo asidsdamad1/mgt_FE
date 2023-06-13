@@ -1,6 +1,7 @@
 export const API_PROJECT = {
     apiAddProject: 'project/add-project',
     apiGetProject: 'project/get-projects',
+    apiGetProjectFilter: 'project/get-projects-filter',
     apiEditProject: 'project/edit-project',
     apiDeleteProject: 'project/delete-project',
     apiDeleteReportFile: 'project/delete-file-report',

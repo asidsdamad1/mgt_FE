@@ -13,7 +13,7 @@ export default {
     components: {
         Multiselect,
         ProjectModal,
-        AddOutlineModal
+        AddOutlineModal,
     },
     data() {
         return {
@@ -112,21 +112,23 @@ export default {
                     id: 0,
                     name: '',
                     studentClass: {
-                        id: 0
+                        id: [],
+                        course: []
                     }
                 },
                 teacher: {
                     id: 0
                 },
                 session: {
-                    id: 0,
+                    id: [],
                     name: ''
                 },
                 topic: {
-                    id: 0, name: ''
+                    id: [],
+                    name: ''
 
                 },
-                status: 0
+                status: []
             },
             objGetListStudent: {
                 id: 0
@@ -138,7 +140,35 @@ export default {
             type: '',
             user: JSON.parse(getUserInfo()),
             isFilter: false,
-            classOptions: []
+            students: [],
+            classOptions: [],
+            sessionOptions: [],
+            topicOptions: [],
+            courseOptions: [],
+            statusOptions: [
+                {
+                    id: 1,
+                    value: 'Đã duyệt'
+                },
+                {
+                    id: 0,
+                    value: 'Chưa duyệt'
+                },
+                {
+                    id: 2,
+                    value: 'Bảo lưu'
+                }
+            ],
+            objSeachProject: {
+                projectName: '',
+                studentCode: '',
+                studentName: '',
+                topic: [],
+                studentClass: [],
+                session: [],
+                course: [],
+                status: []
+            }
         }
     },
     created() {
@@ -159,12 +189,22 @@ export default {
             apiDeleteProject: 'apiDeleteProject',
             apiDeleteReportFile: 'apiDeleteReportFile',
             apiDeleteOutlineFile: 'apiDeleteOutlineFile',
+            apiGetProjectFilter: 'apiGetProjectFilter',
+
         }),
         ...mapActions('assign/assignment', {
             apiGetAssignment: 'apiGetAssignment'
         }),
+        ...mapActions('assign/session', {
+            apiGetSession: 'apiGetSession'
+        }),
         ...mapActions('admin/students', {
-            apiGetStudentClass: 'apiGetStudentClass'
+            apiGetStudentClass: 'apiGetStudentClass',
+            apiGetCourse: 'apiGetCourse',
+            apiGetStudent: 'apiGetStudent',
+        }),
+        ...mapActions('topic', {
+            apiGetTopic: 'apiGetTopic'
         }),
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
@@ -183,7 +223,40 @@ export default {
                 conditionSearch: ''
             }).then(res => {
                 this.classOptions = res;
+
+            });
+            this.apiGetSession({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                this.sessionOptions = res;
+            });
+            this.apiGetTopic({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                this.topicOptions = res;
+            });
+
+            this.apiGetCourse().then(res => {
+                for (let i = 0; i < res.length; i++) {
+                    this.courseOptions.push({id: i, name: res[i]})
+                }
             })
+            this.apiGetStudent({
+                valueSearch: '',
+                conditionSearch: ''
+            })
+                .then(response => {
+
+                    this.students = response;
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
         },
         searchStudent() {
             let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
@@ -194,18 +267,7 @@ export default {
                     return;
                 }
             }
-            this.apiGetStudent(objInput)
-                .then(response => {
-                    let data = response;
-                    this.tableData = data;
-                    console.log('apiGetListContactGroup', data);
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
+
         },
         onFiltered(filteredItems) {
             // Trigger pagination to update the number of buttons/pages due to filtering
@@ -287,7 +349,7 @@ export default {
                         Swal.fire("Xóa thành công", response, "success");
                         this.handleGetProject();
                     }).catch(err => {
-                        if(err.toString().includes('404')) {
+                        if (err.toString().includes('404')) {
                             Swal.fire("Xóa thất bại", "Đồ án không tồn tại", "error");
                         }
                         console.log(err);
@@ -310,7 +372,7 @@ export default {
                 cancelButtonText: "Hủy"
             }).then(result => {
                 if (result.isConfirmed) {
-                    if(type === 'REPORT') {
+                    if (type === 'REPORT') {
                         this.apiDeleteReportFile(id).then(response => {
                             Swal.fire("", "Xóa thành công", "success");
                             this.handleGetProject();
@@ -320,7 +382,7 @@ export default {
                             // this.commonLoadingPage(false);
                         })
                     }
-                    if(type === 'OUTLINE') {
+                    if (type === 'OUTLINE') {
                         this.apiDeleteOutlineFile(id).then(response => {
                             Swal.fire("", "Xóa thành công", "success");
                             this.handleGetProject();
@@ -335,85 +397,71 @@ export default {
                 }
             });
         },
+        cleanData() {
+            this.objProject.topic.id = [];
+            this.objProject.student.studentClass.id = [];
+            this.objProject.student.studentClass.course = [];
+            this.objProject.session.id = [];
+            this.objProject.status = [];
+            this.objProject.name = '';
+            this.objProject.student.code = '';
+            this.objProject.student.name = '';
+            this.objSearch.valueSearch = '';
+
+            this.objSeachProject.projectName = '';
+            this.objSeachProject.studentName = '';
+            this.objSeachProject.studentCode = '';
+            this.objSeachProject.session = [];
+            this.objSeachProject.status = [];
+            this.objSeachProject.topic = [];
+            this.objSeachProject.studentClass = [];
+            this.objSeachProject.course = [];
+
+            this.apiGetProject({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                this.tableData = res;
+            })
+        },
         initData() {
-            if (this.objSearch.timeReport === 1 && (this.objSearch.startTime === '' || this.objSearch.endTime === '')) {
-                Swal.fire('', 'Vui lòng nhập ngày', "warning")
-                return;
+            this.objSeachProject.projectName = this.objProject.name;
+            this.objSeachProject.studentName = this.objProject.student.name;
+            this.objSeachProject.studentCode = this.objProject.student.code;
+            for (let i = 0; i < this.objProject.student.studentClass.id.length; i++) {
+                this.objSeachProject.studentClass[i] = this.objProject.student.studentClass.id[i].id.toString();
             }
-            if (this.filterOptionAreaSelected !== null) {
-                this.objSearch.ctkvCode = this.filterOptionAreaSelected.ctkvCode.toString();
-            } else {
-                this.objSearch.ctkvCode = '-1';
+            for (let i = 0; i < this.objProject.student.studentClass.course.length; i++) {
+                this.objSeachProject.course[i] = this.objProject.student.studentClass.course[i].name.toString();
             }
-            if (this.filterOptionSegmentSelected !== null) {
-                this.objSearch.segmentCust = this.filterOptionSegmentSelected.segmentCode;
-            } else {
-                this.objSearch.segmentCust = '-1';
+            for (let i = 0; i < this.objProject.session.id.length; i++) {
+                this.objSeachProject.session[i] = this.objProject.session.id[i].id.toString();
             }
-
-            this.filterOptionNameSelected = [];
-            this.filterOptionTagSelected = [];
-            this.filterOptionGroupSelected = [];
-            this.filterOptionStatusSelected = [];
-            this.filterOptionKpiSelected = [];
-            this.filterOptionAdsSelected = [];
-            this.filterOptionTypeSelected = [];
-            this.filterOptionNewTypeSelected = [];
-
-            this.showBtnChart = true;
-            this.showBtnTable = false;
-
-            this.apiReportCampaignGroup(this.objSearch).then(response => {
-                if (response.err_code === 0) {
-                    this.tableData = response.data;
-                    this.arrDefaultTable = response.data;
-                    console.log('table: ', this.tableData);
-                    this.arrTypeCampaignScript1 = response.data;
-                    this.arrNameCampaign = response.data;
-                    this.arrStatusCampaignScript = response.data;
-                    this.arrAdsOutputScript = response.data;
-                    this.arrGroupCampaignScript = response.data;
-                    this.arrTagCampaignScript = response.data;
-                    this.arrNewsTypeCampaignScript = response.data;
-
-                    this.arrTypeCampaign = response.data.filter(
-                        (item, index, self) => self.findIndex((m) => m.campaignType === item.campaignType) === index
-                    );
-
-                    let tagConvert = response.data
-
-                    tagConvert.forEach(item => {
-                        const tags = item.campaignTag.split(" "); // Tách các từ khóa trong tag thành một mảng
-                        tags.forEach(tag => {
-                            const existingTag = this.arrTagCampaign.find(dataTagItem => dataTagItem.tagName === tag); // Kiểm tra xem tag đã tồn tại trong mảng dataTag chưa
-                            if (!existingTag) {
-                                // Nếu tag chưa tồn tại trong mảng dataTag, thêm mới nó
-                                this.arrTagCampaign.push({tagName: tag});
-                            }
-                        });
-                    });
-
-                    this.arrStatusCampaign = response.data.filter(
-                        (item, index, self) => self.findIndex((m) => m.status === item.status) === index
-                    );
-                    this.arrNewsTypeCampaign = response.data.filter(
-                        (item, index, self) => self.findIndex((m) => m.campaignNewsType === item.campaignNewsType) === index
-                    );
-                    this.arrAdsOutput = response.data.filter(
-                        (item, index, self) => self.findIndex((m) => m.numberAdv === item.numberAdv) === index
-                    );
-
-                    this.arrCampaignGroup = response.data.filter(
-                        (item, index, self) => self.findIndex((m) => m.campaignGroupName === item.campaignGroupName) === index
-                    );
+            for (let i = 0; i < this.objProject.topic.id.length; i++) {
+                this.objSeachProject.topic[i] = this.objProject.topic.id[i].id.toString();
+            }
+            for (let i = 0; i < this.objProject.status.length; i++) {
+                this.objSeachProject.status[i] = this.objProject.status[i].id.toString();
+            }
+            this.apiGetProjectFilter(this.objSeachProject).then(response => {
+                if (response.length !== 0) {
+                    this.tableData = response
 
                 } else {
-                    Swal.fire('', response.err_message, 'warning');
+                    Swal.fire('', "Không có đồ án đáp ứng điều kiện", 'warning');
                 }
             }).catch(err => {
                 console.log(err);
             }).finally(() => {
             })
+            this.objSeachProject.projectName = '';
+            this.objSeachProject.studentName = '';
+            this.objSeachProject.studentCode = '';
+            this.objSeachProject.session = [];
+            this.objSeachProject.status = [];
+            this.objSeachProject.topic = [];
+            this.objSeachProject.studentClass = [];
+            this.objSeachProject.course = [];
         },
     }
 }
@@ -427,30 +475,41 @@ export default {
 <template>
     <div class="row">
         <div class="row">
+
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
                         <div class="row mb-4">
                             <div class="col-3">
                                 <label>Tên đồ án</label>
-                                 <input type="text" v-model="valueSearch" class="form-control"/>
+                                <input type="text" v-model="objProject.name" class="form-control"/>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
-                                <label>Tên đồ án</label>
-                                 <input type="text" v-model="valueSearch" class="form-control"/>
+
+                                <v-autocomplete
+                                    v-model="objProject.student.code"
+                                    :items="students"
+                                    label="Select Item"
+                                    item-text="name"
+                                    item-value="name"
+
+                                >
+                                </v-autocomplete>
+                                <label>Mã sinh viên</label>
+                                <input type="text" v-model="objProject.student.code" class="form-control"/>
                             </div>
-                            <div class="col-2" v-if="objSearch.timeReport === 1">
-                                <label>Tên đồ án</label>
-                                 <input type="text" v-model="valueSearch" class="form-control"/>
+                            <div class="col-3" v-if="objSearch.timeReport === 1">
+                                <label>Tên sinh viên</label>
+                                <input type="text" v-model="objProject.student.name" class="form-control"/>
                             </div>
                             <div class="col">
                                 <div class="row justify-content-between">
                                     <label>&ensp;</label>
                                     <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" @click="initData" type="button" class="custom-btn-search btn btn-primary d-block me-2"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
-                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-5'" type="button" class="btn btn-outline-primary" @click="isFilter = !isFilter">
+                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-4'" type="button" class="btn btn-outline-primary" @click="isFilter = !isFilter">
                                         <i class="uil uil-filter me-1"></i> Lọc
                                     </button>
-                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-1'" class="btn btn-outline-danger ml-3">
+                                    <button :class="objSearch.timeReport !== 1 ? 'col-2' : 'col-2'" @click="cleanData" class="btn btn-outline-danger ml-3">
                                         <i class="uil uil-backspace me-1"></i>
                                     </button>
                                 </div>
@@ -458,27 +517,34 @@ export default {
                         </div>
                         <div class="mb-3" v-show="isFilter">
                             <div class="row mb-2">
-                                <div class="col-3">
-                                    <label>Lớp</label>
-                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                                <div class="col-2">
+                                    <label>Chủ đề</label>
+                                    <multiselect select-label="'Select'" v-model="objProject.topic.id" :options="topicOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="false" placeholder="Chọn chủ đề" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
                                 <div class="col">
                                     <label>Lớp</label>
-                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                                    <multiselect select-label="'Select'" v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn lớp" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
                                 <div class="col">
-                                    <label>Lớp</label>
-                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                                    <label>Năm học</label>
+                                    <multiselect select-label="'Select'" v-model="objProject.session.id" :options="sessionOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn năm học" label="year" track-by="id">
 
                                     </multiselect>
                                 </div>
                                 <div class="col">
-                                    <label>Lớp</label>
-                                    <multiselect v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn sinh viên" label="name" track-by="name" :preselect-first="true">
+                                    <label>Khóa</label>
+                                    <multiselect select-label="'Select'" v-model="objProject.student.studentClass.course" :options="courseOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn khóa" label="name" track-by="id">
+
+                                    </multiselect>
+                                </div>
+
+                                <div class="col">
+                                    <label>Trạng thái</label>
+                                    <multiselect select-label="'Select'" v-model="objProject.status" :options="statusOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn trạng thái" label="value" track-by="id">
 
                                     </multiselect>
                                 </div>
@@ -498,30 +564,6 @@ export default {
                 </div>
             </div>
             <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-5">
-                        <label>Điều kiện lọc</label>
-                        <select v-model="conditionSearch" class="form-control">
-                            <option value="ALL">Tất cả</option>
-                            <option value="NAME">Tên đề tài</option>
-                            <option value="STUDENT_NAME">Tên sinh viên</option>
-                            <option value="PHONE">Mã sinh viên</option>
-                            <option value="EMAIL">Năm học</option>
-                            <option value="CLASS">Khóa</option>
-                        </select>
-                    </div>
-                    <div class="col-7">
-                        <label>Từ khóa tìm kiếm</label>
-                        <div class="row">
-                            <div class="col-10">
-                                <input type="text" v-model="valueSearch" class="form-control"/>
-                            </div>
-                            <div class="col-2">
-                                <button type="button" class="btn btn-primary d-block" @click="searchStudent"><i class="uil uil-search me-2"></i> Tìm kiếm</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div class="table-responsive">
                     <b-table striped bordered :items="tableData" :fields="fields" responsive="sm" :per-page="perPage" :current-page="currentPage" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :filter="filter" :filter-included-fields="filterOn" @filtered="onFiltered">
                         <template #cell(status)="row">
