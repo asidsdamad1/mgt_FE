@@ -4,5 +4,6 @@ export const API_STUDENT_MANAGE = {
     apiEditStudent: 'admin/edit-student',
     apiGetStudent: 'admin/get-student',
     apiImportStudent: 'admin/import-student',
-    apiGetStudentClass: 'admin/get-class'
+    apiGetStudentClass: 'admin/get-class',
+    apiGetCourse: 'admin/get-course'
 };

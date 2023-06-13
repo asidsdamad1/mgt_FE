@@ -19,6 +19,21 @@ const actions = {
         }
     },
 
+    async apiGetProjectFilter({commit, state}, payload) {
+        try {
+            let {data} = await this.$axios.post(`${API_PROJECT.apiGetProjectFilter}`, payload);
+
+            if (data.code === CONSTANTS.SUCCESS) {
+            }
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new TypeError(error);
+        }
+    },
+
     async apiEditProject({commit, state}, payload) {
         try {
             let {data} = await this.$axios.post(`${API_PROJECT.apiEditProject}`, payload);
