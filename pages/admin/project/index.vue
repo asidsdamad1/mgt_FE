@@ -6,6 +6,7 @@ import AddOutlineModal from "../../../components/project/AddOutlineModal";
 import {getUserInfo} from "../../../utils/cookieAuthen";
 import Swal from "sweetalert2";
 import ProjectModal from "../../../components/admin/ProjectModal.vue";
+import Autocomplete from "@/components/project/Autocomplete.vue";
 
 export default {
     middleware: ['check-authen'],
@@ -14,6 +15,7 @@ export default {
         Multiselect,
         ProjectModal,
         AddOutlineModal,
+        Autocomplete
     },
     data() {
         return {
@@ -111,6 +113,7 @@ export default {
                 student: {
                     id: 0,
                     name: '',
+                    code: '',
                     studentClass: {
                         id: [],
                         course: []
@@ -140,7 +143,7 @@ export default {
             type: '',
             user: JSON.parse(getUserInfo()),
             isFilter: false,
-            students: [],
+            studentList: [],
             classOptions: [],
             sessionOptions: [],
             topicOptions: [],
@@ -170,9 +173,6 @@ export default {
                 status: []
             }
         }
-    },
-    created() {
-
     },
     computed: {
         rows() {
@@ -209,7 +209,9 @@ export default {
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
         },
-
+        setStudentCode(code) {
+            this.objProject.student.code = code;
+        },
         handleGetProject() {
             this.apiGetProject({
                 valueSearch: '',
@@ -243,20 +245,16 @@ export default {
                     this.courseOptions.push({id: i, name: res[i]})
                 }
             })
+
             this.apiGetStudent({
                 valueSearch: '',
                 conditionSearch: ''
-            })
-                .then(response => {
-
-                    this.students = response;
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    // this.commonLoadingPage(false);
-                });
+            }).then(res => {
+                for (let i = 0; i < res.length; i++) {
+                    this.studentList.push(res[i].code)
+                }
+            });
+            console.log(this.studentList)
         },
         searchStudent() {
             let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
@@ -267,7 +265,18 @@ export default {
                     return;
                 }
             }
-
+            this.apiGetStudent(objInput)
+                .then(response => {
+                    let data = response;
+                    this.tableData = data;
+                    console.log('apiGetListContactGroup', data);
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    // this.commonLoadingPage(false);
+                });
         },
         onFiltered(filteredItems) {
             // Trigger pagination to update the number of buttons/pages due to filtering
@@ -397,6 +406,17 @@ export default {
                 }
             });
         },
+        clearObjSearch() {
+            this.objSeachProject.projectName = '';
+            this.objSeachProject.studentName = '';
+            this.objSeachProject.studentCode = '';
+            this.objSeachProject.session = [];
+            this.objSeachProject.status = [];
+            this.objSeachProject.topic = [];
+            this.objSeachProject.studentClass = [];
+            this.objSeachProject.course = [];
+        },
+
         cleanData() {
             this.objProject.topic.id = [];
             this.objProject.student.studentClass.id = [];
@@ -407,15 +427,8 @@ export default {
             this.objProject.student.code = '';
             this.objProject.student.name = '';
             this.objSearch.valueSearch = '';
+            this.clearObjSearch();
 
-            this.objSeachProject.projectName = '';
-            this.objSeachProject.studentName = '';
-            this.objSeachProject.studentCode = '';
-            this.objSeachProject.session = [];
-            this.objSeachProject.status = [];
-            this.objSeachProject.topic = [];
-            this.objSeachProject.studentClass = [];
-            this.objSeachProject.course = [];
 
             this.apiGetProject({
                 valueSearch: '',
@@ -446,9 +459,8 @@ export default {
             this.apiGetProjectFilter(this.objSeachProject).then(response => {
                 if (response.length !== 0) {
                     this.tableData = response
-
                 } else {
-                    Swal.fire('', "Không có đồ án đáp ứng điều kiện", 'warning');
+                    Swal.fire('', 'Không có đồ án thỏa mãn điều kiện', 'warning');
                 }
             }).catch(err => {
                 console.log(err);
@@ -475,7 +487,6 @@ export default {
 <template>
     <div class="row">
         <div class="row">
-
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -485,18 +496,8 @@ export default {
                                 <input type="text" v-model="objProject.name" class="form-control"/>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
-
-                                <v-autocomplete
-                                    v-model="objProject.student.code"
-                                    :items="students"
-                                    label="Select Item"
-                                    item-text="name"
-                                    item-value="name"
-
-                                >
-                                </v-autocomplete>
                                 <label>Mã sinh viên</label>
-                                <input type="text" v-model="objProject.student.code" class="form-control"/>
+                                <autocomplete @setStudentCode="setStudentCode" :suggestions="studentList" :selection.sync="objProject.student.code"></autocomplete>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Tên sinh viên</label>
@@ -519,32 +520,32 @@ export default {
                             <div class="row mb-2">
                                 <div class="col-2">
                                     <label>Chủ đề</label>
-                                    <multiselect select-label="'Select'" v-model="objProject.topic.id" :options="topicOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="false" placeholder="Chọn chủ đề" label="name" track-by="id">
+                                    <multiselect v-model="objProject.topic.id" :options="topicOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn chủ đề" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
-                                <div class="col">
+                                <div class="col-2">
                                     <label>Lớp</label>
-                                    <multiselect select-label="'Select'" v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn lớp" label="name" track-by="id">
+                                    <multiselect select-label="'Select'" v-model="objProject.student.studentClass.id" :options="classOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn lớp" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
                                 <div class="col">
                                     <label>Năm học</label>
-                                    <multiselect select-label="'Select'" v-model="objProject.session.id" :options="sessionOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn năm học" label="year" track-by="id">
+                                    <multiselect v-model="objProject.session.id" :options="sessionOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn năm học" label="year" track-by="id">
 
                                     </multiselect>
                                 </div>
                                 <div class="col">
                                     <label>Khóa</label>
-                                    <multiselect select-label="'Select'" v-model="objProject.student.studentClass.course" :options="courseOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn khóa" label="name" track-by="id">
+                                    <multiselect v-model="objProject.student.studentClass.course" :options="courseOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn khóa" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
 
                                 <div class="col">
                                     <label>Trạng thái</label>
-                                    <multiselect select-label="'Select'" v-model="objProject.status" :options="statusOptions" :multiple="true" :close-on-select="false" :clear-on-select="true" :preserve-search="true" placeholder="Chọn trạng thái" label="value" track-by="id">
+                                    <multiselect v-model="objProject.status" :options="statusOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn trạng thái" label="value" track-by="id">
 
                                     </multiselect>
                                 </div>
@@ -664,6 +665,7 @@ export default {
             @handleGetProject="handleGetProject"
         >
         </project-modal>
+
 
         <add-outline-modal
             :idProject="this.idProject"
