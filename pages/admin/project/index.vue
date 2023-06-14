@@ -6,6 +6,7 @@ import AddOutlineModal from "../../../components/project/AddOutlineModal";
 import {getUserInfo} from "../../../utils/cookieAuthen";
 import Swal from "sweetalert2";
 import ProjectModal from "../../../components/admin/ProjectModal.vue";
+import Autocomplete from "@/components/project/Autocomplete.vue";
 
 export default {
     middleware: ['check-authen'],
@@ -13,7 +14,8 @@ export default {
     components: {
         Multiselect,
         ProjectModal,
-        AddOutlineModal
+        AddOutlineModal,
+        Autocomplete
     },
     data() {
         return {
@@ -111,6 +113,7 @@ export default {
                 student: {
                     id: 0,
                     name: '',
+                    code: '',
                     studentClass: {
                         id: [],
                         course: []
@@ -124,7 +127,8 @@ export default {
                     name: ''
                 },
                 topic: {
-                    id: [], name: ''
+                    id: [],
+                    name: ''
 
                 },
                 status: []
@@ -139,6 +143,7 @@ export default {
             type: '',
             user: JSON.parse(getUserInfo()),
             isFilter: false,
+            studentList: [],
             classOptions: [],
             sessionOptions: [],
             topicOptions: [],
@@ -169,9 +174,6 @@ export default {
             }
         }
     },
-    created() {
-
-    },
     computed: {
         rows() {
             return this.tableData.length;
@@ -198,7 +200,8 @@ export default {
         }),
         ...mapActions('admin/students', {
             apiGetStudentClass: 'apiGetStudentClass',
-            apiGetCourse: 'apiGetCourse'
+            apiGetCourse: 'apiGetCourse',
+            apiGetStudent: 'apiGetStudent',
         }),
         ...mapActions('topic', {
             apiGetTopic: 'apiGetTopic'
@@ -206,7 +209,9 @@ export default {
         closeModalListSub() {
             this.$bvModal.hide('modal-add-list-tb');
         },
-
+        setStudentCode(code) {
+            this.objProject.student.code = code;
+        },
         handleGetProject() {
             this.apiGetProject({
                 valueSearch: '',
@@ -241,6 +246,15 @@ export default {
                 }
             })
 
+            this.apiGetStudent({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                for (let i = 0; i < res.length; i++) {
+                    this.studentList.push(res[i].code)
+                }
+            });
+            console.log(this.studentList)
         },
         searchStudent() {
             let objInput = {id: JSON.parse(getUserInfo()).studentId, conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
@@ -392,6 +406,17 @@ export default {
                 }
             });
         },
+        clearObjSearch() {
+            this.objSeachProject.projectName = '';
+            this.objSeachProject.studentName = '';
+            this.objSeachProject.studentCode = '';
+            this.objSeachProject.session = [];
+            this.objSeachProject.status = [];
+            this.objSeachProject.topic = [];
+            this.objSeachProject.studentClass = [];
+            this.objSeachProject.course = [];
+        },
+
         cleanData() {
             this.objProject.topic.id = [];
             this.objProject.student.studentClass.id = [];
@@ -402,15 +427,8 @@ export default {
             this.objProject.student.code = '';
             this.objProject.student.name = '';
             this.objSearch.valueSearch = '';
+            this.clearObjSearch();
 
-            this.objSeachProject.projectName = '';
-            this.objSeachProject.studentName = '';
-            this.objSeachProject.studentCode = '';
-            this.objSeachProject.session = [];
-            this.objSeachProject.status = [];
-            this.objSeachProject.topic = [];
-            this.objSeachProject.studentClass = [];
-            this.objSeachProject.course= [];
 
             this.apiGetProject({
                 valueSearch: '',
@@ -423,35 +441,39 @@ export default {
             this.objSeachProject.projectName = this.objProject.name;
             this.objSeachProject.studentName = this.objProject.student.name;
             this.objSeachProject.studentCode = this.objProject.student.code;
-            for(let i = 0; i < this.objProject.student.studentClass.id.length ; i++) {
+            for (let i = 0; i < this.objProject.student.studentClass.id.length; i++) {
                 this.objSeachProject.studentClass[i] = this.objProject.student.studentClass.id[i].id.toString();
             }
-            for(let i = 0; i < this.objProject.student.studentClass.course.length ; i++) {
+            for (let i = 0; i < this.objProject.student.studentClass.course.length; i++) {
                 this.objSeachProject.course[i] = this.objProject.student.studentClass.course[i].name.toString();
             }
-            for(let i = 0; i < this.objProject.session.id.length ; i++) {
+            for (let i = 0; i < this.objProject.session.id.length; i++) {
                 this.objSeachProject.session[i] = this.objProject.session.id[i].id.toString();
             }
-            for(let i = 0; i < this.objProject.topic.id.length ; i++) {
-                this.objSeachProject.topic[i] = this.objProject.session.id[i].id.toString();
+            for (let i = 0; i < this.objProject.topic.id.length; i++) {
+                this.objSeachProject.topic[i] = this.objProject.topic.id[i].id.toString();
             }
-            for(let i = 0; i < this.objProject.status.length ; i++) {
+            for (let i = 0; i < this.objProject.status.length; i++) {
                 this.objSeachProject.status[i] = this.objProject.status[i].id.toString();
             }
-            console.log("topic: ", this.objProject.topic);
-            console.log("studentcLASS: ", this.objProject.student.studentClass.id);
-            console.log("session: ", this.objProject.session);
             this.apiGetProjectFilter(this.objSeachProject).then(response => {
                 if (response.length !== 0) {
                     this.tableData = response
-
                 } else {
-                    Swal.fire('', response.err_message, 'warning');
+                    Swal.fire('', 'Không có đồ án thỏa mãn điều kiện', 'warning');
                 }
             }).catch(err => {
                 console.log(err);
             }).finally(() => {
             })
+            this.objSeachProject.projectName = '';
+            this.objSeachProject.studentName = '';
+            this.objSeachProject.studentCode = '';
+            this.objSeachProject.session = [];
+            this.objSeachProject.status = [];
+            this.objSeachProject.topic = [];
+            this.objSeachProject.studentClass = [];
+            this.objSeachProject.course = [];
         },
     }
 }
@@ -475,7 +497,7 @@ export default {
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Mã sinh viên</label>
-                                <input type="text" v-model="objProject.student.code" class="form-control"/>
+                                <autocomplete @setStudentCode="setStudentCode" :suggestions="studentList" :selection.sync="objProject.student.code"></autocomplete>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Tên sinh viên</label>
@@ -498,7 +520,7 @@ export default {
                             <div class="row mb-2">
                                 <div class="col-2">
                                     <label>Chủ đề</label>
-                                    <multiselect v-model="objProject.topic.id" :options="topicOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn chủ đề" label="name" track-by="id" >
+                                    <multiselect v-model="objProject.topic.id" :options="topicOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn chủ đề" label="name" track-by="id">
 
                                     </multiselect>
                                 </div>
@@ -523,7 +545,7 @@ export default {
 
                                 <div class="col">
                                     <label>Trạng thái</label>
-                                    <multiselect v-model="objProject.status" :options="statusOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn trạng thái" label="value" track-by="id" >
+                                    <multiselect v-model="objProject.status" :options="statusOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Chọn trạng thái" label="value" track-by="id">
 
                                     </multiselect>
                                 </div>
@@ -643,6 +665,7 @@ export default {
             @handleGetProject="handleGetProject"
         >
         </project-modal>
+
 
         <add-outline-modal
             :idProject="this.idProject"
