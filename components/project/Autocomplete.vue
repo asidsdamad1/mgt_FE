@@ -1,5 +1,7 @@
 <script>
 
+import Vue from "vue";
+
 export default {
     data() {
         return {
@@ -65,6 +67,7 @@ export default {
 
         suggestionClick(index) {
             this.open = false;
+            console.log(index)
             this.$emit('setStudentCode', index);
         },
         selectValue(value) {
@@ -75,8 +78,22 @@ export default {
         }
     }
 }
-
+Vue.directive('click-outside', {
+    bind: function (element, binding, vnode) {
+        element.clickOutsideEvent = function (event) {  //  check that click was outside the el and his children
+            if (!(element === event.target || element.contains(event.target))) { // and if it did, call method provided in attribute value
+                vnode.context[binding.expression](event);
+                // binding.value(); run the arg
+            }
+        };
+        document.body.addEventListener('click', element.clickOutsideEvent)
+    },
+    unbind: function (element) {
+        document.body.removeEventListener('click', element.clickOutsideEvent)
+    }
+});
 </script>
+
 <template>
     <div style="position:relative" v-bind:class="{'open':openSuggestion}">
         <input class="form-control" type="text" v-model="selection"
@@ -85,9 +102,9 @@ export default {
                @keydown.up='up'
                @input='change'
         />
-        <ul v-on:mousedown="handleClickOutside" class="dropdown-menu" v-show="open" style="display: block ;width:100%">
+        <ul class="dropdown-menu"  v-click-outside="handleClickOutside" v-show="open" style="display: block ;width:100%">
             <li v-for="suggestion in matches.slice(0,5)"
-                v-bind:class="{'active': isActive(current)}"
+                v-bind:class="{'active': isActive($index)}"
                 @click="suggestionClick(suggestion)"
             >
                 {{ suggestion }}

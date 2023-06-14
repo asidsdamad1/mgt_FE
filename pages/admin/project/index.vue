@@ -6,7 +6,7 @@ import AddOutlineModal from "../../../components/project/AddOutlineModal";
 import {getUserInfo} from "../../../utils/cookieAuthen";
 import Swal from "sweetalert2";
 import ProjectModal from "../../../components/admin/ProjectModal.vue";
-import Autocomplete from "@/components/project/Autocomplete.vue";
+import Autocomplete from "../../../components/project/Autocomplete.vue";
 
 export default {
     middleware: ['check-authen'],
@@ -497,7 +497,7 @@ export default {
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Mã sinh viên</label>
-                                <autocomplete @setStudentCode="setStudentCode" :suggestions="studentList" :selection.sync="objProject.student.code"></autocomplete>
+                                <autocomplete @setStudentCode="setStudentCode" :suggestions="studentList" :selection="objProject.student.code"></autocomplete>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Tên sinh viên</label>
