@@ -94,7 +94,7 @@ export default {
             },
         },
     },
-    mounted: function () {
+    mounted() {
         // eslint-disable-next-line no-unused-vars
         this.role = getUserInfo();
         var menuRef = new MetisMenu("#side-menu");
@@ -221,7 +221,7 @@ export default {
             <!--- Sidemenu -->
             <div id="sidebar-menu">
                 <!-- Left Menu Start -->
-                <ul class="metismenu list-unstyled" id="side-menu">
+                <ul class="metismenu list-unstyled" id="side-menu" >
                     <template v-for="item in menuItems">
                         <li class="menu-title" v-if="item.isTitle" :key="item.id">{{ item.label }}</li>
                         <li v-if="role.includes(item.role)" :key="item.id">
@@ -237,7 +237,7 @@ export default {
                                 <span>{{ item.label }}</span>
                                 <span :class="`badge badge-pill badge-${item.badge.variant} float-end`" v-if="item.badge">{{ item.badge.text }}</span>
                             </nuxt-link>
-                            <ul v-if="hasItems(item)" class="sub-menu" aria-expanded="false">
+                            <ul v-if="hasItems(item)" class="sub-menu" aria-expanded="false" >
                                 <li v-for="(subitem, index) of item.subItems" :key="index">
                                     <nuxt-link :to="subitem.link" v-if="!hasItems(subitem)" class="side-nav-link-ref">{{ subitem.label }}</nuxt-link>
                                     <a v-if="hasItems(subitem)" class="side-nav-link-a-ref has-arrow" href="javascript:void(0);">{{ subitem.label }}</a>

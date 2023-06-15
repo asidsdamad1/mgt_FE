@@ -457,11 +457,9 @@ export default {
                 this.objSeachProject.status[i] = this.objProject.status[i].id.toString();
             }
             this.apiGetProjectFilter(this.objSeachProject).then(response => {
-                if (response.length !== 0) {
-                    this.tableData = response
-                } else {
-                    Swal.fire('', 'Không có đồ án thỏa mãn điều kiện', 'warning');
-                }
+
+                this.tableData = response
+
             }).catch(err => {
                 console.log(err);
             }).finally(() => {
@@ -497,7 +495,7 @@ export default {
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Mã sinh viên</label>
-                                <autocomplete @setStudentCode="setStudentCode" :suggestions="studentList" :selection="objProject.student.code"></autocomplete>
+                                <input type="text" v-model="objProject.student.code" class="form-control"/>
                             </div>
                             <div class="col-3" v-if="objSearch.timeReport === 1">
                                 <label>Tên sinh viên</label>
@@ -559,7 +557,7 @@ export default {
             <div class="card-header">
                 <div class="row" style="float: right">
                     <div class="col-12">
-                        <button type="button" class="btn btn-success" @click="showModalProject"><i class="uil uil-plus me-1"></i> Tạo đồ án</button>
+                        <button type="button" class="btn btn-success"  @click="showModalProject"><i class="uil uil-plus me-1"></i> Tạo đồ án</button>
                     </div>
 
                 </div>
@@ -661,6 +659,7 @@ export default {
         <project-modal
             :idProject="idProject"
             :actionType="modalActionType"
+            :students="studentList"
             :flagModal="flagModal"
             @handleGetProject="handleGetProject"
         >

@@ -1,12 +1,14 @@
 <script>
 
 import Vue from "vue";
+import {getUserInfo} from "@/utils/cookieAuthen";
 
 export default {
     data() {
         return {
             open: false,
-            current: 0
+            current: 0,
+            user: JSON.parse(getUserInfo())
         }
     },
     props: {
@@ -92,11 +94,12 @@ Vue.directive('click-outside', {
         document.body.removeEventListener('click', element.clickOutsideEvent)
     }
 });
+
 </script>
 
 <template>
     <div style="position:relative" v-bind:class="{'open':openSuggestion}">
-        <input class="form-control" type="text" v-model="selection"
+        <input class="form-control" type="text" v-model="selection" placeholder="Nhập mã sinh viên"
                @keydown.enter='enter'
                @keydown.down='down'
                @keydown.up='up'

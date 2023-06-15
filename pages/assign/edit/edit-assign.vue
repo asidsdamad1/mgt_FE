@@ -3,6 +3,8 @@
 import {mapActions} from "vuex";
 import Swal from "sweetalert2";
 import * as CONSTANTS from "constants";
+import Multiselect from "vue-multiselect";
+import Autocomplete from "@/components/project/Autocomplete.vue";
 
 /**
  * Product-detail component
@@ -18,6 +20,9 @@ export default {
                   params
               }) {
 
+    },
+    components: {
+        Autocomplete
     },
     data() {
         return {
@@ -88,7 +93,8 @@ export default {
                     id: 0
                 }
             },
-            tableData: []
+            tableData: [],
+            students: []
         };
     },
     methods: {
@@ -98,6 +104,10 @@ export default {
             apiDeleteAssignment: 'apiDeleteAssignment',
             apiAddAssignment: 'apiAddAssignment'
         }),
+
+        ...mapActions('admin/students', {
+            apiGetStudents: 'apiGetStudent'
+        }) ,
         goToPrev() {
             this.$router.go(-1);
         },
@@ -107,6 +117,14 @@ export default {
             this.currentPage = 1;
         },
         searchSub() {
+            this.apiGetStudents({
+                valueSearch: '',
+                conditionSearch: ''
+            }).then(res => {
+                for(let i = 0; i < res.length; i++) {
+                    this.students.push(res[i].code)
+                }
+            })
             this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
                 .then(response => {
                     this.tableData = response;
@@ -121,6 +139,9 @@ export default {
                     // this.commonLoadingPage(false);
                 });
 
+        },
+        setStudentCode(code) {
+          this.objAssignment.student.code = code;
         },
         deleteAssignment(sessionId, studentId, teacherId) {
             this.objAssignment.session.id = sessionId;
@@ -310,7 +331,7 @@ export default {
                 <div class="row mb-3">
                     <div class="col-12">
                         <label>Mã sinh viên</label>
-                        <input type="text" maxlength="15" v-model="objAssignment.student.code" :disabled="isEditModalField" class="form-control"/>
+                        <autocomplete  @setStudentCode="setStudentCode" :suggestions="students" :selection="objAssignment.student.code"></autocomplete>
                     </div>
                 </div>
 

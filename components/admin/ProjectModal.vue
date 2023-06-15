@@ -5,6 +5,7 @@ import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.min.css";
 import Swal from "sweetalert2";
 import {getUserInfo} from "@/utils/cookieAuthen";
+import Autocomplete from "@/components/project/Autocomplete.vue";
 
 export default {
     middleware: ['check-authen'],
@@ -17,6 +18,9 @@ export default {
         actionType: {
             type: Number,
             default: 0
+        },
+        students: {
+            type: Array
         }
     },
     watch: {
@@ -81,7 +85,8 @@ export default {
         }
     },
     components: {
-        Multiselect
+        Multiselect,
+        Autocomplete
     },
     updated() {
 
@@ -221,7 +226,10 @@ export default {
             let files = e.target.files || e.dataTransfer.files;
             if (files != null)
                 this.fileUpload = files[0];
-        }
+        },
+        setStudentCode(code) {
+            this.objProject.student.code = code;
+        },
     }
 }
 </script>
@@ -264,7 +272,7 @@ export default {
         <div class="row pb-3">
             <div class="col-6">
                 <label>Sinh viên thực hiện</label>
-                <input type="text" maxlength="200" v-model="objProject.student.code" :disabled="actionType===2" placeholder="Nhập mã sinh viên" class="form-control form-control multiselect__tags"/>
+                <autocomplete  @setStudentCode="setStudentCode" :suggestions="students" :selection="objProject.student.code"></autocomplete>
             </div>
             <div class="col-6">
                 <label>Giảng viên hướng dẫn</label>

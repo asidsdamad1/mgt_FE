@@ -33,6 +33,13 @@ export const menuItems = [
                 role: "ROLE_ADMIN",
                 parentId: 19
             },
+            {
+                id: 22,
+                label: "Danh sách chủ đề",
+                link: "/admin/topic",
+                role: "ROLE_ADMIN",
+                parentId: 19
+            },
         ]
     },
     /*{
@@ -156,7 +163,9 @@ export const menuItems = [
                 parentId: 16
             },
         ]
-    }
+    },
+
+
     // {
     //     id: 13,
     //     label: "Quản lý người dùng",
