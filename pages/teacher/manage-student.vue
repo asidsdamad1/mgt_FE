@@ -157,6 +157,7 @@ export default {
             }
         },
         handleGetStudent() {
+            this.commonLoadingPage(true);
             this.objTeacher.id = JSON.parse(getUserInfo()).teacherId;
             this.apiGetStudentByTeacher(this.objTeacher)
                 .then(response => {
@@ -166,6 +167,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchStudent() {

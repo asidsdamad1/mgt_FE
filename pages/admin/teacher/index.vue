@@ -123,6 +123,7 @@ export default {
                 })
         },
         handleGetTeacher() {
+            this.commonLoadingPage(true);
             this.apiGetTeacher(this.objGetTeacher)
                 .then(response => {
                     console.log('apiGetListContactGroup', response)
@@ -132,6 +133,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchContact() {

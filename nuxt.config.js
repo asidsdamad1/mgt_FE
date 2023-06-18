@@ -1,5 +1,5 @@
 export default {
-    // loading: "~/components/loading.vue",
+    loading: "~/components/Loading.vue",
     /*
      ** Nuxt rendering mode
      ** See https://nuxtjs.org/api/configuration-mode
@@ -24,11 +24,11 @@ export default {
                 content: "Responsive Bootstrap 5 Admin Dashboard"
             }
         ],
-        link: [{rel: "icon", type: "image/x-icon", href: "/favicon.ico"}]
+        link: [{rel: "icon", type: "image/x-icon", href: "favicon.ico"}]
     },
     router: {
         // linkExactActiveClass: 'active'
-        base: '/mgt/'
+        base: '/'
         // routeNameSplitter: '/',
         // linkExactActiveClass: 'active'
     },
@@ -118,6 +118,7 @@ export default {
     //     appid: process.env.VUE_APP_APPId,
     //     measurement: process.env.VUE_APP_MEASUREMENTID
     // }
+    loadingIndicator: false
 };
 
 /*

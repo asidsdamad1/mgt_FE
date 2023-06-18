@@ -213,11 +213,14 @@ export default {
             this.objProject.student.code = code;
         },
         handleGetProject() {
+            this.commonLoadingPage(true);
             this.apiGetProject({
                 valueSearch: '',
                 conditionSearch: ''
             }).then(res => {
                 this.tableData = res;
+            }).finally(() => {
+                this.commonLoadingPage(false);
             });
 
             this.apiGetStudentClass({
@@ -429,12 +432,14 @@ export default {
             this.objSearch.valueSearch = '';
             this.clearObjSearch();
 
-
+            this.commonLoadingPage(true);
             this.apiGetProject({
                 valueSearch: '',
                 conditionSearch: ''
             }).then(res => {
                 this.tableData = res;
+            }).finally(() => {
+                this.commonLoadingPage(false);
             })
         },
         initData() {
@@ -456,6 +461,7 @@ export default {
             for (let i = 0; i < this.objProject.status.length; i++) {
                 this.objSeachProject.status[i] = this.objProject.status[i].id.toString();
             }
+            this.commonLoadingPage(true);
             this.apiGetProjectFilter(this.objSeachProject).then(response => {
 
                 this.tableData = response
@@ -463,6 +469,7 @@ export default {
             }).catch(err => {
                 console.log(err);
             }).finally(() => {
+                this.commonLoadingPage(false);
             })
             this.objSeachProject.projectName = '';
             this.objSeachProject.studentName = '';

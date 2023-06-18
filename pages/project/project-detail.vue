@@ -187,6 +187,7 @@ export default {
 
         },
         handleGetProjectDetail() {
+            this.commonLoadingPage(true);
             this.apiGetProjectDetail(this.projectId)
                 .then(response => {
                     this.tableData = response;
@@ -195,6 +196,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchStudent() {

@@ -112,6 +112,7 @@ export default {
                     this.user.name = res[0].fullName
                 })
             }
+                    console.log(JSON.parse(getUserInfo()).teacherId)
             if (JSON.parse(getUserInfo()).role === "ROLE_TEACHER") {
                 this.apiGetTeacherById({id: JSON.parse(getUserInfo()).teacherId}).then(res => {
                     this.user.name = res.fullName

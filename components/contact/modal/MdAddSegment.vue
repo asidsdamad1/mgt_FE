@@ -105,7 +105,6 @@ export default {
         'only-numeric': {
             bind(el, binding, vnode) {
                 el.addEventListener('input', function () {
-                    console.log('11111')
                     this.value = this.value.replace(/[^0-9]/g, '');
                 });
             }

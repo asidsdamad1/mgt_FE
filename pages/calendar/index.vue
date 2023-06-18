@@ -237,6 +237,7 @@ export default {
         async handleInitData() {
             let userInfo = JSON.parse(getUserInfo());
             let reminder = [];
+            this.commonLoadingPage(true);
             try {
                 var d = new Date(Date.now());
 
@@ -249,6 +250,8 @@ export default {
                 }
             } catch (err) {
                 console.error(err);
+            } finally {
+                this.commonLoadingPage(false);
             }
             this.calendarEvents = reminder;
         },
@@ -306,6 +309,7 @@ export default {
                     this.event.end = new Date(endDate.toLocaleString('en-US', {timeZone: 'Asia/Bangkok'}));
                     this.event.status = this.event?.category;
                     this.event.recipient = this.studentMail[0].value;
+                    this.commonLoadingPage(true);
                     this.apiSendMail({
                         recipient: [this.event.recipient],
                         msgBody: this.event.content,
@@ -331,7 +335,9 @@ export default {
                         this.handleInitData()
                         this.showModal = false;
                         this.errormsg();
-                    })
+                    }).finally(
+                        () => this.commonLoadingPage(true)
+                    )
 
                 }
 
@@ -353,9 +359,11 @@ export default {
                 this.event.start = `${this.event.from.date}T${this.event.from.time}:00.000Z`;
                 this.event.end = `${this.event.to.date}T${this.event.to.time}:00.000Z`;
                 this.event.recipient = this.studentMail[0].value;
+                this.commonLoadingPage(true);
                 this.apiEditReminder(this.event).then(response => {
                     Swal.fire("", "Sửa thành công", "success");
                     this.handleInitData();
+
                     this.apiSendMail({
                         recipient: [this.event.recipient],
                         msgBody: this.event.content,
@@ -377,11 +385,10 @@ export default {
                     this.errormsg();
 
                 }).finally(() => {
-                    // this.commonLoadingPage(false);
+                     this.commonLoadingPage(false);
                 });
 
 
-                this.successmsg();
                 this.eventModal = false;
             }
 

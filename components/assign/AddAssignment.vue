@@ -30,6 +30,7 @@ export default {
             json_data: [],
         }
     },
+
     methods: {
         ...mapActions('assign/assignment', {
             apiImportAssignment: 'apiImportAssignment'
@@ -41,7 +42,6 @@ export default {
             } else {
                 formData.append('fileExcel', this.fileUpload);
                 formData.append('session', this.idSession);
-
                 this.apiImportAssignment(formData)
                     .then(response => {
                         if(response.length === 0) {

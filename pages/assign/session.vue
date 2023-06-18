@@ -101,6 +101,7 @@ export default {
                 }
             }
 
+            this.commonLoadingPage(true);
             this.apiGetSession(objInput)
                 .then(response => {
 
@@ -113,7 +114,7 @@ export default {
                     console.log(err);
                 })
                 .finally(() => {
-                    // this.commonLoadingPage(false);
+                    this.commonLoadingPage(false);
                 });
 
         },
@@ -255,12 +256,12 @@ export default {
                         </template>
                         <template v-slot:cell(action)=data>
                             <ul class="list-inline mb-0">
-                                <nuxt-link title="Xem tập TB"
+                                <nuxt-link title="Xem năm học"
                                            :to="{ path: '/assign/view/view-session', query: { id: data.item.id, name: data.item.name }}"
                                            class="text-secondary p-2"
                                 ><i class="uil uil-eye font-size-18"></i>
                                 </nuxt-link>
-                                <nuxt-link title="Sửa tập TB"
+                                <nuxt-link title="Sửa năm học"
                                            :to="{path:'/assign/edit/edit-session',query: { id: data.item.id, name: data.item.name }}"
                                            class="text-secondary pe-2"
                                 ><i class="uil uil-pen font-size-18"></i>

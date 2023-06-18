@@ -125,6 +125,8 @@ export default {
                     this.students.push(res[i].code)
                 }
             })
+
+            this.commonLoadingPage(true);
             this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
                 .then(response => {
                     this.tableData = response;
@@ -136,7 +138,7 @@ export default {
                     console.log(err);
                 })
                 .finally(() => {
-                    // this.commonLoadingPage(false);
+                    this.commonLoadingPage(false);
                 });
 
         },
@@ -190,9 +192,11 @@ export default {
             if(this.checkDataInput()) {
                 this.objAssignment.session.id = this.sessionId;
                 this.objAssignment.teacher.id = this.teacherId;
+                this.commonLoadingPage(true);
                 this.apiAddAssignment(this.objAssignment)
                     .then(response => {
                         this.searchSub();
+                        Swal.fire("", "Thêm sinh viên thành công", "success");
                         this.$bvModal.hide('modal-add-one');
 
                     })
@@ -206,7 +210,7 @@ export default {
                         }
                     })
                     .finally(() => {
-                        // this.commonLoadingPage(false);
+                         this.commonLoadingPage(false);
                     });
             }
 

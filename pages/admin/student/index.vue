@@ -162,6 +162,7 @@ export default {
             }
         },
         handleGetStudent() {
+            this.commonLoadingPage(true);
             this.apiGetStudent(this.objGetStudent)
                 .then(response => {
                     console.log('apiGetListContactGroup', response)
@@ -171,6 +172,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchContact() {

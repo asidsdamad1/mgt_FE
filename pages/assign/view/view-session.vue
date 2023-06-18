@@ -103,6 +103,7 @@ export default {
 
             console.log('apiGetListContact', objInput);
 
+            this.commonLoadingPage(true);
             this.apiGetAssignment(objInput)
                 .then(response => {
                     this.tableData = response;
@@ -115,7 +116,7 @@ export default {
                     console.log(err);
                 })
                 .finally(() => {
-                    // this.commonLoadingPage(false);
+                     this.commonLoadingPage(false);
                 });
 
         }

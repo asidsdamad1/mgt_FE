@@ -1,7 +1,7 @@
 export const API_AUTHEN = {
     apiRegister: 'auth/register',
     apiSendOTP: 'auth/otp',
-    apiLogin: 'api/signin',
+    apiLogin: '/signin',
     apiGoogleLogin: 'auth/google/login',
     apiFacebookLogin: 'auth/facebook/login',
     apiTiktokLogin: 'auth/tiktok/login',

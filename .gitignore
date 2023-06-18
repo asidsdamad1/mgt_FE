@@ -94,3 +94,6 @@ sw.*
 *.swp
 
 firebase-messaging-sw.js
+
+# Local Netlify folder
+.netlify

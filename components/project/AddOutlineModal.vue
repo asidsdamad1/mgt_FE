@@ -51,6 +51,7 @@ export default {
                 formData.append('file', this.fileUpload);
                 formData.append('type', this.type);
                 if(this.type === "REPORT_DETAIL") {
+                    this.commonLoadingPage(true);
                     if(this.idDetail !== 0) {
                         formData.append('id', this.idDetail);
                         this.apiAddReportFileDetail(formData)
@@ -84,11 +85,11 @@ export default {
 
                     }
                 } else {
+                    this.commonLoadingPage(true);
                     if(this.idDetail !== 0) {
                         formData.append('id', this.idDetail);
                         this.apiAddReportFileDetail(formData)
                             .then(response => {
-                                console.log('apiAddBlacklist', response);
                                 this.$emit('handleGetProjectDetail');
                                 this.$bvModal.hide('modal-add-file-outline');
 
@@ -101,6 +102,7 @@ export default {
                             });
                     }
                     if(this.idProject !== 0) {
+
                         formData.append('id', this.idProject);
                         this.apiAddOutlineFile(formData)
                             .then(response => {
@@ -112,7 +114,7 @@ export default {
                                 console.log(err);
                             })
                             .finally(() => {
-                                // this.commonLoadingPage(false);
+                                 this.commonLoadingPage(false);
                             });
 
                     }

@@ -1,7 +1,7 @@
 <script>
 
 import {mapActions} from "vuex";
-import AddAssignment from "@/components/assign/AddAssignment.vue";
+import AddAssignment from "../../../components/assign/AddAssignment.vue";
 import Swal from "sweetalert2";
 
 /**
@@ -120,8 +120,8 @@ export default {
         },
         searchSub() {
             let objInput = {conditionSearch: 'SESSION', valueSearch: this.sessionId};
-
             console.log('apiGetListContact', objInput);
+            this.commonLoadingPage(true);
 
             this.apiGetAssignment(objInput)
                 .then(response => {
@@ -135,7 +135,7 @@ export default {
                     console.log(err);
                 })
                 .finally(() => {
-                    // this.commonLoadingPage(false);
+                     this.commonLoadingPage(false);
                 });
 
         },
@@ -222,7 +222,9 @@ export default {
             return this.tableData.length;
         }
     },
+    prepareAddOne() {
 
+    }
 
 };
 </script>
@@ -251,7 +253,7 @@ export default {
                                 <select v-model="conditionSearch" class="form-control">
                                     <option value=""></option>
                                     <option value="-1">Tất cả</option>
-                                    <option value="ID">ID SĐT</option>
+                                    <option value="ID">Tên giảng viên</option>
                                     <option value="SDT">Số điện thoại</option>
                                 </select>
                             </div>

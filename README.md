@@ -16,5 +16,7 @@ $ yarn start
 # generate static project
 $ yarn generate
 ```
+netlify login
+netlify deploy
 
 For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).

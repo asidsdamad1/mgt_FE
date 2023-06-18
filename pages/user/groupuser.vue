@@ -120,6 +120,7 @@ export default {
         },
         handleGetUser() {
             let objInput = {conditionSearch: this.conditionSearch, valueSearch: this.valueSearch};
+            this.commonLoadingPage(true);
             this.apiGetUser(objInput)
                 .then(response => {
                     this.tableData = response;
@@ -128,6 +129,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchContact() {

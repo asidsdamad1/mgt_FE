@@ -167,6 +167,7 @@ export default {
         handleGetProject() {
             this.objProject.valueSearch = JSON.parse(getUserInfo()).teacherId;
             this.objProject.conditionSearch = 'TEACHER';
+            this.commonLoadingPage(true);
             this.apiGetProject(this.objProject)
                 .then(response => {
                     this.tableData = response;
@@ -175,6 +176,8 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
+
                 })
         },
         searchStudent() {

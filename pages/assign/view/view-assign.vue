@@ -110,6 +110,7 @@ export default {
     },
     mounted() {
         let objInput = {conditionSearch: 'ID', valueSearch: this.assignmentId}
+        this.commonLoadingPage(true);
         this.apiGetStudent({sessionId: this.sessionId, teacherId: this.teacherId})
             .then(response => {
                 this.tableData = response;
@@ -121,7 +122,7 @@ export default {
                 console.log(err);
             })
             .finally(() => {
-                // this.commonLoadingPage(false);
+                this.commonLoadingPage(false);
             });
     },
     computed:{

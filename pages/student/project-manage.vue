@@ -158,8 +158,10 @@ export default {
                 })
         },
         handleGetProject() {
+            this.commonLoadingPage(true);
             this.handleGetTeacher()
                 .then(() => {
+
                     console.log(this.teacherId)
                     this.objSearch.valueSearch = this.teacherId;
                     this.objSearch.conditionSearch = 'TEACHER'
@@ -173,6 +175,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+                    this.commonLoadingPage(false);
                 })
         },
         searchStudent() {
@@ -305,6 +308,7 @@ export default {
                     console.log(err)
                 })
                 .finally(() => {
+
                 })
             this.type = "REPORT"
             this.flagModal = !this.flagModal;

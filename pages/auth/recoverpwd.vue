@@ -57,7 +57,7 @@ export default {
                                             <p class="mb-0">
                                                 Remember It ?
 
-                                                <nuxt-link to="/auth/login-1" class="fw-medium text-primary">Signin</nuxt-link>
+                                                <nuxt-link to="/account/login" class="fw-medium text-primary">Signin</nuxt-link>
                                             </p>
                                         </div>
                                     </form>
